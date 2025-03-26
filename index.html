@@ -17,26 +17,33 @@
     <div class="navigation">
       <nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #0b0b0b;">
         <div class="container-fluid">
-          <a class="nav-bar letter-logo"><img src="asset/homepage-assets/image.png" style="width: 170px"></a>
+          <a class="nav-bar letter-logo"><i class="ri-terminal-box-fill"></i></a>
+          <form class="d-flex ms-3" role="search">
+            <div class="input-group">
+                <input class="form-control" type="search" placeholder="Tìm kiếm..." aria-label="Search">
+                <button class="btn btn-outline-danger" type="submit">Tìm</button>
+            </div>
+          </form>
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link active" href="/html/lol-homepage.html">League of Legends</a>
+              <a class="nav-link active" href="/html/lol-homepage.html">Lộ Trình</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="/html/valorant-homepage.html">VALORANT</a>
+              <a class="nav-link active" href="/html/valorant-homepage.html">Lộ Trình Của Tôi</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="/html/tft-homepage.html">Teamfight Tactics</a>
+              <a class="nav-link active" href="/html/tft-homepage.html">Về Chúng Tôi</a>
             </li>
           </ul>
           <ul class="navbar-nav">
-            <li class="nav-item dropdown no-margin">
-              <a class="nav-link dropdown-toggle" href="#" id="language-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="https://flagsapi.com/VN/flat/64.png" alt="English" width="30" height="30"> VietNamese
+            <li class="nav-item d-flex align-items-center">
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/VN/flat/64.png" alt="Vietnamese" width="30" height="30">
               </a>
-              <ul class="dropdown-menu" aria-labelledby="language-dropdown">
-                <li><a class="dropdown-item" href="#"><img src="https://flagsapi.com/GB/flat/64.png" alt="English" width="20" height="20"> English</a></li>
-              </ul>
+              <span class="border-start mx-2" style="height: 24px; display: inline-block;"></span>
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/GB/flat/64.png" alt="English" width="30" height="30">
+              </a>
             </li>
             <li class="nav-item">
               <button class="btn btn-outline-danger" id="signin-btn" onclick="window.location.href='../html/login.html'">Đăng nhập</button>
@@ -53,29 +60,49 @@
           </label>
           <ul class="mobile-list">
             <li class="nav-mobile-item">
-              <a class="nav-link active" href="lol-homepage.html">League of Legends</a>
+              <a class="nav-link active" href="lol-homepage.html">Lộ Trình</a>
             </li>
             <li class="nav-mobile-item">
-              <a class="nav-link active" href="valorant-homepage.html">VALORANT</a>
+              <a class="nav-link active" href="valorant-homepage.html">Lộ Trình Của Tôi</a>
             </li>
             <li class="nav-mobile-item">
-              <a class="nav-link active" href="tft-homepage.html">Teamfight Tactics</a>
+              <a class="nav-link active" href="tft-homepage.html">Về Chúng Tôi</a>
             </li>
-            <li class="nav-mobile-item dropdown no-margin">
-              <a class="nav-link dropdown-toggle" href="#" id="language-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="https://flagsapi.com/GB/flat/64.png" alt="English" width="30" height="30"> English
+            <li class="nav-item d-flex align-items-center">
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/VN/flat/64.png" alt="Vietnamese" width="30" height="30">
               </a>
-              <ul class="dropdown-menu" aria-labelledby="language-dropdown">
-                <li><a class="dropdown-item" href="#"><img src="https://flagsapi.com/VN/flat/64.png" alt="VietNamese" width="20" height="20"> Vietnamese</a></li>
-              </ul>
+              <span class="border-start mx-2" style="height: 24px; display: inline-block;"></span>
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/GB/flat/64.png" alt="English" width="30" height="30">
+              </a>
             </li>
             <li class="nav-mobile-item">
-              <button class="btn btn-outline-danger" id="signin-btn" onclick="window.location.href='login.html'">Sign In</button>
-              <button class="btn btn-outline-danger" id="signin-btn" onclick="window.location.href='admin.html'">(dev)to admin</button>
+              <button class="btn btn-outline-danger" id="signin-btn" onclick="window.location.href='login.html'">Đăng nhập</button>
             </li>
           </ul>
         </nav>
       </nav>
+    </div>
+    <div class="sc-1">
+      <h1>Chào mừng đến với RoadMapPTIT</h1>
+      <p>"Đây là nơi giúp anh em có những sự tham khảo, học hỏi cũng như là luyện tập một số kỹ năng nhất định để xác định được hướng đi của mình. Chúc anh em học tập vui vẻ!</p>
+      <p>~Trai đẹp Marsellie~</p>
+    </div>
+    <div class="container">
+      <h3>Lập Trình web:</h3>
+      <div class="course">
+        <div class="progress-circle" data-progress="70"></div>
+        <span>Lộ Trình học front-end</span>
+      </div>
+      <div class="course">
+        <div class="progress-circle" data-progress="70"></div>
+        <span>Lộ Trình học front-end</span>
+      </div>
+      <div class="course">
+        <div class="progress-circle" data-progress="70"></div>
+        <span>Lộ Trình học front-end</span>
+      </div>
     </div>
 </body>
 </html>
