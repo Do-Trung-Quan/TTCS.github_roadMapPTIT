@@ -13,12 +13,11 @@ body, html{
 }
 
 main{
-    background-color: #1B1B1B;
     color: white;
 }
 
 body{
-    background-color: #100C2A !important;
+    background-color: #CCCCCC !important;
 }
 
 img{
@@ -172,8 +171,8 @@ img{
     display: block;
     padding-top: 40px;
     text-align: center;
-    background-color: #100C2A;
-    color: white
+    background-color: #CCCCCC;
+    color: #333;
 }
 
 .sc-1 p{
@@ -183,22 +182,31 @@ img{
 .container {
     width: 700px !important;
     color: white;
-    background-color: #100C2A;
+    background-color: #CCCCCC;
 }
 
-h3 {
-    font-size: 16px;
+.container h3{
+    font-size: 30px;
     margin-bottom: 10px;
+    color: #333;
 }
 
 .course {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
-    background-color: #1B1035;
+    background-color: #B22222;
+    transition: background 0.5s ease-in-out, filter 0.3s ease;
     padding: 15px;
     border-radius: 8px;
     width: 100%;
+    cursor: pointer;
+}
+
+.course:hover {
+    background: linear-gradient(135deg, #111111, #ff3333);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.2);
 }
 
 .progress-circle {
@@ -221,6 +229,6 @@ h3 {
     position: absolute;
     width: 30px;
     height: 30px;
-    background-color: #fff;
+    background-color: white;
     border-radius: 50%;
 }
