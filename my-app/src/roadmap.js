@@ -22,12 +22,11 @@ const edges = [
   { id: "e3-6", source: "3", target: "6" },
   { id: "e3-7", source: "3", target: "7" },
 ];
-
 export default function Roadmap() {
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow nodes={nodes} edges={edges} fitView>
-        <Controls /> {/* Thêm nút zoom và điều khiển */}
+        <Controls />
         <Background color="#aaa" gap={16} />
       </ReactFlow>
     </div>
