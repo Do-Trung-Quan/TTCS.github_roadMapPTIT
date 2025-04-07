@@ -10,13 +10,13 @@
   
   /* Tuỳ chỉnh node */
   .react-flow__node {
-    background-color: #ffffff;
-    border: 2px solid #1890ff;
+    background-color: #B22222;
+    border: 2px solid #333;
     border-radius: 12px;
     padding: 10px;
     font-size: 14px;
     font-weight: 600;
-    color: #333;
+    color: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease-in-out;
   }
@@ -28,11 +28,11 @@
   
   /* Tùy chỉnh đường nối */
   .react-flow__edge-path {
-    stroke: #1890ff;
+    stroke: #333;
     stroke-width: 2;
   }
   
   .react-flow__arrowhead {
-    fill: #1890ff;
+    fill: #3333;
   }
   

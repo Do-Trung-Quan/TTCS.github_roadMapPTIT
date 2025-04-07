@@ -1,0 +1,168 @@
+*{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-decoration: none;
+    font-family: 'Roboto', sans-serif;
+    caret-color: transparent;
+    box-sizing: border-box;
+}
+
+body, html{
+    overflow-x: hidden;
+}
+
+main{
+    color: white;
+}
+
+body{
+    background-color: #CCCCCC !important;
+}
+
+img{
+    vertical-align: middle;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+
+@keyframes fadeIN{
+    from{
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}
+
+.navigation{
+    overflow-y: hidden;
+}
+
+.nav-item button{
+    margin-left: 10px;
+}
+
+.btn.btn-outline-danger{
+    background-color: red;
+    border-radius: 40px;
+    color: white;
+    padding: 10px auto;
+}
+
+.nav-home{
+    display: none;
+    color: white;
+    padding-right: 10px;
+}
+
+.ri-menu-fill{
+    width: 34px;
+    height: 34px;
+}
+
+.nav-overlay{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+    animation: fadeIN linear 0.2s;
+}
+
+.nav-mobile{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    max-width: 100%;
+    background-color:  #2c2c2c;
+    transform: translateX(100%);
+    z-index: 999;
+    transition: transform linear 0.2s;
+}
+
+.mobile-list{
+    margin-top: 24px;
+}
+
+.nav-mobile-item{
+    text-decoration: none;
+    color: #fff;
+    display: block;
+    padding: 8px 0;
+    font-size: 1.4rem;
+}
+
+.nav-mobile-close{
+    font-size: 1.4rem;
+    color: #666;
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+}
+
+.nav-input-mobile{
+    display: none;
+}
+
+.nav-input-mobile:checked ~ .nav-overlay{
+    display: block;
+}
+
+.nav-input-mobile:checked ~ .nav-mobile{
+    transform: translateX(0%);
+}
+
+@media (max-width: 1023px) {
+    
+
+    .nav-bar.letter-logo img{
+        max-width: 100px;
+    }
+
+    .navbar.navbar-expand-sm.navbar-dark{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        max-width: 100%;
+    }
+
+    .nav-home{
+        display: block;
+    }
+
+    .navbar-nav.ms-auto{
+        display: none;
+    }
+
+    .nav-item.dropdown.no-margin{
+        display: none;
+    }
+
+    .nav-item{
+        display: none;
+    }
+}
+
+@media (max-width: 768px){
+    .container-fluid{
+        max-width: 100px;
+    }
+
+    .navbar.navbar-expand-sm.navbar-dark{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        max-width: 100%;
+    }
+}
