@@ -1,8 +1,8 @@
 import React from "react";
 import ReactFlow, { Controls, Background } from "reactflow";
 import "reactflow/dist/style.css";
-import "./roadmap.css";
-import Header from "./header";
+import './roadmap.css';
+import Header from '../../components/Header/header';
 
 // Danh sách các node (các khối trong roadmap)
 const nodes = [
