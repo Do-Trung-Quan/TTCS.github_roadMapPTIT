@@ -1,38 +1,37 @@
 /* Roadmap.css */
 
 .roadmap-container {
-    width: 100vw;
-    height: 100vh;
-    background-color: #f0f2f5;
-    padding: 16px;
-    box-sizing: border-box;
-  }
-  
-  /* Tuỳ chỉnh node */
-  .react-flow__node {
-    background-color: #B22222;
-    border: 2px solid #333;
-    border-radius: 12px;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease-in-out;
-  }
-  
-  .react-flow__node:hover {
-    transform: scale(1.05);
-    cursor: pointer;
-  }
-  
-  /* Tùy chỉnh đường nối */
-  .react-flow__edge-path {
-    stroke: #333;
-    stroke-width: 2;
-  }
-  
-  .react-flow__arrowhead {
-    fill: #3333;
-  }
-  
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Tuỳ chỉnh node */
+.react-flow__node {
+  background-color: #B22222;
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.react-flow__node:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+/* Tùy chỉnh đường nối */
+.react-flow__edge-path {
+  stroke: #333;
+  stroke-width: 2;
+}
+
+.react-flow__arrowhead {
+  fill: #3333;
+}

@@ -7,8 +7,6 @@ from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_decode
-import re
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
