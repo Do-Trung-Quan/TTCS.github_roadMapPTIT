@@ -8,9 +8,7 @@ import ResetPasswordEmail from './pages/ResetPasswordEmail/ResetPasswordEmail';
 
 function Home() {
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Front-end Roadmap</h1>
-      <p>Chào mừng, đây là lộ trình front-end cho các anh chị em</p>
+    <div style={{ textAlign: "center" }}>
       <Roadmap />
     </div>
   );
