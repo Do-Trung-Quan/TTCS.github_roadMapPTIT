@@ -38,6 +38,18 @@ img{
     }
 }
 
+.nav-bar.letter-logo{
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+}
+
+.nav-bar.letter-logo:hover{
+    color: #CCCCCC;
+}
+
 .navigation{
     overflow-y: hidden;
 }
