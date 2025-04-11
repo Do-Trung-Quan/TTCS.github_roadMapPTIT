@@ -1,17 +1,16 @@
 .signup-container {
-    width: 100vw;
-    height: 100vh;
-    background-color: #f0f2f5;
-    padding: 16px;
-    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px;
+    min-height: 100vh; 
   }
   
   .signup-box {
     background-color: white;
-    padding: 40px;
+    padding: 20px;
     border-radius: 12px;
-    width: 100%;
-    max-width: 400px;
+    width: 500px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
   }
@@ -85,7 +84,7 @@
   .signup-form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
   }
   
   .signup-input {
@@ -113,6 +112,9 @@
   .login-link {
     margin-top: 15px;
     font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
     color: #555;
   }
   
