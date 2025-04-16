@@ -34,7 +34,7 @@ export default function Header() {
               <button
                 className="btn btn-outline-danger"
                 id="signin-btn"
-                onClick={() => window.location.href = '../html/login.html'}
+                onClick={() => window.location.href = 'http://localhost:3000/login'}
               >
                 Đăng nhập
               </button>
