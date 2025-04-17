@@ -1,0 +1,45 @@
+Watching for file changes with StatReloader
+Unauthorized: /api/login/
+Unauthorized: /api/login/
+Forbidden (Origin checking failed - http://localhost:3000 does not match any trusted origins.): /api/reset-password-email/
+Watching for file changes with StatReloader
+Forbidden (Origin checking failed - http://localhost:3000 does not match any trusted origins.): /api/reset-password-email/
+Watching for file changes with StatReloader
+Unauthorized: /api/login/
+Forbidden (Origin checking failed - http://localhost:3000 does not match any trusted origins.): /api/reset-password-email/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Unauthorized: /api/login/
+Watching for file changes with StatReloader
+Unauthorized: /api/login/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Unauthorized: /api/login/
+Unauthorized: /api/login/
+Unauthorized: /api/register/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Bad Request: /api/password/reset-email/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Bad Request: /api/password/reset-email/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Bad Request: /api/password/reset/
+Watching for file changes with StatReloader
+Bad Request: /api/password/reset-email/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Bad Request: /api/password/reset-email/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Bad Request: /api/password/reset-email/
+Bad Request: /api/password/reset/

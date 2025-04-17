@@ -1,36 +1,41 @@
 from rest_framework import serializers
 from .models import User
-from django.contrib.auth import authenticate
 from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import check_password
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils import timezone
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ObjectDoesNotExist
+import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     avatar = serializers.SerializerMethodField(read_only=True)
     role = serializers.CharField(default='user')
-    created_at = serializers.DateTimeField(required=False, read_only=True)
-    last_login = serializers.DateTimeField(required=False, read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    last_login = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password', 'role', 'avatar', 'created_at', 'last_login')
-        read_only_fields = ('id', 'created_at')
+        read_only_fields = ('id', 'created_at', 'last_login')
 
     def get_avatar(self, obj):
-        # Nếu avatar là None hoặc rỗng, dùng mặc định
-        filename = obj.avatar or 'ptitLogo.png'
-        return f"{settings.MEDIA_URL}{filename}"
+        return obj.avatar or 'https://res.cloudinary.com/dsm1uhecl/image/upload/v1744875601/ptitLogo_x3gko8.png'
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        # Nếu không có avatar được gửi lên, dùng mặc định
-        if not validated_data.get('avatar'):
-            validated_data['avatar'] = 'ptitLogo.png'
-        return User.objects.create_user(password=password, **validated_data)
+        validated_data['id'] = User.generate_user_id()  # Tạo id theo định dạng USxxx
+        user = User(**validated_data)
+        user.set_password(password)
+        if not user.avatar:
+            user.avatar = 'https://res.cloudinary.com/dsm1uhecl/image/upload/v1744875601/ptitLogo_x3gko8.png'
+        user.save()
+        return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
@@ -41,6 +46,25 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class SocialUserSerializer(serializers.ModelSerializer):
+    avatar = serializers.CharField(required=False, allow_null=True)
+    role = serializers.CharField(default='user')
+    created_at = serializers.DateTimeField(read_only=True)
+    last_login = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'role', 'avatar', 'created_at', 'last_login')
+        read_only_fields = ('id', 'created_at', 'last_login')
+
+    def create(self, validated_data):
+        validated_data['id'] = User.generate_user_id()
+        validated_data['password'] = make_password(str(uuid.uuid4()))  # Mật khẩu ngẫu nhiên
+        user = User(**validated_data)
+        if not user.avatar:
+            user.avatar = 'https://res.cloudinary.com/dsm1uhecl/image/upload/v1744875601/ptitLogo_x3gko8.png'
+        user.save()
+        return user
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -50,17 +74,16 @@ class LoginSerializer(serializers.Serializer):
         username = data.get('username')
         password = data.get('password')
 
-        # Tìm user theo username
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise serializers.ValidationError("Tên đăng nhập không tồn tại.")
 
-        # Kiểm tra mật khẩu
-        if not check_password(password, user.password):
+        if not user.check_password(password):
             raise serializers.ValidationError("Mật khẩu không đúng.")
 
-        # Nếu đăng nhập thành công, trả về user trong dữ liệu
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
         data['user'] = user
         return data
     
@@ -75,6 +98,8 @@ class EmailLoginSerializer(serializers.Serializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("Email không tồn tại trong hệ thống.")
         
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
         data['user'] = user
         return data
 
@@ -109,7 +134,6 @@ class ResetPasswordEmailSerializer(serializers.Serializer):
             [user.email],  # Người nhận
             html_message=message,  # Nội dung HTML cho email
         )
-
 
 class ResetPasswordSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
