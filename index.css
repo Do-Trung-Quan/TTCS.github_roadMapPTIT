@@ -4,7 +4,7 @@
     list-style: none;
     text-decoration: none;
     font-family: 'Roboto', sans-serif;
-    caret-color: transparent;
+    /*caret-color: transparent; nhap text d thay cursor an card a:))*/ 
     box-sizing: border-box;
 }
 
