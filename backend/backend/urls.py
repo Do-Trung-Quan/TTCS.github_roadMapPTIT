@@ -1,29 +1,23 @@
-"""
-URL configuration for backend project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('accounts.urls')),  # Giờ endpoint của bạn là: http://localhost:8000/api/register/
+    path('admin/', admin.site.urls),  # Đường dẫn đến trang admin của Django
+    path('api/', include('users.urls')),  # Endpoint chung cho API người dùng (register, login, profile, v.v.)
+    path('api/', include('topics.urls')),  # Endpoint cho API quản lý topic
+    path('api/', include('resources.urls')),  # Endpoint cho API quản lý resources
+    path('api/', include('exercise.urls')),  # Endpoint cho API quản lý exercises
+    path('api/', include('quizquestions.urls')),  # Endpoint cho API quản lý câu hỏi quiz
+    path('api/', include('quizanswers.urls')),  # Endpoint cho API quản lý câu trả lời quiz
+    path('api/', include('bookmark.urls')),  # Endpoint cho API quản lý bookmark
+    path('api/', include('enroll.urls')),  # Endpoint cho API quản lý đăng ký (enroll)
+    path('api/', include('roadmaps.urls')),  # Endpoint cho API quản lý roadmap
+    path('api/', include('resources_types.urls')),  # Endpoint cho API quản lý loại tài nguyên
+    path('api/', include('topic_roadmaps.urls')),  # Endpoint cho API quản lý mối quan hệ topic-roadmap
+    path('api/', include('user_topic_progresses.urls')) # Endpoint cho API theo dõi tiến trình topic của người dùng
 ]
-
+# Cấu hình URL cho static và media khi debug
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
