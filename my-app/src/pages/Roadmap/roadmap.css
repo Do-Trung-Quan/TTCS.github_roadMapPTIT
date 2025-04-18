@@ -1,5 +1,3 @@
-/* Roadmap.css */
-
 .roadmap-container {
   width: 100vw;
   height: 100vh;
@@ -8,9 +6,9 @@
   box-sizing: border-box;
 }
 
-/* Tuỳ chỉnh node */
+/* Tùy chỉnh node */
 .react-flow__node {
-  background-color: #B22222;
+  background-color: #b22222;
   border: 2px solid #333;
   border-radius: 12px;
   padding: 10px;
@@ -33,5 +31,142 @@
 }
 
 .react-flow__arrowhead {
-  fill: #3333;
+  fill: #333;
+}
+
+/* Tùy chỉnh lớp phủ overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+/* Tùy chỉnh panel hiển thị thông tin */
+.info-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #fff;
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  font-family: Arial, sans-serif;
+}
+
+/* Tùy chỉnh tiêu đề trong panel */
+.info-panel h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #b22222;
+}
+
+/* Tùy chỉnh tiêu đề "Thông tin" và "Bài tập" */
+.info-panel h4 {
+  margin: 15px 0 5px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Tùy chỉnh đoạn văn bản thông tin */
+.info-panel p {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Tùy chỉnh danh sách bài tập */
+.info-panel ul {
+  margin: 5px 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+/* Tùy chỉnh từng mục bài tập */
+.info-panel li {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* Tùy chỉnh nút đóng panel */
+.info-panel button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.info-panel button:hover {
+  color: #b22222;
+}
+
+/* Đảm bảo layout của header trong panel */
+.info-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Tùy chỉnh checkbox hoàn thành */
+.completion-checkbox {
+  margin: 10px 0;
+}
+
+.completion-checkbox label {
+  font-size: 16px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.completion-checkbox input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Tùy chỉnh progress bar */
+.progress-container {
+  max-width: 600px;
+  margin: 20px auto;
+  text-align: left;
+}
+
+.progress-container label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #b22222;
+  transition: width 0.3s ease-in-out;
 }
