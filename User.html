@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="user.css">
+    <link rel="stylesheet" href="index.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+    rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" href="asset/homepage-assets/page-favicon.png" type="image/x-icon">
+
+    <script src="/user.js" defer></script>
+    <title>Rito.gg</title>
+</head>
+<body>
+    <div class="navigation">
+      <nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #0b0b0b;">
+        <div class="container-fluid">
+          <a class="nav-bar letter-logo">RoadMapPTIT</a>
+          <form class="d-flex ms-3" role="search">
+            <div class="input-group">
+                <input class="form-control" type="search" placeholder="Tìm kiếm..." aria-label="Search">
+                <button class="btn btn-outline-danger" type="submit">Tìm</button>
+            </div>
+          </form>
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="/html/lol-homepage.html">Lộ Trình</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/html/valorant-homepage.html">Lộ Trình Của Tôi</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/html/tft-homepage.html">Về Chúng Tôi</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item d-flex align-items-center">
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/VN/flat/64.png" alt="Vietnamese" width="30" height="30">
+              </a>
+              <span class="border-start mx-2" style="height: 24px; display: inline-block;"></span>
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/GB/flat/64.png" alt="English" width="30" height="30">
+              </a>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-outline-danger" id="signin-btn" onclick="window.location.href='http://localhost:3000/login'">Đăng nhập</button>
+            </li>
+        </div>
+        <label for="nav-mobile-input" class="nav-home">
+          <i class="ri-menu-fill"></i>
+        </label>
+        <input type="checkbox" name="" class="nav-input-mobile" id="nav-mobile-input">
+        <label for="nav-mobile-input" class="nav-overlay"></label>
+        <nav class="nav-mobile">
+          <label for="nav-mobile-input" class="nav-mobile-close">
+            <i class="ri-close-large-line"></i>
+          </label>
+          <ul class="mobile-list">
+            <li class="nav-mobile-item">
+              <a class="nav-link active" href="lol-homepage.html">Lộ Trình</a>
+            </li>
+            <li class="nav-mobile-item">
+              <a class="nav-link active" href="valorant-homepage.html">Lộ Trình Của Tôi</a>
+            </li>
+            <li class="nav-mobile-item">
+              <a class="nav-link active" href="tft-homepage.html">Về Chúng Tôi</a>
+            </li>
+            <li class="nav-item d-flex align-items-center">
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/VN/flat/64.png" alt="Vietnamese" width="30" height="30">
+              </a>
+              <span class="border-start mx-2" style="height: 24px; display: inline-block;"></span>
+              <a class="nav-link p-0" href="#">
+                  <img src="https://flagsapi.com/GB/flat/64.png" alt="English" width="30" height="30">
+              </a>
+            </li>
+            <li class="nav-mobile-item">
+              <button class="btn btn-outline-danger" id="signin-btn" onclick="window.location.href='login.html'">Đăng nhập</button>
+            </li>
+          </ul>
+        </nav>
+      </nav>
+    </div>
+
+    <div class="body-sec">
+
+      <div class="sidebar">
+          <div class="team-selector">
+              <h3>CHOOSE TEAM</h3>
+              <div class="team-dropdown">
+                  <span>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+                      </svg>
+                      Quân Đỗ Trung
+                  </span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
+                  </svg>
+              </div>
+          </div>
+          
+          <a href="#" class="menu-item active" data-page="activity">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V13H17V17Z" fill="currentColor"/>
+              </svg>
+              Activity
+          </a>
+          
+          <a href="#" class="menu-item" data-page="profile">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+              </svg>
+              Profile
+          </a>
+          
+          <a href="#" class="menu-item" data-page="roadmaps">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20.5 3L20.34 3.03L15 5.1L9 3L3.36 4.9C3.15 4.97 3 5.15 3 5.38V20.5C3 20.78 3.22 21 3.5 21L3.66 20.97L9 18.9L15 21L20.64 19.1C20.85 19.03 21 18.85 21 18.62V3.5C21 3.22 20.78 3 20.5 3ZM15 19L9 16.89V5L15 7.11V19Z" fill="currentColor"/>
+              </svg>
+              Roadmaps
+          </a>
+          
+          <a href="#" class="menu-item" data-page="settings">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.91 7.63 6.29L5.24 5.33C5.02 5.26 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.84 14.52C2.66 14.66 2.61 14.93 2.72 15.13L4.64 18.45C4.76 18.67 5.01 18.74 5.23 18.67L7.62 17.71C8.12 18.09 8.65 18.41 9.24 18.65L9.6 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.74 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 8.4C13.98 8.4 15.6 10.02 15.6 12C15.6 13.98 13.98 15.6 12 15.6Z" fill="currentColor"/>
+              </svg>
+              Settings
+          </a>
+      </div>
+      
+      <div class="main-content">
+      <!-- Activity page -->
+        <div class="page-content" id="activity">
+          <div class="activity-container">
+            <div class="activity-stats">
+              <div class="stats-item">
+                <span class="stats-value">0</span>
+                <span class="stats-label">Topics Completed</span>
+              </div>
+              <div class="stats-item">
+                <span class="stats-value">0</span>
+                <span class="stats-label">Currently Learning</span>
+              </div>
+              <div class="stats-item">
+                <span class="stats-value">2d</span>
+                <span class="stats-label">Visit Streak</span>
+              </div>
+            </div>
+            
+            <div class="activity-empty">
+              <div class="icon-circle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 9V19H8V9H16ZM14.5 3H9.5L8.5 4H5V6H19V4H15.5L14.5 3ZM18 7H6V19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7Z" fill="#ddd"/>
+                </svg>
+              </div>
+              <h2>No Progress</h2>
+              <p>Progress will appear here as you start tracking your</p>
+              <p>
+                <a href="#" class="link-text">Roadmaps</a> or <a href="#" class="link-text">Best Practices</a> progress.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      <!-- Profile page -->
+        <div class="page-content hidden" id="profile">
+          <div class="profile-container">
+            <div class="profile-header">
+              <h2>Skill Profile</h2>
+              <div class="visibility-selector">
+                <button id="visibility-dropdown-btn" class="visibility-btn">
+                  <i class="fa-solid fa-globe"></i> Public <i class="fa-solid fa-caret-down"></i>
+                </button>
+                <div id="visibility-dropdown" class="visibility-dropdown">
+                  <div class="dropdown-item" data-value="public">
+                    <i class="fa-solid fa-globe"></i> Public
+                  </div>
+                  <div class="dropdown-item" data-value="private">
+                    <i class="fa-solid fa-lock"></i> Private
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="profile-description">Create your skill profile to showcase your skills.</p>
+            
+            <div class="profile-section">
+              <h3>Profile picture</h3>
+              <div class="profile-picture-container">
+                <img src="/creator-ava.png" alt="Profile Picture" id="profile-image" class="profile-picture">
+                <button class="edit-btn" id="edit-profile-pic">Edit</button>
+                <input type="file" id="profile-pic-upload" accept="image/*" style="display:none">
+              </div>
+            </div>
+            
+            <div class="profile-section">
+              <h3>Name<span class="required">*</span></h3>
+              <input type="text" class="form-control-us" value="Quản Đỗ Trung">
+            </div>
+            
+            <div class="profile-section">
+              <h3>Email<span class="required">*</span></h3>
+              <div class="email-section">
+                <input type="email" class="form-control us" value="quantrungdo198@gmail.com" disabled>
+                <a href="#" class="email-settings-link">Visit settings page to change email</a>
+              </div>
+              <div class="email-display">
+                <input type="checkbox" id="show-email" checked>
+                <label for="show-email">Show my email on profile</label>
+              </div>
+            </div>
+            
+            <div class="profile-section">
+              <h3>Headline</h3>
+              <input type="text" class="form-control us" value="Full Stack Developer">
+            </div>
+            
+            <div class="profile-section profile-save-section">
+              <button class="save-profile-btn">Save Profile</button>
+            </div>
+          </div>
+        </div>
+
+      <!-- Roadmap page -->
+        <div class="page-content hidden" id="roadmaps">
+          <div class="roadmap-container">
+            <div class="roadmap-tabs">
+              <button class="tab-btn active">Personal</button>
+              <button class="tab-btn">Shared by Friends</button>
+              <button class="create-roadmap-btn">+ Create Roadmap</button>
+            </div>
+            
+            <div class="no-roadmaps">
+              <div class="roadmap-icon">
+                <i class="fa-solid fa-signs-post"></i>
+              </div>
+              <h2>No roadmaps</h2>
+              <p>Create a roadmap to get started</p>
+            </div>
+          </div>
+        </div>
+        
+
+      <!-- Setting page -->
+        <div class="page-content hidden" id="settings">
+        <div class="settings-container">
+          <div class="settings-section">
+            <h2>Password</h2>
+            <p class="settings-description">Use the form below to update your password.</p>
+            
+            <div class="password-fields">
+              <div class="field-group">
+                <label>New Password</label>
+                <input type="password" class="form-control us password-input" id="new-password" placeholder="New password">
+              </div>
+              
+              <div class="field-group">
+                <label>Confirm New Password</label>
+                <input type="password" class="form-control us password-input" id="confirm-password" placeholder="Confirm New Password">
+              </div>
+              
+              <button class="update-password-btn" id="update-password-btn">Update Password</button>
+            </div>
+          </div>
+          
+          <hr class="settings-divider">
+          
+          <div class="settings-section">
+            <h2>Update Email</h2>
+            <p class="settings-description">You have used google when signing up. Please set your password first.</p>
+            
+            <div class="email-fields">
+              <div class="field-group">
+                <label>Current Email</label>
+                <input type="email" class="form-control us" value="quantrungdo198@gmail.com" disabled>
+              </div>
+              
+              <div class="email-warning">
+                Please set your password first to update your email.
+              </div>
+            </div>
+          </div>
+          
+          <hr class="settings-divider">
+          
+          <div class="settings-section">
+            <h2>Delete Account</h2>
+            <p class="settings-description">Permanently remove your account from the roadmap.sh. This cannot be undone.</p>
+            
+            <button class="delete-account-btn">Delete My Account</button>
+          </div>
+        </div>
+        </div>
+
+      </div>
+    </div>
+
+
+  </body>
+</html>
