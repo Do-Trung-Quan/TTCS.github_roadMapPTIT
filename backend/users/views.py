@@ -2,7 +2,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from .models import User
 from .serializers import (
@@ -11,6 +11,7 @@ from .serializers import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 import cloudinary.uploader
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from rest_framework.authentication import SessionAuthentication
 
@@ -159,6 +160,7 @@ class UserDeleteView(APIView):
 
 class UserUpdateView(APIView):
     permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser]  # 👈 Thêm để xử lý multipart/form-data
 
     def put(self, request, id):
         try:
@@ -166,35 +168,25 @@ class UserUpdateView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Kiểm tra quyền của user
-        if not request.user.is_admin() and user != request.user:
-            return Response({"detail": "Bạn không có quyền cập nhật thông tin của người khác."}, status=status.HTTP_403_FORBIDDEN)
-
-        # Lấy dữ liệu từ request
         data = request.data
 
-        # Cập nhật username nếu có
         if 'username' in data:
             user.username = data['username']
 
-        # Cập nhật password nếu có
+        if 'email' in data:
+            user.email = data['email']
+
         if 'password' in data:
             user.set_password(data['password'])
 
-        # Cập nhật avatar nếu có (upload lên Cloudinary)
-        if 'avatar' in data:
-            avatar = data['avatar']
+        if 'avatar' in request.FILES:
+            avatar_file = request.FILES['avatar']
             try:
-                # Upload ảnh lên Cloudinary
-                response = cloudinary.uploader.upload(avatar)
-                # Lấy URL ảnh trả về từ Cloudinary
-                user.avatar = response['secure_url']
+                result = cloudinary.uploader.upload(avatar_file)
+                user.avatar = result['secure_url']
             except Exception as e:
                 return Response({"detail": f"Lỗi khi tải ảnh lên Cloudinary: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Lưu lại thông tin cập nhật
         user.save()
-
-        # Trả về dữ liệu đã cập nhật
         serializer = UserSerializer(user)
         return Response(serializer.data)
