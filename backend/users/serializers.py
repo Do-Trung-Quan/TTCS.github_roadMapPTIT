@@ -53,13 +53,27 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
+        
+        # Kiểm tra quyền cập nhật (admin có thể thay đổi tất cả, user chỉ có thể cập nhật bản thân)
+        user = self.context['request'].user
+        if user != instance and not user.is_admin():
+            raise serializers.ValidationError("Bạn không có quyền cập nhật thông tin của người khác.")
+        
+        # Nếu là admin, có thể thay đổi vai trò
+        if 'role' in validated_data and not user.is_admin():
+            validated_data.pop('role')  # Nếu không phải admin, không thể thay đổi vai trò
+        
+        # Cập nhật thông tin người dùng
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        
+        # Cập nhật mật khẩu nếu có
         if password:
             instance.set_password(password)
+        
         instance.save()
         return instance
-
+    
 class SocialUserSerializer(serializers.ModelSerializer):
     avatar = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     role = serializers.ChoiceField(choices=[('user', 'User'), ('admin', 'Admin')], default='user')

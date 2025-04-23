@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,13 +53,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -90,9 +91,20 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Thời gian sống của access token
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Thời gian sống của refresh token
+    'ROTATE_REFRESH_TOKENS': False,                  # Không tự động làm mới refresh token
+    'BLACKLIST_AFTER_ROTATION': False,               # Không hủy refresh token sau khi làm mới
+}
 
 
 # Database
@@ -169,6 +181,10 @@ DEBUG = True
 # Tắt CSRF protection cho API views
 CSRF_COOKIE_SECURE = False
 
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF cookie
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
@@ -189,3 +205,14 @@ EMAIL_HOST_PASSWORD = 'boem gcin fxhz nqsa'  # Thay bằng mật khẩu email c�
 
 DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'  # Địa chỉ email gửi đi
 FRONTEND_URL = 'http://localhost:3000'  # Hoặc URL frontend của bạn
+
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name= "dsm1uhecl",
+    api_key= "118225892873696",
+    api_secret= "Ks-yVnCE9rmTML5wOPmYmoozy74"
+)

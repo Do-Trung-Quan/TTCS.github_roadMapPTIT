@@ -1,10 +1,12 @@
 from django.db import models
 from topics.models import Topic
 from users.models import User
+from core.models import AutoIDModel
 
-class UserTopicProgress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+class UserTopicProgress(AutoIDModel):
+    PREFIX = 'PRG'
+    UserID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='UserID')
+    TopicID = models.ForeignKey(Topic, on_delete=models.CASCADE, db_column= 'TopicID')
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'),
         ('done', 'Done'),
@@ -12,6 +14,6 @@ class UserTopicProgress(models.Model):
     ], default='pending')
 
     class Meta:
-        unique_together = ('user', 'topic')
+        unique_together = (('UserID', 'TopicID'),)
         db_table = 'User_Topic_Progress'  # Đảm bảo tên bảng khớp với bảng MySQL
         managed = False

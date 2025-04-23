@@ -4,30 +4,29 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
-from django.views.decorators.csrf import csrf_exempt
 from .models import User
 from .serializers import (
     UserSerializer, SocialUserSerializer, LoginSerializer,
     EmailLoginSerializer, ResetPasswordEmailSerializer, ResetPasswordSerializer
 )
-from .permissions import IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
-import logging
+import cloudinary.uploader
 
-logger = logging.getLogger(__name__)
+from rest_framework.authentication import SessionAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # Bỏ qua kiểm tra CSRF
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
-    @csrf_exempt
     def post(self, request, *args, **kwargs):
-        logger.info(f"Register request data: {request.data}")
         try:
             return super().post(request, *args, **kwargs)
         except Exception as e:
-            logger.error(f"Register error: {str(e)}")
             return Response(
                 {"detail": f"Lỗi khi đăng ký: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -38,59 +37,18 @@ class SocialRegisterView(CreateAPIView):
     serializer_class = SocialUserSerializer
     permission_classes = [AllowAny]
 
-    @csrf_exempt
     def post(self, request, *args, **kwargs):
-        logger.info(f"Social register request data: {request.data}")
         try:
             return super().post(request, *args, **kwargs)
         except Exception as e:
-            logger.error(f"Social register error: {str(e)}")
             return Response(
                 {"detail": f"Lỗi khi đăng ký social: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-class UserListView(ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
-
-    def get(self, request, *args, **kwargs):
-        logger.info(f"User list request received from user: {request.user}")
-        try:
-            return super().get(request, *args, **kwargs)
-        except Exception as e:
-            logger.error(f"Error listing users: {str(e)}")
-            return Response(
-                {"detail": f"Lỗi khi lấy danh sách user: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-class UserDetailView(RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
-    lookup_field = 'id'
-
-class UserDeleteView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
-
-    def delete(self, request, id):
-        try:
-            user = User.objects.get(id=id)
-        except User.DoesNotExist:
-            return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
-
-        if user.is_admin():
-            return Response({"detail": "Không thể xóa tài khoản admin."}, status=status.HTTP_403_FORBIDDEN)
-
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
-    @csrf_exempt
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -108,7 +66,6 @@ class LoginView(APIView):
 class SocialLoginView(APIView):
     permission_classes = [AllowAny]
 
-    @csrf_exempt
     def post(self, request, *args, **kwargs):
         serializer = EmailLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -125,7 +82,6 @@ class SocialLoginView(APIView):
 class ResetPasswordEmailView(APIView):
     permission_classes = [AllowAny]
 
-    @csrf_exempt
     def post(self, request):
         serializer = ResetPasswordEmailSerializer(data=request.data)
         if serializer.is_valid():
@@ -140,7 +96,6 @@ class ResetPasswordEmailView(APIView):
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 
-    @csrf_exempt
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
@@ -157,3 +112,89 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
+
+class UserListView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {"detail": f"Lỗi khi lấy danh sách user: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class UserDetailView(RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+    def get_object(self):
+        """
+        Nếu là Admin: trả về đối tượng User theo id được truyền trong URL.
+        Nếu là User bình thường: trả về thông tin của chính họ.
+        """
+        user_id = self.kwargs.get(self.lookup_field)
+        if self.request.user.is_admin():
+            return User.objects.get(id=user_id)
+        return self.request.user
+
+class UserDeleteView(APIView):
+    permission_classes = [AllowAny]
+
+    def delete(self, request, id):
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_admin():
+            return Response({"detail": "Không thể xóa tài khoản admin."}, status=status.HTTP_403_FORBIDDEN)
+
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class UserUpdateView(APIView):
+    permission_classes = [AllowAny]
+
+    def put(self, request, id):
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Kiểm tra quyền của user
+        if not request.user.is_admin() and user != request.user:
+            return Response({"detail": "Bạn không có quyền cập nhật thông tin của người khác."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Lấy dữ liệu từ request
+        data = request.data
+
+        # Cập nhật username nếu có
+        if 'username' in data:
+            user.username = data['username']
+
+        # Cập nhật password nếu có
+        if 'password' in data:
+            user.set_password(data['password'])
+
+        # Cập nhật avatar nếu có (upload lên Cloudinary)
+        if 'avatar' in data:
+            avatar = data['avatar']
+            try:
+                # Upload ảnh lên Cloudinary
+                response = cloudinary.uploader.upload(avatar)
+                # Lấy URL ảnh trả về từ Cloudinary
+                user.avatar = response['secure_url']
+            except Exception as e:
+                return Response({"detail": f"Lỗi khi tải ảnh lên Cloudinary: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Lưu lại thông tin cập nhật
+        user.save()
+
+        # Trả về dữ liệu đã cập nhật
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
