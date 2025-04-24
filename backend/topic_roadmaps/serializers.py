@@ -6,7 +6,7 @@ from roadmaps.models import Roadmap
 class TopicRoadmapSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicRoadmap
-        fields = ['TopicID', 'RoadmapID']
+        fields = ['id', 'TopicID', 'RoadmapID', 'topic_order']
 
     def validate_topic(self, value):
         if not Topic.objects.filter(id=value).exists():
@@ -17,6 +17,11 @@ class TopicRoadmapSerializer(serializers.ModelSerializer):
         if not Roadmap.objects.filter(id=value).exists():
             raise serializers.ValidationError("Roadmap không tồn tại.")
         return value
+    
+    def validate(self, data):
+        if 'topic_order' in data and data['topic_order'] < 1:
+            raise serializers.ValidationError({"topic_order": "Topic order phải lớn hơn 0."})
+        return data
 
     def validate(self, data):
         TopicID = data.get('TopicID')

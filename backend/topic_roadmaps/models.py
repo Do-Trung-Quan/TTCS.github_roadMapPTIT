@@ -7,6 +7,7 @@ class TopicRoadmap(AutoIDModel):
     PREFIX = 'TR'
     TopicID = models.ForeignKey(Topic, on_delete=models.CASCADE, db_column='TopicID')
     RoadmapID = models.ForeignKey(Roadmap, on_delete=models.CASCADE, db_column='RoadmapID')
+    topic_order = models.IntegerField()
 
     class Meta:
         db_table = 'Topic_Roadmap'  # Đảm bảo tên bảng khớp với bảng MySQL
