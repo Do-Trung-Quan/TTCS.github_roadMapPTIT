@@ -5,6 +5,7 @@ from .models import TopicRoadmap
 from .serializers import TopicRoadmapSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.authentication import SessionAuthentication
+from users.permissions import IsAdmin
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -12,7 +13,11 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 
 # API cho việc lấy danh sách tất cả TopicRoadmap và tạo mới
 class TopicRoadmapListCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request):
         topic_roadmaps = TopicRoadmap.objects.all()
@@ -37,7 +42,11 @@ class TopicRoadmapListCreate(APIView):
 
 
 class TopicRoadmapDetail(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request, pk):
         try:

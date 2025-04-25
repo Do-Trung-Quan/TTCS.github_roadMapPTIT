@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import Exercise
 from .serializers import ExerciseSerializer
 from rest_framework.permissions import AllowAny
+from users.permissions import IsAdmin
 
 from rest_framework.authentication import SessionAuthentication
 
@@ -12,7 +13,11 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # Bỏ qua kiểm tra CSRF
     
 class ExerciseListCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     # GET: Lấy danh sách tất cả bài tập
     def get(self, request):
@@ -39,6 +44,11 @@ class ExerciseListCreate(APIView):
 
 
 class ExerciseDetail(APIView):
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [IsAdmin()]
+        return [AllowAny()]
     #API GET: Lấy thông tin bài tập theo pk
     def get(self, request, pk):
         try:

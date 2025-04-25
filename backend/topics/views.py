@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from .models import Topic
 from .serializers import TopicSerializer
+from users.permissions import IsAdmin
 
 from rest_framework.authentication import SessionAuthentication
 
@@ -13,7 +14,11 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # Bỏ qua kiểm tra CSR
 
 class TopicListCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request):
         try:
@@ -47,7 +52,11 @@ class TopicListCreate(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class TopicDetail(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request, pk):
         try:

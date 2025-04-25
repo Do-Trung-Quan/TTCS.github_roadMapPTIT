@@ -12,8 +12,13 @@ from .serializers import (
 from rest_framework_simplejwt.tokens import RefreshToken
 import cloudinary.uploader
 from rest_framework.parsers import MultiPartParser, FormParser
+from .permissions import IsAdmin, IsAdminOrUser, CanAccessOwnUserData
 
 from rest_framework.authentication import SessionAuthentication
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -109,15 +114,26 @@ class ResetPasswordView(APIView):
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
+    
+    refresh['user_id'] = str(user.id)
+    refresh['role'] = user.role  
+
+    access_token = refresh.access_token
+    access_token['user_id'] = str(user.id)
+    access_token['role'] = user.role  
+
+    logger.info(f"[Token] Generated token for user_id: {user.id}, role: {user.role}")
+    
     return {
         'refresh': str(refresh),
-        'access': str(refresh.access_token),
+        'access': str(access_token),
     }
 
 class UserListView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    permission_classes = [IsAdmin]
 
     def get(self, request, *args, **kwargs):
         try:
@@ -131,36 +147,46 @@ class UserListView(ListAPIView):
 class UserDetailView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    lookup_field = 'id'
+    authentication_classes = []
+    permission_classes = [IsAdminOrUser, CanAccessOwnUserData]
 
     def get_object(self):
-        """
-        Nếu là Admin: trả về đối tượng User theo id được truyền trong URL.
-        Nếu là User bình thường: trả về thông tin của chính họ.
-        """
         user_id = self.kwargs.get(self.lookup_field)
-        if self.request.user.is_admin():
+        # Permission checks (IsAdminOrUser, CanAccessOwnUserData) should have already run
+        # If we reach here, either the user is an admin or accessing their own data
+        if self.request.auth_user.get('role') == 'admin':
             return User.objects.get(id=user_id)
         return self.request.user
 
 class UserDeleteView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    permission_classes = [IsAdminOrUser, CanAccessOwnUserData]
 
     def delete(self, request, id):
         try:
-            user = User.objects.get(id=id)
+            user_to_delete = User.objects.get(id=id)
         except User.DoesNotExist:
             return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
 
-        if user.is_admin():
-            return Response({"detail": "Không thể xóa tài khoản admin."}, status=status.HTTP_403_FORBIDDEN)
+        # Get the authenticated user's ID and role
+        authenticated_user_id = request.auth_user['_id']
+        user_role = request.auth_user['role']
 
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        # Prevent admins from deleting their own account
+        if user_role == 'admin' and id == authenticated_user_id:
+            return Response({"detail": "Admin không thể tự xóa tài khoản của chính mình."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Permission checks (IsAdminOrUser, CanAccessOwnUserData) already ensure:
+        # - Users can only delete their own account (id matches authenticated_user_id)
+        # - Admins can delete any account except their own (handled above)
+        user_to_delete.delete()
+        return Response({"message": "Xóa người dùng thành công."}, status=status.HTTP_204_NO_CONTENT)
 
 class UserUpdateView(APIView):
-    permission_classes = [AllowAny]
-    parser_classes = [MultiPartParser, FormParser]  # 👈 Thêm để xử lý multipart/form-data
+    parser_classes = [MultiPartParser, FormParser]
+    authentication_classes = []
+    permission_classes = [IsAdminOrUser, CanAccessOwnUserData]
 
     def put(self, request, id):
         try:
@@ -168,6 +194,7 @@ class UserUpdateView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Permission checks (IsAdminOrUser, CanAccessOwnUserData) already ensure the user can modify this data
         data = request.data
 
         if 'username' in data:
@@ -189,4 +216,7 @@ class UserUpdateView(APIView):
 
         user.save()
         serializer = UserSerializer(user)
-        return Response(serializer.data)
+        return Response({
+            "message": "Cập nhật thông tin người dùng thành công.",
+            "data": serializer.data
+        })

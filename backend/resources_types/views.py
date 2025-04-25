@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import ResourceType
 from .serializers import ResourceTypeSerializer
 from rest_framework.permissions import AllowAny
+from users.permissions import IsAdmin
 
 from rest_framework.authentication import SessionAuthentication
 
@@ -12,7 +13,11 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # Bỏ qua kiểm tra CSRF
 
 class ResourceTypeListCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request):
         resource_types = ResourceType.objects.all()
@@ -37,7 +42,11 @@ class ResourceTypeListCreate(APIView):
 
 
 class ResourceTypeDetail(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request, pk):
         try:

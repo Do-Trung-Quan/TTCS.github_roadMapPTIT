@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+import sys
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -64,7 +64,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'users.middleware.DisableCOOPMiddleware',
+    'users.middleware.AuthMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -93,9 +93,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
@@ -145,23 +142,56 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} [{name}] {message}',
+            'style': '{',
         },
+        'simple': {
+            'format': '{asctime} {levelname} {message}',  # Định dạng đơn giản
+            'style': '{',
+        },
+    },
+    'handlers': {
         'file': {
+            'level': 'INFO',  # Giảm mức độ log xuống INFO, chỉ ghi những log quan trọng
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'filename': 'django.log',  # Lưu log vào file này
+            'formatter': 'simple',
+        },
+        'console': {
+            'level': 'WARNING',  # Cũng chỉ ghi các log từ INFO trở lên
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
     'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Chỉ ghi log từ mức INFO trở lên
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Giảm log mức DEBUG từ DB backend
+            'propagate': False,
+        },
+        'users.middleware': {  # Đặc biệt cho middleware của bạn
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Chỉ ghi log quan trọng của middleware
+            'propagate': False,
+        },
         '': {
-            'handlers': ['console', 'file'],
-            'level': 'ERROR',
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Log ở mức độ thông tin chung
             'propagate': True,
         },
     },
 }
+
+
+
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

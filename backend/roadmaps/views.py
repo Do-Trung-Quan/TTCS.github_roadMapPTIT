@@ -4,7 +4,7 @@ from rest_framework import status
 from .models import Roadmap
 from .serializers import RoadmapSerializer
 from rest_framework.permissions import AllowAny
-
+from users.permissions import IsAdmin
 from rest_framework.authentication import SessionAuthentication
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -12,7 +12,11 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # Bỏ qua kiểm tra CSRF
 
 class RoadmapListCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request):
         roadmaps = Roadmap.objects.all()
@@ -37,7 +41,11 @@ class RoadmapListCreate(APIView):
 
 
 class RoadmapDetail(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     def get(self, request, pk):
         try:

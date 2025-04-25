@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import QuizAnswer
 from .serializers import QuizAnswerSerializer
 from rest_framework.permissions import AllowAny
+from users.permissions import IsAdmin
 
 from rest_framework.authentication import SessionAuthentication
 
@@ -12,7 +13,11 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # Bỏ qua kiểm tra CSRF
 
 class QuizAnswerListCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     # GET: Lấy danh sách tất cả quiz answer
     def get(self, request):
@@ -39,7 +44,11 @@ class QuizAnswerListCreate(APIView):
 
 
 class QuizAnswerDetail(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [IsAdmin()]
+        return [AllowAny()]
 
     # GET: Lấy thông tin quiz answer theo pk
     def get(self, request, pk):
