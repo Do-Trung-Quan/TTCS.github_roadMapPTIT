@@ -5,13 +5,8 @@ class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Topic
-        fields = ['id', 'title', 'description', 'topic_order']
+        fields = ['id', 'title', 'description']
         read_only_fields = ['id']
-
-    def validate(self, data):
-        if 'topic_order' in data and data['topic_order'] < 1:
-            raise serializers.ValidationError({"topic_order": "Topic order phải lớn hơn 0."})
-        return data
     
     def create(self, validated_data):
         try:
@@ -23,6 +18,5 @@ class TopicSerializer(serializers.ModelSerializer):
         # Cập nhật thông tin một Topic
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
-        instance.topic_order = validated_data.get('topic_order', instance.topic_order)
         instance.save()
         return instance

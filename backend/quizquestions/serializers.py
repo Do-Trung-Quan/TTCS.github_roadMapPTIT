@@ -8,7 +8,14 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'question_text', 'exercise']
 
     def create(self, validated_data):
-        return QuizQuestion.objects.create(**validated_data)
+        exercise_id = validated_data.pop('exercise')
+        try:
+            exercise = Exercise.objects.get(id=exercise_id)
+        except Exercise.DoesNotExist:
+            raise serializers.ValidationError({"exercise": "Không tìm thấy Exercise với id đã cung cấp."})
+
+        question = QuizQuestion.objects.create(exercise=exercise, **validated_data)
+        return question
     
     def update(self, instance, validated_data):
         if 'exercise' in validated_data:
