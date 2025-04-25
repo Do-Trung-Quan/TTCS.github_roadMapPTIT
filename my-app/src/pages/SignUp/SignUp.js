@@ -31,67 +31,93 @@ const SignUp = () => {
     return ""; // hợp lệ
   };
   
-const sendRegisterRequest = async (payload) => {
-  try {
-    const response = await fetch("http://localhost:8000/api/register/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      console.log("Đăng ký thành công:", data);
-      alert("Đăng ký thành công!");
-      setTimeout(() => navigate("/login"), 1000);
-    } else {
-      console.error("Lỗi đăng ký:", data);
-      alert("Lỗi đăng ký: " + JSON.stringify(data));
+  const sendRegisterRequest = async (payload) => {
+    try {
+      const response = await fetch("http://localhost:8000/api/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log("Đăng ký thành công:", data);
+        alert("Đăng ký thành công!");
+        setTimeout(() => navigate("/login"), 1000);
+      } else {
+        console.error("Lỗi đăng ký:", data);
+        alert("Lỗi đăng ký: " + JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error("Lỗi kết nối server:", err);
+      alert("Lỗi kết nối tới server.");
     }
-  } catch (err) {
-    console.error("Lỗi kết nối server:", err);
-    alert("Lỗi kết nối tới server.");
-  }
-};
-
-const handleFormSubmit = async (e) => {
-  e.preventDefault();
-  const payload = { username, email, password };
-  await sendRegisterRequest(payload);
-};
-
-const handleGoogleSignUp = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    const payload = {
-      username: user.displayName || user.email.split("@")[0],
-      email: user.email,
-      password: user.uid,
-      avatar: user.photoURL,
-    };
+  };
+  
+  const sendSocialRegisterRequest = async (payload) => {
+    try {
+      const response = await fetch("http://localhost:8000/api/social-register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log("Đăng ký bằng tài khoản xã hội thành công:", data);
+        alert("Đăng ký bằng tài khoản xã hội thành công!");
+        setTimeout(() => navigate("/login"), 1000);
+      } else {
+        console.error("Lỗi đăng ký bằng tài khoản xã hội:", data);
+        alert("Lỗi đăng ký bằng tài khoản xã hội: " + JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error("Lỗi kết nối server:", err);
+      alert("Lỗi kết nối tới server.");
+    }
+  };
+  
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const payload = { username, email, password };
     await sendRegisterRequest(payload);
-  } catch (err) {
-    console.error("Google login error:", err);
-  }
-};
-
-const handleGithubSignUp = async () => {
-  try {
-    const result = await signInWithPopup(auth, githubProvider);
-    const user = result.user;
-    const payload = {
-      username: user.displayName || user.email?.split("@")[0] || user.uid,
-      email: user.email,
-      password: user.uid,
-      avatar: user.photoURL,
-    };
-    await sendRegisterRequest(payload);
-  } catch (err) {
-    console.error("GitHub login error:", err);
-  }
-};
+  };
+  
+  const handleGoogleSignUp = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const payload = {
+        username: user.displayName || user.email.split("@")[0],
+        email: user.email,
+        password: user.uid,
+        avatar: user.photoURL,
+      };
+      await sendSocialRegisterRequest(payload);
+    } catch (err) {
+      console.error("Google login error:", err);
+      alert("Lỗi đăng ký với Google: " + err.message);
+    }
+  };
+  
+  const handleGithubSignUp = async () => {
+    try {
+      const result = await signInWithPopup(auth, githubProvider);
+      const user = result.user;
+      const payload = {
+        username: user.displayName || user.email?.split("@")[0] || user.uid,
+        email: user.email,
+        password: user.uid,
+        avatar: user.photoURL,
+      };
+      await sendSocialRegisterRequest(payload);
+    } catch (err) {
+      console.error("GitHub login error:", err);
+      alert("Lỗi đăng ký với GitHub: " + err.message);
+    }
+  };
   
 
   return (

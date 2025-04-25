@@ -13,7 +13,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
    const navigate = useNavigate();
 
-  const sendLoginRequest = async (payload) => {
+   const sendLoginRequest = async (payload) => {
     try {
       const response = await fetch("http://localhost:8000/api/login/", {
         method: "POST",
@@ -26,7 +26,6 @@ const Login = () => {
       if (response.ok) {
         console.log("Đăng nhập thành công:", data);
         alert("Đăng nhập thành công!");
-        // Điều hướng đến trang chính sau khi đăng nhập thành công
         setTimeout(() => navigate("/roadmap"), 1000);
       } else {
         console.error("Lỗi đăng nhập:", data);
@@ -37,11 +36,34 @@ const Login = () => {
       alert("Lỗi kết nối tới server.");
     }
   };
-
+  
+  const sendSocialLoginRequest = async (payload) => {
+    try {
+      const response = await fetch("http://localhost:8000/api/social-login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log("Đăng nhập bằng tài khoản xã hội thành công:", data);
+        alert("Đăng nhập xã hội thành công!");
+        setTimeout(() => navigate("/roadmap"), 1000);
+      } else {
+        console.error("Lỗi đăng nhập bằng tài khoản xã hội:", data);
+        alert("Lỗi đăng nhập xã hội: " + JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error("Lỗi kết nối server:", err);
+      alert("Lỗi kết nối tới server.");
+    }
+  };
   
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    const payload = { username, password }; // Payload chỉ gồm username và password
+    const payload = { username, password };
     await sendLoginRequest(payload);
   };
   
@@ -51,26 +73,27 @@ const Login = () => {
       const user = result.user;
       const payload = {
         email: user.email,
-        password: user.uid, // Sử dụng UID làm password tạm
+        password: user.uid,
       };
-      await sendLoginRequest(payload);
+      await sendSocialLoginRequest(payload);
     } catch (err) {
       console.error("Google login error:", err);
+      alert("Lỗi đăng nhập với Google: " + err.message);
     }
   };
   
-
   const handleGithubLogin = async () => {
     try {
       const result = await signInWithPopup(auth, githubProvider);
       const user = result.user;
       const payload = {
         email: user.email,
-        password: user.uid, // Sử dụng UID làm password tạm
+        password: user.uid,
       };
-      await sendLoginRequest(payload);
+      await sendSocialLoginRequest(payload);
     } catch (err) {
       console.error("GitHub login error:", err);
+      alert("Lỗi đăng nhập với GitHub: " + err.message);
     }
   };
   
