@@ -24,6 +24,12 @@
   cursor: pointer;
 }
 
+.react-flow__node.completed {
+  background-color: #28a745; /* Màu xanh thể hiện đã hoàn thành */
+  border-color: #1e7e34;
+  color: #fff;
+}
+
 /* Tùy chỉnh đường nối */
 .react-flow__edge-path {
   stroke: #333;
@@ -163,6 +169,7 @@
   background-color: #e0e0e0;
   border-radius: 10px;
   overflow: hidden;
+  border: 2px solid #333;
 }
 
 .progress-fill {

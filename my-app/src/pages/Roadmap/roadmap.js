@@ -248,7 +248,7 @@ export default function Roadmap() {
         <div className="progress-container">
           <label>Tiến độ: {progressPercentage}%</label>
           <div className="progress-bar">
-            <div style={{ width: `${progressPercentage}%` }}>
+            <div className="progress-fill" style={{ width: `${progressPercentage}%` }}>
             </div>
           </div>
         </div>
