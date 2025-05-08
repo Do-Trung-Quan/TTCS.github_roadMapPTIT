@@ -3,7 +3,7 @@
     padding: 0;
     list-style: none;
     text-decoration: none;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Poppins', sans-serif;
     /*caret-color: transparent; nhap text d thay cursor an card a:))*/ 
     box-sizing: border-box;
 }
@@ -243,4 +243,125 @@ img{
     height: 30px;
     background-color: white;
     border-radius: 50%;
+}
+
+h4 {
+    color: #000;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Card tài liệu */
+.card {
+border: none;
+border-radius: 12px;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+transform: translateY(-5px);
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Tiêu đề trong card */
+.card-title {
+font-size: 1.1rem;
+font-weight: 600;
+color: #212529;
+margin-bottom: 0.75rem;
+}
+
+/* Mô tả trong card */
+.card-text {
+font-size: 0.95rem;
+color: #555;
+}
+
+/* Nút truy cập */
+.card .btn {
+border-radius: 20px;
+font-size: 0.85rem;
+padding: 4px 16px;
+}
+
+/* Row cách nhau giữa các phần */
+.container .row + h4 {
+margin-top: 3rem;
+}
+
+/* Responsive padding */
+@media (max-width: 768px) {
+h4 {
+    font-size: 1.1rem;
+    text-align: center;
+}
+.card {
+    margin-bottom: 1rem;
+}
+}
+
+.footer {
+    background-color: #0b0b0b !important;
+    color: #fff;
+    padding: 40px 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.container-2 {
+    margin: 0 auto;
+    width: 700px !important;
+    color: white;
+    background-color: #0b0b0b !important;
+}
+
+.footer h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+  
+.footer p, .footer li {
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+  
+.footer a {
+    color: #fff;
+    transition: color 0.3s ease;
+}
+  
+.footer a:hover {
+    color: #dc3545;
+    text-decoration: none;
+}
+  
+.footer .social-icons a {
+    font-size: 1.5rem;
+    margin-right: 15px;
+    transition: color 0.3s ease;
+}
+  
+.footer .social-icons a:hover {
+    color: #dc3545;
+}
+  
+.footer .list-unstyled li {
+    margin-bottom: 10px;
+}
+  
+.footer .text-center p {
+    font-size: 0.85rem;
+    color: #adb5bd;
+}
+  
+@media (max-width: 768px) {
+    .footer .col-md-4 {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+  
+    .footer .social-icons {
+      justify-content: center;
+    }
 }

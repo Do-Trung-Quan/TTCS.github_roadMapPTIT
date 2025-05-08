@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import ReactFlow, { Controls, Background } from "reactflow";
+import React, { useState, useEffect, useMemo } from "react";
+import ReactFlow, {Background } from "reactflow";
 import "reactflow/dist/style.css";
 import "./roadmap.css";
 import Header from "../../components/Header/header";
+import Footer from "../../components/Footer/footer";
 
-// Dữ liệu thông tin và bài tập cho từng node
 const nodeDetails = {
   "1": { 
     info: "Frontend là lĩnh vực phát triển giao diện người dùng (UI) cho website và ứng dụng web, tập trung vào trải nghiệm người dùng. Frontend developer sử dụng HTML, CSS, JavaScript và các framework như React để tạo ra các giao diện đẹp, tương tác và dễ sử dụng. Đây là cầu nối giữa thiết kế (UI/UX) và backend, đảm bảo dữ liệu được hiển thị một cách trực quan.",
@@ -202,16 +202,28 @@ const edges = [
   { id: "e4-17", source: "4", target: "17" },
 ];
 
+const STORAGE_KEY = "frontend_roadmap_progress";
+
 export default function Roadmap() {
+  // Load trạng thái từ localStorage (nếu có), nếu không thì dùng mặc định
+  const [nodeProgress, setNodeProgress] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : nodeDetails;
+  });
+
   const [selectedNode, setSelectedNode] = useState(null);
-  const [nodeProgress, setNodeProgress] = useState(nodeDetails);
+
+  // Cập nhật localStorage mỗi khi nodeProgress thay đổi
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nodeProgress));
+  }, [nodeProgress]);
 
   // Tính phần trăm tiến độ
   const totalNodes = Object.keys(nodeProgress).length;
   const completedNodes = Object.values(nodeProgress).filter(node => node.completed).length;
   const progressPercentage = Math.round((completedNodes / totalNodes) * 100);
 
-  // Xử lý thay đổi trạng thái hoàn thành
+  
   const handleCompleteToggle = (nodeId) => {
     setNodeProgress(prev => ({
       ...prev,
@@ -222,22 +234,38 @@ export default function Roadmap() {
     }));
   };
 
-  // Debug state changes
-  useEffect(() => {
-    console.log("selectedNode updated:", selectedNode);
-    console.log("nodeProgress updated:", nodeProgress);
-  }, [selectedNode, nodeProgress]);
-
   const onNodeClick = (event, node) => {
-    console.log("Node clicked:", node);
-    console.log("Node ID:", node.id);
-    console.log("Node details:", nodeProgress[node.id]);
     setSelectedNode(node);
   };
 
   const closePanel = () => {
     setSelectedNode(null);
   };
+
+  const styledNodes = useMemo(() => {
+    return nodes.map(node => {
+      const isCompleted = nodeProgress[node.id]?.completed;
+      return {
+        ...node,
+        style: {
+          ...node.style,
+          ...(isCompleted && {
+            backgroundColor: "green",
+            border: "2px solid black",
+          }),
+        },
+        data: {
+          ...node.data,
+          label: (
+            <>
+              {node.data.label}
+              {isCompleted && " ✅"}
+            </>
+          ),
+        },
+      };
+    });
+  }, [nodeProgress]);
 
   return (
     <>
@@ -248,22 +276,28 @@ export default function Roadmap() {
         <div className="progress-container">
           <label>Tiến độ: {progressPercentage}%</label>
           <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${progressPercentage}%` }}>
-            </div>
+            <div className="progress-fill" style={{ width: `${progressPercentage}%` }} />
           </div>
         </div>
       </div>
+
       <div
         className="roadmap-container"
         style={{ position: "relative", width: "100%", height: "80vh" }}
       >
         <ReactFlow
-          nodes={nodes}
+          nodes={styledNodes}
           edges={edges}
           onNodeClick={onNodeClick}
           fitView
+          panOnDrag={false} 
+          zoomOnScroll={false} 
+          panOnScroll={false} 
+          zoomOnPinch={false} 
+          nodesDraggable={false} 
+          preventScrolling={false}
+          style={{ cursor: 'default' }}
         >
-          <Controls />
           <Background color="#aaa" gap={16} />
         </ReactFlow>
 
@@ -279,7 +313,7 @@ export default function Roadmap() {
                 <label>
                   <input
                     type="checkbox"
-                    checked={nodeProgress[selectedNode.id].completed}
+                    checked={nodeProgress[selectedNode.id]?.completed || false}
                     onChange={() => handleCompleteToggle(selectedNode.id)}
                   />
                   Đánh dấu hoàn thành
@@ -301,6 +335,7 @@ export default function Roadmap() {
           </>
         )}
       </div>
+      <Footer />
     </>
   );
 }
