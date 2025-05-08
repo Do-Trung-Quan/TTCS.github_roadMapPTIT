@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+import sys
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,18 +53,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'users.middleware.DisableCOOPMiddleware',
+    'users.middleware.AuthMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -90,9 +91,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Thời gian sống của access token
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Thời gian sống của refresh token
+    'ROTATE_REFRESH_TOKENS': False,                  # Không tự động làm mới refresh token
+    'BLACKLIST_AFTER_ROTATION': False,               # Không hủy refresh token sau khi làm mới
+}
 
 
 # Database
@@ -133,23 +142,56 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} [{name}] {message}',
+            'style': '{',
         },
+        'simple': {
+            'format': '{asctime} {levelname} {message}',  # Định dạng đơn giản
+            'style': '{',
+        },
+    },
+    'handlers': {
         'file': {
+            'level': 'INFO',  # Giảm mức độ log xuống INFO, chỉ ghi những log quan trọng
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'filename': 'django.log',  # Lưu log vào file này
+            'formatter': 'simple',
+        },
+        'console': {
+            'level': 'WARNING',  # Cũng chỉ ghi các log từ INFO trở lên
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
     'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Chỉ ghi log từ mức INFO trở lên
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Giảm log mức DEBUG từ DB backend
+            'propagate': False,
+        },
+        'users.middleware': {  # Đặc biệt cho middleware của bạn
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Chỉ ghi log quan trọng của middleware
+            'propagate': False,
+        },
         '': {
-            'handlers': ['console', 'file'],
-            'level': 'ERROR',
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  # Log ở mức độ thông tin chung
             'propagate': True,
         },
     },
 }
+
+
+
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -169,6 +211,10 @@ DEBUG = True
 # Tắt CSRF protection cho API views
 CSRF_COOKIE_SECURE = False
 
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF cookie
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
@@ -189,3 +235,14 @@ EMAIL_HOST_PASSWORD = 'boem gcin fxhz nqsa'  # Thay bằng mật khẩu email c�
 
 DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'  # Địa chỉ email gửi đi
 FRONTEND_URL = 'http://localhost:3000'  # Hoặc URL frontend của bạn
+
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name= "dsm1uhecl",
+    api_key= "118225892873696",
+    api_secret= "Ks-yVnCE9rmTML5wOPmYmoozy74"
+)

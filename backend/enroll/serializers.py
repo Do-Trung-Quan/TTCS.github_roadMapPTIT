@@ -7,7 +7,7 @@ class EnrollSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Enroll
-        fields = ['UserID', 'RoadmapID', 'enroll_date', 'status', 'start_at', 'completed_at']
+        fields = ['id', 'UserID', 'RoadmapID', 'start_at', 'completed_at']
 
     def validate_UserID(self, value):
         if not User.objects.filter(id=value.id).exists():
@@ -21,7 +21,7 @@ class EnrollSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Automatically handle the ForeignKey relation
-        user = validated_data.pop('UserID')
+        user = validated_data.pop('UserID')  
         roadmap = validated_data.pop('RoadmapID')
         # Create Enroll object using foreign key relationships
         return Enroll.objects.create(UserID=user, RoadmapID=roadmap, **validated_data)

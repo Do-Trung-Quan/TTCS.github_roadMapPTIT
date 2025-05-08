@@ -9,7 +9,7 @@ class User(AutoIDModel):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     role = models.CharField(max_length=5, choices=[('admin', 'Admin'), ('user', 'User')], default='user')
-    avatar = models.CharField(max_length=255, blank=True, null=True)
+    avatar = models.URLField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(blank=True, null=True)
 

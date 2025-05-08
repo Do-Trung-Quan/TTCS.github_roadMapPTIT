@@ -3,57 +3,90 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Roadmap
 from .serializers import RoadmapSerializer
+from rest_framework.permissions import AllowAny
+from users.permissions import IsAdmin
+from rest_framework.authentication import SessionAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # Bỏ qua kiểm tra CSRF
 
 class RoadmapListCreate(APIView):
-    # GET: Lấy danh sách tất cả Roadmap
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [AllowAny()]
+
     def get(self, request):
         roadmaps = Roadmap.objects.all()
         serializer = RoadmapSerializer(roadmaps, many=True)
-        return Response(serializer.data)
+        return Response({
+            "message": "Lấy danh sách Roadmap thành công.",
+            "data": serializer.data
+        })
 
-    # POST: Tạo mới một Roadmap
     def post(self, request):
         serializer = RoadmapSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()  # Serializers sẽ tự động xử lý việc tạo mới
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response({
+                "message": "Tạo mới Roadmap thành công.",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            "message": "Tạo mới Roadmap thất bại.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RoadmapDetail(APIView):
-    # GET: Lấy thông tin chi tiết Roadmap
+    authentication_classes = []
+    def get_permissions(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [IsAdmin()]
+        return [AllowAny()]
+
     def get(self, request, pk):
         try:
             roadmap = Roadmap.objects.get(pk=pk)
+            serializer = RoadmapSerializer(roadmap)
+            return Response({
+                "message": "Lấy thông tin chi tiết Roadmap thành công.",
+                "data": serializer.data
+            })
         except Roadmap.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = RoadmapSerializer(roadmap)
-        return Response(serializer.data)
+            return Response({
+                "message": "Roadmap không tồn tại."
+            }, status=status.HTTP_404_NOT_FOUND)
 
-    # PUT: Cập nhật thông tin Roadmap
     def put(self, request, pk):
         try:
             roadmap = Roadmap.objects.get(pk=pk)
+            serializer = RoadmapSerializer(roadmap, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Cập nhật Roadmap thành công.",
+                    "data": serializer.data
+                })
+            return Response({
+                "message": "Cập nhật Roadmap thất bại.",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
         except Roadmap.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = RoadmapSerializer(roadmap, data=request.data)
-        if serializer.is_valid():
-            serializer.save()  # Serializers sẽ tự động xử lý việc cập nhật
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "message": "Roadmap không tồn tại."
+            }, status=status.HTTP_404_NOT_FOUND)
 
-    # DELETE: Xóa một Roadmap
     def delete(self, request, pk):
         try:
-            # Lấy đối tượng Roadmap theo pk
             roadmap = Roadmap.objects.get(pk=pk)
+            roadmap.delete()
+            return Response({
+                "message": "Xóa Roadmap thành công."
+            }, status=status.HTTP_204_NO_CONTENT)
         except Roadmap.DoesNotExist:
-            # Nếu không tìm thấy, trả về lỗi 404
-            return Response({"detail": "Roadmap not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Xóa đối tượng
-        roadmap.delete()
-        
-        # Trả về phản hồi 204 (No Content) để báo xóa thành công
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({
+                "message": "Roadmap không tồn tại."
+            }, status=status.HTTP_404_NOT_FOUND)
