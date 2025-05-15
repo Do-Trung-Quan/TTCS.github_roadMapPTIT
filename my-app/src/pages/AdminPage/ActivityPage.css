@@ -1,0 +1,100 @@
+/* src/pages/AdminPage/ActivityPage.css - Updated */
+
+/* Style cho container chính của nội dung trang Activity */
+.page-content#activity {
+    padding: 20px;
+}
+
+.activity-container {
+    max-width: 900px;
+    margin: 0 auto;
+    /* Có thể thêm padding bên trong container nếu muốn */
+    padding: 20px; /* Thêm padding bên trong container */
+    background-color: #fff; /* Nền trắng cho container */
+    border-radius: 8px; /* Bo góc container */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng container */
+}
+
+/* Style cho container chứa 3 mục thống kê */
+.activity-stats {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 40px;
+    /* background-color: #fff; Bỏ nền trắng ở đây vì đã thêm vào activity-container */
+    border: 1px solid #ddd; /* Giữ viền */
+    border-radius: 8px; /* Bo góc */
+    padding: 20px 0; /* Giữ padding trên dưới */
+    /* Bỏ padding hai bên nếu đã có padding ở activity-container */
+}
+
+.stats-item {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid #eee;
+    /* padding: 0 10px; Bỏ padding hai bên ở đây */
+}
+
+.stats-item:last-child {
+    border-right: none;
+}
+
+.stats-value {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.stats-label {
+    display: block;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Style cho phần thông báo khi trống */
+.activity-empty {
+    text-align: center;
+    padding: 40px 20px;
+    /* background-color: #fff; Bỏ nền trắng ở đây */
+    border: 1px solid #ddd; /* Giữ viền */
+    border-radius: 8px; /* Bo góc */
+}
+
+.icon-circle {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    margin-bottom: 20px;
+}
+
+.icon-circle svg {
+    width: 30px;
+    height: 30px;
+    fill: #ddd;
+}
+
+.activity-empty h2 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.activity-empty p {
+    margin-bottom: 5px;
+    color: #555;
+    font-size: 1em;
+}
+
+.activity-empty .link-text {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.activity-empty .link-text:hover {
+    text-decoration: underline;
+}

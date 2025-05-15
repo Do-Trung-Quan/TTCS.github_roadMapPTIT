@@ -11,7 +11,7 @@ const ResetPasswordEmail = () => {
 
     // Gửi yêu cầu reset mật khẩu đến backend
     try {
-      const response = await fetch('http://localhost:8000/api/reset-password-email/', {
+      const response = await fetch('http://localhost:8000/api/password/reset-email/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }) // Gửi email vào body yêu cầu

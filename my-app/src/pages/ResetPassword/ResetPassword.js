@@ -14,7 +14,7 @@ const ResetPassword = () => {
     
     try {
       // Gửi yêu cầu đến backend
-      const response = await fetch('http://localhost:8000/api/reset-password/', {
+      const response = await fetch('http://localhost:8000/api/password/reset/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

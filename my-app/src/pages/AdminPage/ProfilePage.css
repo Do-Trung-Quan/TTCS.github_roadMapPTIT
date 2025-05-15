@@ -1,0 +1,253 @@
+/* src/pages/AdminPage/ProfilePage.css */
+
+/* Style cho container chính của Profile Page */
+.page-content.profile-page-container {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 800px; /* Giới hạn chiều rộng form */
+    margin: 0 auto; /* Căn giữa */
+}
+
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-header h2 {
+    margin: 0;
+    font-size: 1.8em;
+    color: #333;
+}
+
+.profile-description {
+    font-size: 1em;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+
+/* Visibility Dropdown (Giữ lại nếu cần) */
+.visibility-selector {
+    position: relative; /* Để dropdown list định vị tuyệt đối bên trong */
+    display: inline-block; /* Đảm bảo container bao quanh ảnh */
+}
+
+.visibility-btn {
+    background-color: #e9ecef;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.visibility-dropdown {
+    position: absolute;
+    top: 100%; /* Đặt ngay dưới nút */
+    right: 0; /* Căn lề phải với nút */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Đảm bảo nằm trên nội dung khác */
+    min-width: 120px; /* Chiều rộng tối thiểu */
+}
+
+.dropdown-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
+
+
+/* Style cho các phần Profile Section (Picture, Name, Email, etc.) */
+.profile-section {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-section:last-child {
+    border-bottom: none; /* Bỏ border dưới cho section cuối */
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+
+.profile-section h3 {
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.profile-section .required {
+    color: red; /* Màu đỏ cho dấu * */
+    margin-left: 5px;
+}
+
+
+/* Profile Picture Section */
+.profile-picture-container {
+    position: relative; /* Để nút Edit bên trong định vị tương đối với container ảnh */
+    display: inline-block; /* Đảm bảo container bao quanh ảnh */
+}
+
+.profile-picture {
+    width: 100px; /* Kích thước ảnh profile */
+    height: 100px;
+    border-radius: 50%; /* Bo tròn ảnh */
+    object-fit: cover; /* Đảm bảo ảnh không bị méo */
+    border: 3px solid #eee; /* Viền ảnh */
+}
+
+/* Style cho nút Edit trên ảnh profile */
+/* Rule này đã được sửa selector trong ProfilePage.css ở bước trước */
+.profile-picture-container .edit-btn { /* <-- Selector CỤ THỂ */
+    position: absolute; /* Vẫn absolute để nằm trên ảnh */
+    bottom: 0;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 3px 8px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.profile-picture-container .edit-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+
+/* Style cho Email section (nếu cần style riêng) */
+/* .email-section { ... } */
+/* .email-settings-link { ... } */
+/* .email-display { ... } */
+
+
+/* Style cho phần Update Password (sử dụng class name từ Settings) */
+.settings-section h2 { /* Đảm bảo h2 trong profile-container.settings-section có style này */
+    font-size: 1.5em; /* Giảm kích thước h2 trong section con */
+    /* margin-bottom: 15px; */
+}
+.settings-description {
+     font-size: 0.9em;
+     color: #555;
+     margin-bottom: 20px;
+}
+
+/* .password-fields {
+    display: flex; 
+    gap: 20px;
+} */
+
+.field-group { /* Giữ nguyên class name */
+    margin-bottom: 20px;
+}
+.field-group label {
+    display: block; font-size: 0.9em; color: #555; margin-bottom: 8px; font-weight: bold;
+}
+
+/* Style cho nút Update Password */
+.update-password-btn {
+    background-color: #007bff; /* Màu xanh */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px; /* Khoảng cách trên */
+}
+
+.update-password-btn:hover {
+    background-color: #0056b3;
+}
+.update-password-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+/* Style cho phần Save Profile Actions */
+/* .profile-actions-section {
+    Style đã thêm inline trong JSX hoặc thêm class CSS nếu cần
+} */
+
+/* Style cho nút Save Profile */
+.save-profile-btn {
+    background-color: #28a745; /* Màu xanh lá */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.save-profile-btn:hover {
+    background-color: #218838;
+}
+.save-profile-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+/* --- Xóa Style cho phần Delete Account --- */
+/*
+.delete-account-btn {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px;
+}
+.delete-account-btn:hover {
+    background-color: #c82333;
+}
+*/
+
+
+/* Style cho thông báo lỗi và thành công */
+.error-message {
+    color: red;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.success-message {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Style chung cho các input, textarea, select - Tái sử dụng form-control-us */
+/* Đảm bảo các style cho form-control-us có sẵn từ file CSS chung hoặc AdminPage.css */
+/* .form-control-us { ... } */

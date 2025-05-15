@@ -1,0 +1,151 @@
+/* src/pages/AdminPage/EditRoadmapPage.css */
+
+/* Style cho container chính của nội dung trang Edit Roadmap */
+.page-content#edit-roadmap {
+    padding: 20px;
+    /* Thêm style nếu cần cho layout toàn trang */
+}
+
+.edit-roadmap-container {
+     max-width: 900px; /* Chiều rộng tối đa */
+     margin: 0 auto; /* Căn giữa */
+     padding: 20px;
+     background-color: #fff;
+     border-radius: 8px;
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Style cho header (Tiêu đề và nút Save changes) */
+.edit-roadmap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.edit-roadmap-header h1 {
+    margin: 0;
+    font-size: 1.8em;
+    color: #333;
+}
+
+/* Style cho nút "Save changes" */
+.save-changes-btn {
+    background-color: #007bff; /* Màu xanh */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.save-changes-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Style cho form groups (label + input/textarea) - Sử dụng lại form-control-us */
+.form-group { /* Sử dụng style đã định nghĩa ở các component khác */
+    margin-bottom: 20px;
+}
+.form-group label { /* Sử dụng style đã định nghĩa ở các component khác */
+    display: block;
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+/* Ensure form-control-us style is accessible (global or imported) */
+/* .form-control-us { ... } */
+
+
+/* Style cho phần quản lý Topics */
+.topics-section {
+    margin-top: 30px; /* Khoảng cách phía trên phần topics */
+    border-top: 1px solid #eee; /* Đường kẻ phía trên */
+    padding-top: 20px; /* Padding phía trên */
+}
+
+.topics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.topics-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: #333;
+}
+
+/* Style cho nút "Add topic" */
+.add-topic-btn {
+    background-color: #28a745; /* Màu xanh lá */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.add-topic-btn:hover {
+    background-color: #218838;
+}
+
+/* Style cho trạng thái "No topics" */
+.no-topics { /* Sử dụng lại style từ RoadmapsPage.css hoặc định nghĩa lại */
+    text-align: center;
+    padding: 40px 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9; /* Nền nhạt hơn */
+    margin-top: 10px;
+}
+
+.topic-icon { /* Sử dụng lại style từ RoadmapsPage.css */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    /* background-color: #e0e0e0; */
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+
+.topic-icon .fa-solid { /* Style cho icon Font Awesome */
+    font-size: 30px;
+    color: #555;
+}
+
+.no-topics h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.no-topics p {
+    color: #555;
+    font-size: 1em;
+}
+
+
+/* Style cho danh sách topics (khi có data) */
+.topic-list {
+    margin-top: 10px;
+    /* Thêm style cho danh sách (ul, li) hoặc các item topic */
+    /* Nếu mỗi item topic là một component riêng (TopicItem), style sẽ nằm trong TopicItem.css */
+}
+
+/* Style cho thông báo lỗi */
+.error-message {
+    color: red;
+    text-align: center;
+    margin-top: 20px;
+}

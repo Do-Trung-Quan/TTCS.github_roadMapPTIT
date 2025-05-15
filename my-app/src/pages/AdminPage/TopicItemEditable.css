@@ -1,0 +1,174 @@
+/* src/pages/AdminPage/TopicItemEditable.css */
+
+.topic-item-editable {
+    border: 1px solid #eee; /* Viền xung quanh mỗi topic */
+    border-radius: 5px; /* Bo góc */
+    margin-bottom: 15px; /* Khoảng cách dưới mỗi topic item */
+    background-color: #fff; /* Nền trắng */
+    overflow: hidden; /* Để bo góc có hiệu lực */
+}
+
+.topic-header-summary {
+    display: flex; /* Dùng flexbox */
+    align-items: center; /* Căn giữa dọc */
+    padding: 15px; /* Padding bên trong header */
+    cursor: pointer; /* Con trỏ pointer */
+    background-color: #f8f9fa; /* Nền nhẹ cho header */
+    border-bottom: 1px solid #eee; /* Viền dưới */
+    user-select: none; /* Ngăn chọn văn bản */
+}
+
+.topic-item-editable:last-child .topic-header-summary {
+     border-bottom: none; /* Bỏ viền dưới cho header item cuối cùng */
+}
+
+
+.topic-header-summary .topic-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+    flex-grow: 1; /* Cho phép tên topic chiếm hết không gian */
+    margin-right: 10px; /* Khoảng cách với stats */
+}
+
+.topic-header-summary .topic-stats {
+    font-size: 0.9em;
+    color: #555;
+    margin-right: 15px; /* Khoảng cách với icon mũi tên */
+}
+
+.topic-header-summary .details-toggle-icon {
+    font-size: 0.9em;
+    color: #555;
+    transition: transform 0.2s ease; /* Hiệu ứng xoay */
+}
+
+.topic-header-summary .details-toggle-icon.open {
+    transform: rotate(180deg); /* Xoay khi mở */
+}
+
+/* Style cho các nút hành động trong header (Edit, Delete Topic) */
+.topic-header-summary .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 0.9em;
+    color: #555; /* Màu icon mặc định */
+    margin-left: 5px; /* Khoảng cách giữa các nút */
+    transition: color 0.2s ease;
+}
+
+.topic-header-summary .action-btn:hover {
+     color: #333; /* Màu đậm hơn khi hover */
+}
+/* Style riêng cho nút delete topic */
+.topic-header-summary .delete-topic-btn {
+    color: #dc3545; /* Màu đỏ */
+}
+.topic-header-summary .delete-topic-btn:hover {
+    color: #c82333;
+}
+
+
+/* Style cho phần chi tiết Resources/Exercises (khi mở) */
+.topic-details {
+    padding: 15px; /* Padding bên trong phần chi tiết */
+    background-color: #fff; /* Nền trắng */
+}
+
+/* Style cho các phần Resources/Exercises con */
+.topic-resources-section,
+.topic-exercises-section {
+    margin-bottom: 20px; /* Khoảng cách dưới mỗi phần */
+    border-bottom: 1px solid #eee; /* Viền dưới mỗi phần */
+    padding-bottom: 15px; /* Padding dưới viền */
+}
+
+.topic-exercises-section {
+     border-bottom: none; /* Bỏ viền dưới cho phần Exercise cuối cùng */
+     padding-bottom: 0;
+     margin-bottom: 0;
+}
+
+
+.topic-resources-section h4,
+.topic-exercises-section h4 {
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 10px;
+    display: flex; /* Dùng flexbox để căn chỉnh tiêu đề và nút Add */
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Style cho nút "+ Add Resource/Exercise" */
+.add-item-btn {
+    background-color: #28a745; /* Màu xanh lá */
+    color: #fff;
+    border: none;
+    border-radius: 4px; /* Bo góc nhỏ hơn */
+    padding: 5px 10px; /* Padding nhỏ hơn */
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.add-item-btn:hover {
+    background-color: #218838;
+}
+
+/* Style cho danh sách Resources/Exercises */
+.topic-details ul {
+    list-style: none; /* Bỏ bullet mặc định */
+    padding: 0;
+    margin: 0;
+}
+
+.topic-details ul li {
+    border: 1px solid #eee; /* Viền mỗi item */
+    padding: 10px 15px;
+    margin-bottom: 8px; /* Khoảng cách giữa các item */
+    border-radius: 4px;
+    background-color: #f9f9f9; /* Nền nhẹ cho item */
+    display: flex; /* Dùng flexbox nếu có nút Edit/Delete bên cạnh */
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.topic-details ul li:last-child {
+    margin-bottom: 0; /* Bỏ khoảng cách dưới item cuối cùng */
+}
+
+/* Style cho nút Edit/Delete Resource/Exercise (nếu thêm vào li) */
+.topic-details ul li .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px; /* Padding nhỏ */
+    font-size: 0.8em;
+    color: #555;
+    margin-left: 5px;
+    transition: color 0.2s ease;
+}
+.topic-details ul li .action-btn:hover {
+    color: #333;
+}
+/* Style riêng cho nút delete resource/exercise */
+.topic-details ul li .delete-btn {
+    color: #dc3545;
+}
+.topic-details ul li .delete-btn:hover {
+    color: #c82333;
+}
+
+
+/* Style cho thông báo "No items" */
+.no-items-message {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    margin-top: 10px;
+}

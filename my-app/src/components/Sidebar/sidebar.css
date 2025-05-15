@@ -1,0 +1,88 @@
+.sidebar {
+    width: 250px; /* Điều chỉnh chiều rộng nếu cần */
+    background-color: #fff; /* Nền trắng */
+    padding: 20px 10px; /* Padding trên dưới và hai bên */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+    height: 100vh; /* Chiều cao đầy đủ viewport */
+    overflow-y: auto; /* Cho phép cuộn nếu nội dung dài hơn */
+    position: fixed; /* Giữ sidebar cố định khi cuộn trang */
+    top: 0;
+    left: 0;
+}
+
+/* Style cho phần hiển thị User */
+.user-display {
+    display: flex; /* Dùng flexbox để căn chỉnh icon, tên, mũi tên */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    padding: 10px 15px; /* Padding bên trong khung user */
+    margin-bottom: 20px; /* Khoảng cách dưới khung user */
+    background-color: #f0f0f0; /* Nền xám nhạt cho khung user */
+    border-radius: 5px; /* Bo góc nhẹ */
+    cursor: pointer; /* Hiển thị con trỏ kiểu pointer khi hover */
+    user-select: none; /* Ngăn chọn văn bản */
+    font-weight: bold; /* Tên user đậm hơn */
+}
+
+.user-display .fa-user, /* Icon User */
+.user-display .dropdown-arrow /* Icon mũi tên */
+ {
+    color: #555; /* Màu icon */
+    font-size: 16px; /* Kích thước icon */
+}
+
+.user-display .fa-user {
+    margin-right: 10px; /* Khoảng cách giữa icon user và tên */
+}
+
+.user-display .user-name {
+    flex-grow: 1; /* Cho phép tên user chiếm hết không gian còn lại */
+    margin-right: 10px; /* Khoảng cách giữa tên user và mũi tên */
+    white-space: nowrap; /* Ngăn tên user xuống dòng */
+    overflow: hidden; /* Ẩn phần tên user nếu quá dài */
+    text-overflow: ellipsis; /* Hiển thị ... nếu tên user quá dài */
+}
+
+.user-display .dropdown-arrow {
+     /* Icon mũi tên - đã được căn sang phải nhờ flex-grow của user-name */
+     margin-left: auto; /* Đẩy mũi tên sang phải cuối cùng */
+}
+
+
+/* Style cho các mục menu */
+.menu-item {
+    display: flex; /* Dùng flexbox để căn chỉnh icon và chữ */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    padding: 10px 15px; /* Padding cho mỗi mục menu */
+    margin-bottom: 5px; /* Khoảng cách giữa các mục menu */
+    cursor: pointer; /* Hiển thị con trỏ kiểu pointer khi hover */
+    border-radius: 5px; /* Bo góc nhẹ cho mục menu */
+    transition: background-color 0.2s ease; /* Hiệu ứng hover */
+    color: #333; /* Màu chữ mặc định */
+    text-decoration: none; /* Bỏ gạch chân nếu dùng thẻ <a> */
+    font-size: 15px; /* Kích thước chữ */
+}
+
+.menu-item:hover {
+    background-color: #f0f0f0; /* Nền xám nhạt khi hover */
+}
+
+/* Style cho mục menu đang active */
+.menu-item.active {
+    background-color: #e0e0e0; /* Nền xám đậm hơn cho mục active */
+    font-weight: bold; /* Chữ đậm hơn cho mục active */
+    color: #000; /* Màu chữ đậm hơn (tùy chọn) */
+}
+
+.menu-item svg {
+    margin-right: 10px; /* Khoảng cách giữa icon và chữ trong mục menu */
+    width: 16px; /* Kích thước icon */
+    height: 16px; /* Kích thước icon */
+    fill: currentColor; /* Icon lấy màu từ màu chữ */
+}
+
+/* Nếu bạn dùng Font Awesome icons trong menu item thay vì SVG */
+.menu-item .fas {
+     margin-right: 10px;
+     font-size: 16px;
+     /* Màu icon sẽ theo màu chữ của menu-item */
+}
