@@ -1,0 +1,157 @@
+/* src/pages/AdminPage/UserManagementPage.css - Updated */
+
+/* Style cho container chính của nội dung trang User Management */
+.page-content#Users {
+    padding: 20px;
+}
+
+.users-container {
+     max-width: 1000px;
+     margin: 0 auto;
+     padding: 20px;
+     background-color: #fff;
+     border-radius: 8px;
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Style cho header (Chỉ còn tiêu đề User Management) */
+/* Bỏ các style flexbox và justify-content nếu không còn nút actions */
+.users-header {
+    /* display: flex; */ /* Bỏ nếu chỉ còn h2 */
+    /* justify-content: space-between; */ /* Bỏ nếu chỉ còn h2 */
+    align-items: center; /* Giữ lại căn giữa dọc nếu cần */
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    /* Nếu chỉ còn h2, có thể bỏ margin-bottom và padding-bottom ở đây,
+       thêm margin-top cho users-table */
+}
+
+.users-header h2 {
+    margin: 0; /* Bỏ margin mặc định của h2 */
+    font-size: 1.5em;
+    color: #333;
+}
+
+/* Bỏ style cho container các nút actions vì đã bỏ các nút */
+/* .users-actions { ... } */
+
+
+/* Style cho container bảng */
+.users-table {
+    overflow-x: auto; /* Thêm scroll ngang nếu bảng quá rộng */
+    margin-bottom: 20px;
+    /* Thêm bo góc và overflow: hidden để bo góc bảng con bên trong */
+    border-radius: 8px; /* Bo góc cho container */
+    overflow: hidden; /* Cắt nội dung thừa để bo góc có hiệu lực */
+    border: 1px solid #dee2e6; /* Thêm viền cho toàn bảng theo hình */
+}
+
+/* Style cho bảng */
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Gộp các border lại */
+    /* Bỏ border trên table vì border đã ở users-table */
+    /* border: 1px solid #dee2e6; */
+}
+
+/* Style cho header của bảng */
+.table thead th {
+    text-align: left;
+    padding: 12px 15px;
+    background-color: #f8f9fa; /* Nền xám nhạt cho header */
+    border-bottom: 1px solid #dee2e6; /* Chỉ cần viền dưới 1px */
+    font-size: 0.9em;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Style cho body của bảng */
+.table tbody td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6; /* Viền dưới */
+    vertical-align: middle;
+    font-size: 0.95em;
+    color: #555;
+}
+
+/* Bỏ viền dưới cho hàng cuối cùng (tùy chọn) */
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* Style cho hàng khi hover (tùy chọn) */
+.table tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+
+/* Style cho cột Name (user info) */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    /* border: 1px solid #eee; */ /* Có thể thêm viền avatar */
+}
+
+
+/* Style cho cột Action buttons */
+.action-buttons {
+    white-space: nowrap;
+    text-align: center; /* Căn giữa icon xóa */
+}
+
+/* Style cho nút hành động riêng lẻ (ví dụ: nút xóa) */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 1em;
+    transition: color 0.2s ease;
+    /* Nếu muốn nút có hover background như hình mẫu trước */
+     border-radius: 4px; /* Bo góc nhẹ */
+     transition: background-color 0.2s ease;
+     padding: 8px; /* Tăng padding cho vùng click */
+}
+.action-btn:hover {
+     background-color: #eee; /* Nền xám nhạt khi hover */
+}
+
+
+/* Style riêng cho nút delete */
+.action-btn.delete-btn {
+     color: #dc3545; /* Màu đỏ */
+}
+
+.action-btn.delete-btn:hover {
+     color: #c82333;
+}
+
+/* Bỏ style liên quan đến status badge vì cột Status đã được thay thế */
+/* .status-badge { ... } */
+/* .status-badge.active { ... } */
+/* .status-badge.suspended { ... } */
+/* .status-badge.inactive { ... } */
+
+/* Style cho thông báo lỗi (nếu có) */
+.error-message {
+    color: red;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Style cho container danh sách roadmap (sẽ chứa các item roadmap) */
+/* .roadmap-list { ... } */ /* Style này thuộc RoadmapPage, không phải UserManagementPage */
+
+
+/* Style cho component phân trang - Đảm bảo nó được import đúng cách */
+/* Các style cho .pagination, .pagination-info, .pagination-controls, .pagination-btn, .pagination-btn.active nằm trong Pagination.css */

@@ -952,6 +952,7 @@
 2025-04-25 10:54:23,914 WARNING Forbidden: /api/bookmarks/BM001/
 2025-04-25 10:54:23,915 WARNING "GET /api/bookmarks/BM001/ HTTP/1.1" 403 63
 2025-04-25 10:55:35,213 INFO Watching for file changes with StatReloader
+<<<<<<< Updated upstream
 2025-04-25 18:26:11,250 INFO Watching for file changes with StatReloader
 2025-04-25 18:26:27,157 INFO Processing request: GET /api/roadmaps/
 2025-04-25 18:26:27,157 INFO Skipping authentication for GET request on path: /api/roadmaps/
@@ -1154,3 +1155,127 @@
 2025-04-25 19:30:55,140 INFO Skipping authentication for path: /api/login/
 2025-04-25 19:30:56,422 INFO [Token] Generated token for user_id: US003, role: user
 2025-04-25 19:30:56,425 INFO "POST /api/login/ HTTP/1.1" 200 737
+=======
+2025-04-26 15:51:00,853 INFO Watching for file changes with StatReloader
+2025-04-26 16:00:46,108 INFO Watching for file changes with StatReloader
+2025-04-26 16:01:48,646 INFO Processing request: GET /api/roadmaps/
+2025-04-26 16:01:48,650 INFO Skipping authentication for GET request on path: /api/roadmaps/
+2025-04-26 16:01:48,929 WARNING No auth_user set in request
+2025-04-26 16:01:48,939 WARNING No auth_user set in request
+2025-04-26 16:01:49,209 INFO "GET /api/roadmaps/ HTTP/1.1" 200 5322
+2025-04-26 16:01:49,574 INFO "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3426
+2025-04-26 16:01:49,580 INFO "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+2025-04-26 16:01:49,597 INFO "GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+2025-04-26 16:01:49,610 INFO "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+2025-04-26 16:01:49,778 INFO "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+2025-04-26 16:01:49,800 INFO "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+2025-04-26 16:01:49,831 INFO "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+2025-04-26 16:01:49,833 INFO "GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+2025-04-26 16:01:49,842 INFO "GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+2025-04-26 16:01:49,858 INFO "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+2025-04-26 16:01:49,907 INFO "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+2025-04-26 16:01:49,924 INFO "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+2025-04-26 16:02:03,798 INFO Processing request: GET /api/roadmaps/
+2025-04-26 16:02:03,798 INFO Skipping authentication for GET request on path: /api/roadmaps/
+2025-04-26 16:02:03,808 WARNING No auth_user set in request
+2025-04-26 16:02:03,808 WARNING No auth_user set in request
+2025-04-26 16:02:03,811 INFO "GET /api/roadmaps/ HTTP/1.1" 200 5322
+2025-04-26 16:02:07,629 INFO Processing request: GET /api/roadmaps/
+2025-04-26 16:02:07,629 INFO Skipping authentication for GET request on path: /api/roadmaps/
+2025-04-26 16:02:07,650 INFO "GET /api/roadmaps/?format=json HTTP/1.1" 200 62
+2025-04-26 16:03:55,543 INFO C:\Users\huyle\OneDrive\Desktop\64GB_child_po\Tai lieu ki 2 (24-25)\Thực tập cơ sở\BTL\TTCS.github_roadMapPTIT\backend\backend\settings.py changed, reloading.
+2025-04-26 16:03:58,311 INFO Watching for file changes with StatReloader
+2025-04-26 16:04:22,112 INFO Watching for file changes with StatReloader
+2025-04-26 16:05:17,637 INFO C:\Users\huyle\OneDrive\Desktop\64GB_child_po\Tai lieu ki 2 (24-25)\Thực tập cơ sở\BTL\TTCS.github_roadMapPTIT\backend\backend\settings.py changed, reloading.
+2025-04-26 16:05:19,368 INFO Watching for file changes with StatReloader
+2025-04-26 16:05:33,423 INFO C:\Users\huyle\OneDrive\Desktop\64GB_child_po\Tai lieu ki 2 (24-25)\Thực tập cơ sở\BTL\TTCS.github_roadMapPTIT\backend\backend\settings.py changed, reloading.
+2025-04-26 16:05:34,750 INFO Watching for file changes with StatReloader
+2025-04-26 16:05:42,037 INFO C:\Users\huyle\OneDrive\Desktop\64GB_child_po\Tai lieu ki 2 (24-25)\Thực tập cơ sở\BTL\TTCS.github_roadMapPTIT\backend\backend\settings.py changed, reloading.
+2025-04-26 16:05:43,445 INFO Watching for file changes with StatReloader
+2025-04-26 16:05:49,506 INFO Processing request: GET /api/roadmaps/
+2025-04-26 16:05:49,506 INFO Skipping authentication for GET request on path: /api/roadmaps/
+2025-04-26 16:05:49,530 WARNING No auth_user set in request
+2025-04-26 16:05:49,534 WARNING No auth_user set in request
+2025-04-26 16:05:49,590 INFO "GET /api/roadmaps/ HTTP/1.1" 200 5322
+2025-04-26 16:14:16,597 INFO Watching for file changes with StatReloader
+2025-04-26 16:17:34,659 INFO "OPTIONS /api/register/ HTTP/1.1" 200 0
+2025-04-26 16:17:34,667 INFO Processing request: POST /api/register/
+2025-04-26 16:17:34,668 INFO Skipping authentication for path: /api/register/
+2025-04-26 16:17:36,428 INFO "POST /api/register/ HTTP/1.1" 201 265
+2025-04-26 16:17:52,377 INFO "OPTIONS /api/login/ HTTP/1.1" 200 0
+2025-04-26 16:17:52,381 INFO Processing request: POST /api/login/
+2025-04-26 16:17:52,381 INFO Skipping authentication for path: /api/login/
+2025-04-26 16:17:52,384 WARNING Unauthorized: /api/login/
+2025-04-26 16:17:52,391 WARNING "POST /api/login/ HTTP/1.1" 401 40
+2025-04-26 16:18:34,409 INFO Processing request: POST /api/login/
+2025-04-26 16:18:34,409 INFO Skipping authentication for path: /api/login/
+2025-04-26 16:18:34,412 WARNING Unauthorized: /api/login/
+2025-04-26 16:18:34,412 WARNING "POST /api/login/ HTTP/1.1" 401 40
+2025-04-26 16:19:06,393 INFO Processing request: POST /api/login/
+2025-04-26 16:19:06,393 INFO Skipping authentication for path: /api/login/
+2025-04-26 16:19:06,426 WARNING Unauthorized: /api/login/
+2025-04-26 16:19:06,427 WARNING "POST /api/login/ HTTP/1.1" 401 63
+2025-04-26 16:20:19,358 INFO Processing request: POST /api/register/
+2025-04-26 16:20:19,359 INFO Skipping authentication for path: /api/register/
+2025-04-26 16:20:19,393 WARNING Bad Request: /api/register/
+2025-04-26 16:20:19,394 WARNING "POST /api/register/ HTTP/1.1" 400 121
+2025-04-26 16:20:32,418 INFO Processing request: POST /api/login/
+2025-04-26 16:20:32,418 INFO Skipping authentication for path: /api/login/
+2025-04-26 16:20:32,429 WARNING Unauthorized: /api/login/
+2025-04-26 16:20:32,429 WARNING "POST /api/login/ HTTP/1.1" 401 63
+2025-04-26 16:21:24,294 INFO Processing request: POST /api/login/
+2025-04-26 16:21:24,294 INFO Skipping authentication for path: /api/login/
+2025-04-26 16:21:24,296 WARNING Unauthorized: /api/login/
+2025-04-26 16:21:24,297 WARNING "POST /api/login/ HTTP/1.1" 401 40
+2025-04-26 17:42:35,260 INFO C:\Users\huyle\OneDrive\Desktop\64GB_child_po\Tai lieu ki 2 (24-25)\Thực tập cơ sở\BTL\TTCS.github_roadMapPTIT\backend\backend\settings.py changed, reloading.
+2025-04-26 17:42:37,069 INFO Watching for file changes with StatReloader
+2025-04-26 17:42:47,020 INFO C:\Users\huyle\OneDrive\Desktop\64GB_child_po\Tai lieu ki 2 (24-25)\Thực tập cơ sở\BTL\TTCS.github_roadMapPTIT\backend\backend\settings.py changed, reloading.
+2025-04-26 17:42:48,003 INFO Watching for file changes with StatReloader
+2025-05-15 14:17:51,182 INFO Watching for file changes with StatReloader
+2025-05-15 14:18:27,505 INFO Watching for file changes with StatReloader
+2025-05-15 14:19:32,760 INFO "OPTIONS /api/login/ HTTP/1.1" 200 0
+2025-05-15 14:19:32,763 INFO Processing request: POST /api/login/
+2025-05-15 14:19:32,763 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:19:32,766 WARNING Unauthorized: /api/login/
+2025-05-15 14:19:32,766 WARNING "POST /api/login/ HTTP/1.1" 401 40
+2025-05-15 14:19:57,151 INFO Processing request: POST /api/login/
+2025-05-15 14:19:57,151 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:19:57,153 WARNING Unauthorized: /api/login/
+2025-05-15 14:19:57,154 WARNING "POST /api/login/ HTTP/1.1" 401 40
+2025-05-15 14:20:31,873 INFO Processing request: POST /api/login/
+2025-05-15 14:20:31,873 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:20:31,874 WARNING Unauthorized: /api/login/
+2025-05-15 14:20:31,874 WARNING "POST /api/login/ HTTP/1.1" 401 40
+2025-05-15 14:20:47,200 INFO Processing request: POST /api/login/
+2025-05-15 14:20:47,200 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:20:47,208 WARNING Unauthorized: /api/login/
+2025-05-15 14:20:47,209 WARNING "POST /api/login/ HTTP/1.1" 401 63
+2025-05-15 14:20:56,379 INFO Processing request: POST /api/login/
+2025-05-15 14:20:56,379 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:20:56,877 WARNING Unauthorized: /api/login/
+2025-05-15 14:20:56,878 WARNING "POST /api/login/ HTTP/1.1" 401 52
+2025-05-15 14:21:01,805 INFO Processing request: POST /api/login/
+2025-05-15 14:21:01,806 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:21:02,245 WARNING Unauthorized: /api/login/
+2025-05-15 14:21:02,246 WARNING "POST /api/login/ HTTP/1.1" 401 52
+2025-05-15 14:23:42,091 INFO "OPTIONS /api/register/ HTTP/1.1" 200 0
+2025-05-15 14:23:42,092 INFO Processing request: POST /api/register/
+2025-05-15 14:23:42,092 INFO Skipping authentication for path: /api/register/
+2025-05-15 14:23:42,632 INFO "POST /api/register/ HTTP/1.1" 201 262
+2025-05-15 14:23:53,278 INFO Processing request: POST /api/login/
+2025-05-15 14:23:53,278 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:23:53,279 WARNING Unauthorized: /api/login/
+2025-05-15 14:23:53,279 WARNING "POST /api/login/ HTTP/1.1" 401 40
+2025-05-15 14:30:55,876 INFO "OPTIONS /api/social-login/ HTTP/1.1" 200 0
+2025-05-15 14:30:55,878 INFO Processing request: POST /api/social-login/
+2025-05-15 14:30:55,878 INFO Skipping authentication for path: /api/social-login/
+2025-05-15 14:30:55,887 INFO [Token] Generated token for user_id: US005, role: user
+2025-05-15 14:30:55,898 INFO "POST /api/social-login/ HTTP/1.1" 200 683
+2025-05-15 14:35:54,183 INFO Processing request: POST /api/register/
+2025-05-15 14:35:54,183 INFO Skipping authentication for path: /api/register/
+2025-05-15 14:35:55,130 INFO "POST /api/register/ HTTP/1.1" 201 248
+2025-05-15 14:36:18,884 INFO Processing request: POST /api/login/
+2025-05-15 14:36:18,884 INFO Skipping authentication for path: /api/login/
+2025-05-15 14:36:19,796 INFO [Token] Generated token for user_id: US006, role: user
+2025-05-15 14:36:19,797 INFO "POST /api/login/ HTTP/1.1" 200 746
+>>>>>>> Stashed changes

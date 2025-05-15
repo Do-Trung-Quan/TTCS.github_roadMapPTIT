@@ -1,0 +1,93 @@
+/* src/pages/AdminPage/RoadmapsPage.css */
+
+/* Style cho container chính của nội dung trang Roadmaps */
+.page-content#roadmaps {
+    padding: 20px; /* Khoảng cách lề xung quanh nội dung trang */
+    /* Các style khác liên quan đến layout toàn trang nếu cần */
+}
+
+.roadmap-container {
+     max-width: 900px; /* Đặt chiều rộng tối đa cho nội dung */
+     margin: 0 auto; /* Căn giữa container */
+     padding: 20px;
+     background-color: #fff; /* Nền trắng */
+     border-radius: 8px; /* Bo góc */
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+
+
+/* Style cho phần header (Tiêu đề và nút Create) */
+.roadmap-tabs { /* Tên class trong HTML là roadmap-tabs, dù trông không giống tabs */
+    display: flex; /* Dùng flexbox */
+    justify-content: space-between; /* Đẩy tiêu đề sang trái, nút sang phải */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    margin-bottom: 20px; /* Khoảng cách dưới header */
+    padding-bottom: 10px; /* Padding dưới */
+    border-bottom: 1px solid #eee; /* Đường kẻ dưới */
+}
+
+.roadmap-tabs h2 {
+    margin: 0; /* Bỏ margin mặc định của h2 */
+    font-size: 1.5em;
+    color: #333;
+}
+
+/* Style cho nút "Create Roadmap" */
+.create-roadmap-btn {
+    background-color: #dc3545; /* Màu đỏ Bootstrap danger */
+    color: #fff; /* Chữ trắng */
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.create-roadmap-btn:hover {
+    background-color: #c82333; /* Màu đỏ sẫm hơn khi hover */
+}
+
+/* Style cho trạng thái rỗng (No roadmaps) */
+.no-roadmaps {
+    text-align: center; /* Căn giữa toàn bộ nội dung */
+    padding: 40px 20px; /* Padding xung quanh */
+    /* background-color: #f9f9f9;  Có thể thêm nền nhạt */
+    /* border: 1px solid #eee; Border */
+    border-radius: 8px; /* Bo góc */
+}
+
+.roadmap-icon {
+    display: inline-flex; /* Dùng flexbox để căn giữa icon */
+    justify-content: center;
+    align-items: center;
+    width: 60px; /* Kích thước hình vuông */
+    height: 60px;
+    /* background-color: #e0e0e0;  Nền xám nhạt cho icon */
+    border-radius: 50%; /* Có thể làm tròn nếu muốn icon trong hình tròn */
+    margin-bottom: 20px;
+}
+
+.roadmap-icon .fa-solid { /* Style cho icon Font Awesome */
+    font-size: 30px; /* Kích thước icon */
+    color: #555; /* Màu icon */
+}
+
+.no-roadmaps h2 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.no-roadmaps p {
+    color: #555;
+    font-size: 1em;
+}
+
+/* Style cho container danh sách roadmap (sẽ chứa các item roadmap) */
+
+/* Style cho thông báo lỗi (nếu có) */
+.error-message {
+    color: red;
+    text-align: center;
+    margin-top: 20px;
+}

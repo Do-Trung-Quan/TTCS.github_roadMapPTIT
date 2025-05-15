@@ -1,0 +1,142 @@
+/* src/pages/AdminPage/SettingsPage.css - Updated */
+
+/* Style cho container chính của nội dung trang Settings */
+.page-content#settings {
+    padding: 20px; /* Khoảng cách lề xung quanh nội dung trang */
+    /* Các style khác liên quan đến layout toàn trang nếu cần */
+}
+
+.settings-container {
+    max-width: 700px; /* Chiều rộng tối đa, tương tự ProfilePage */
+    margin: 0 auto; /* Căn giữa container */
+    padding: 20px;
+    background-color: #fff; /* Nền trắng */
+    border-radius: 8px; /* Bo góc */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+
+/* Style cho mỗi phần cài đặt */
+.settings-section {
+    margin-bottom: 30px; /* Khoảng cách dưới mỗi phần */
+}
+
+.settings-section h2 {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.settings-description {
+    font-size: 1em;
+    color: #555;
+    margin-bottom: 20px; /* Khoảng cách dưới mô tả */
+}
+
+/* Style cho đường phân cách giữa các phần */
+.settings-divider {
+    border: none; /* Bỏ viền mặc định */
+    height: 1px; /* Chiều cao đường kẻ */
+    background-color: #eee; /* Màu đường kẻ */
+    margin: 30px 0; /* Khoảng cách trên dưới đường kẻ */
+}
+
+/* Style cho các nhóm input field (Password, Email) */
+
+/* Style cho mỗi group field (Label + Input) */
+.field-group {
+    margin-bottom: 15px; /* Khoảng cách dưới mỗi field group */
+}
+
+.field-group label {
+    display: block; /* Label trên dòng riêng */
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 8px;
+    font-weight: normal; /* Chữ thường hoặc semi-bold tùy thiết kế */
+}
+
+/* Style cho input và textarea tùy chỉnh (form-control-us / form-control.us) */
+/* Cập nhật style để giống input trong hình hơn */
+.form-control-us,
+.form-control.us {
+    display: block;
+    width: 100%;
+    padding: 12px 15px; /* Tăng padding */
+    font-size: 1em;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ccc; /* Viền */
+    border-radius: 5px; /* Bo góc */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    box-sizing: border-box;
+}
+
+.form-control-us:focus,
+.form-control.us:focus {
+    border-color: #007bff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Style riêng cho input email bị disabled (theo hình) */
+/* Dù trong JS đã bỏ disabled, CSS này áp dụng cho element nào có thuộc tính disabled */
+.form-control.us[disabled] {
+     background-color: #e9ecef; /* Nền xám nhạt theo hình */
+     opacity: 1; /* Đảm bảo không bị mờ */
+     cursor: not-allowed; /* Con trỏ not-allowed */
+}
+
+
+/* .password-input { Style riêng cho input mật khẩu nếu có - hiện tại dùng chung form-control-us } */
+
+/* Style cho nút "Update Password" */
+/* Cập nhật style để giống nút màu xám trong hình */
+.update-password-btn {
+    display: block;
+    width: 100%; /* Chiếm toàn bộ chiều rộng */
+    padding: 12px 15px; /* Padding */
+    font-size: 1em;
+    font-weight: bold;
+    color: #fff; /* Chữ trắng */
+    background-color: #6c757d; /* Màu xám Bootstrap secondary */
+    border: none;
+    border-radius: 5px; /* Bo góc */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 20px; /* Tăng khoảng cách trên */
+}
+
+.update-password-btn:hover {
+     background-color: #545b62; /* Màu xám sẫm hơn khi hover */
+}
+
+/* Bỏ style cho cảnh báo email nếu đã xóa div đó */
+/* .email-warning { ... } */
+
+
+/* Style cho nút "Update Email" (đã tạo ở bước trước, không hiển thị trong hình mới) */
+/* Giữ lại style này nếu bạn vẫn muốn nút đó tồn tại trong component JS */
+.update-email-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1em;
+    font-weight: bold;
+    color: #fff;
+    background-color: #28a745; /* Màu xanh lá cây */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 15px;
+}
+
+.update-email-btn:hover {
+    background-color: #218838;
+}
+
+
+/* Bỏ style cho nút xóa tài khoản nếu đã xóa div đó */
+/* .delete-account-btn { ... } */

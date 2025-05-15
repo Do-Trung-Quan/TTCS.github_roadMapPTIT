@@ -1,0 +1,53 @@
+/* src/components/Pagination/Pagination.css */
+
+.pagination {
+    display: flex; /* Dùng flexbox */
+    justify-content: space-between; /* Đẩy info sang trái, controls sang phải */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    margin-top: 20px; /* Khoảng cách phía trên */
+    padding: 15px 0;
+    border-top: 1px solid #eee; /* Đường kẻ phía trên */
+    font-size: 0.9em;
+}
+
+.pagination-info {
+    color: #555;
+}
+
+.pagination-controls {
+    display: flex; /* Dùng flexbox cho các nút */
+    align-items: center;
+    gap: 5px; /* Khoảng cách giữa các nút */
+}
+
+.pagination-btn {
+    background-color: #fff; /* Nền trắng */
+    border: 1px solid #ccc; /* Viền */
+    padding: 8px 12px; /* Padding */
+    border-radius: 4px; /* Bo góc */
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+    min-width: 30px; /* Chiều rộng tối thiểu cho nút số */
+    text-align: center;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f0f0f0; /* Nền xám nhạt khi hover */
+}
+
+.pagination-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6; /* Mờ đi khi disabled */
+}
+
+.pagination-btn.active {
+    background-color: #007bff; /* Nền xanh cho nút active */
+    color: #fff; /* Chữ trắng */
+    border-color: #007bff;
+    font-weight: bold;
+}
+
+.pagination-btn.active:hover {
+     background-color: #0056b3; /* Màu xanh sẫm hơn khi hover active */
+}

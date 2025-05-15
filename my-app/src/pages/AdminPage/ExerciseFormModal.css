@@ -1,0 +1,75 @@
+/* src/pages/AdminPage/ExerciseFormModal.css - Complete */
+
+/* Sử dụng lại các style chung cho modal overlay, content, header, close btn, body, form-group, label, form-control-us, modal-actions, cancel-btn, create-btn từ ResourceFormModal.css (hoặc file dùng chung) */
+/* Đảm bảo các style này có sẵn */
+
+/* Ví dụ các style chung cần có (copy từ ResourceFormModal.css): */
+.modal-overlay {
+    display: none; /* Mặc định ẩn */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+.modal-overlay.visible { display: flex; }
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 500px; /* Chiều rộng modal */
+    width: 90%;
+    position: relative;
+     max-height: 80vh; /* Cho phép cuộn nếu nội dung dài */
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;
+}
+.modal-header h3 { margin: 0; font-size: 1.2em; color: #333; }
+.modal-close-btn { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #888; padding: 0; }
+.modal-close-btn:hover { color: #555; }
+
+/* .modal-body { padding: 0; }  Có thể bỏ padding ở đây nếu padding ở modal-content đủ */
+
+.form-group { margin-bottom: 20px; }
+.form-group label {
+    display: block; font-size: 0.9em; color: #555; margin-bottom: 8px; font-weight: bold;
+}
+/* Style cho input/textarea/select - sử dụng lại form-control-us */
+.form-control-us {
+    display: block; width: 100%; padding: 10px 15px; font-size: 1em; line-height: 1.5;
+    color: #495057; background-color: #fff; border: 1px solid #ccc; border-radius: 5px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; box-sizing: border-box;
+}
+.form-control-us:focus { border-color: #007bff; outline: 0; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
+
+
+.modal-actions {
+    display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
+}
+.cancel-btn {
+    background-color: #ccc; color: #333; border: none; border-radius: 5px; padding: 8px 15px;
+    font-size: 1em; cursor: pointer; transition: background-color 0.2s ease;
+}
+.cancel-btn:hover { background-color: #bbb; }
+
+.create-btn { /* Dùng cho nút Add Exercise / Save Changes */
+    background-color: #007bff; /* Màu xanh (hoặc màu bạn muốn cho nút chính) */
+    color: #fff; border: none; border-radius: 5px; padding: 8px 15px;
+    font-size: 1em; cursor: pointer; transition: background-color 0.2s ease;
+}
+.create-btn:hover { background-color: #0056b3; }
+
+
+/* Style cụ thể cho ExerciseFormModal nếu cần khác với các modal khác */
+/* Ví dụ: .exercise-modal-content { max-width: 600px; } */
+
+/* Nếu bạn thêm phần Quiz Questions/Answers sau này, bạn sẽ cần style thêm cho phần đó */
+/* .quiz-questions-section { margin-top: 20px; } */
+/* .add-question-btn { ... } */
+/* .question-item { ... } */

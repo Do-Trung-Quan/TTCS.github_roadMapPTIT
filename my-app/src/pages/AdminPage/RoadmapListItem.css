@@ -1,0 +1,75 @@
+/* src/pages/AdminPage/RoadmapListItem.css - Adjusted */
+
+.roadmap-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #fff;
+}
+
+.item-details {
+    flex-grow: 1;
+    margin-right: 15px;
+}
+
+.item-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.item-stats {
+    font-size: 0.9em;
+    color: #555;
+    display: block;
+}
+
+.item-actions {
+    display: flex;           /* <-- Vẫn sử dụng Flexbox */
+    flex-direction: row;     /* <-- Explicitly set direction to row */
+    gap: 10px;               /* <-- Gap between buttons */
+    align-items: center;     /* <-- Center items vertically within item-actions */
+    white-space: nowrap;     /* Prevent buttons from wrapping */
+    /* debug outline */
+    /* outline: 1px dashed blue; */ /* <-- Tạm thời thêm viền để xem khu vực này */
+}
+
+/* Style chung cho các nút hành động (Edit, Delete) trong item */
+.item-actions .action-btn {
+    background-color: #e9ecef;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    /* debug outline */
+    /* outline: 1px dashed red; */ /* <-- Tạm thời thêm viền cho từng nút */
+}
+
+.item-actions .action-btn:hover {
+    background-color: #dee2e6;
+}
+
+/* Style riêng cho nút Edit */
+.item-actions .edit-btn {
+    /* Style cụ thể cho nút Edit nếu cần khác */
+   background-color: #007bff;
+   color: #fff;
+}
+
+.item-actions .delete-btn {
+    color: #dc3545;
+    border-color: #dc3545;
+    background-color: #fff;
+}
+.item-actions .delete-btn:hover {
+     background-color: #f8d7da;
+}
