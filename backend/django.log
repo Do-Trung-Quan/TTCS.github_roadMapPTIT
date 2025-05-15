@@ -1278,4 +1278,7 @@
 2025-05-15 14:36:18,884 INFO Skipping authentication for path: /api/login/
 2025-05-15 14:36:19,796 INFO [Token] Generated token for user_id: US006, role: user
 2025-05-15 14:36:19,797 INFO "POST /api/login/ HTTP/1.1" 200 746
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

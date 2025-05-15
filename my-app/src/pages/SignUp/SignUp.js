@@ -43,6 +43,7 @@ const SignUp = () => {
      // if (!hasSpecialChar) { return "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt."; }
 
     return ""; // Mật khẩu hợp lệ theo tiêu chí frontend
+<<<<<<< Updated upstream
   };
 <<<<<<< Updated upstream
   
@@ -135,6 +136,9 @@ const SignUp = () => {
   };
   
 =======
+=======
+  };
+>>>>>>> Stashed changes
 
   // Hàm xử lý response API chung cho đăng ký
    const handleApiResponse = async (response) => {
@@ -337,6 +341,9 @@ const handleGithubSignUp = async () => {
   }
 };
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
   return (

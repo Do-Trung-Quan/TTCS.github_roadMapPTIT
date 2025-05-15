@@ -24,8 +24,11 @@ const Login = () => {
   const navigate = useNavigate();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
    const sendLoginRequest = async (payload) => {
 =======
+=======
+>>>>>>> Stashed changes
   // Hàm xử lý response API chung (lưu token vào cookie, thông báo, điều hướng)
   const handleApiResponse = async (response) => {
     const data = await response.json();
@@ -74,6 +77,9 @@ const Login = () => {
      setIsLoading(true);
      setError(null);
      setSuccessMessage(null);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     try {
       const response = await fetch("http://localhost:8000/api/login/", {
@@ -81,6 +87,7 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   
       const data = await response.json();
@@ -126,11 +133,20 @@ const Login = () => {
         console.error("Lỗi đăng nhập bằng tài khoản xã hội:", data);
         alert("Lỗi đăng nhập xã hội: " + JSON.stringify(data));
       }
+=======
+
+      await handleApiResponse(response); // Sử dụng hàm xử lý response chung
+
+>>>>>>> Stashed changes
     } catch (err) {
-      console.error("Lỗi kết nối server:", err);
-      alert("Lỗi kết nối tới server.");
+      console.error("Lỗi kết nối server (Standard Login):", err);
+      setError("Lỗi kết nối tới server.");
+      setSuccessMessage(null);
+    } finally {
+      setIsLoading(false);
     }
   };
+<<<<<<< Updated upstream
   
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -166,6 +182,37 @@ const Login = () => {
   // Hàm xử lý submit form đăng nhập (Username/Password)
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+=======
+
+   // Hàm xử lý đăng nhập bằng Social (Google/Github)
+   const handleSocialLoginRequest = async (payload) => {
+      setIsLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+       try {
+         // API social login nhận email
+         const response = await fetch("http://localhost:8000/api/social-login/", {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(payload), // Payload chỉ chứa email
+         });
+
+         await handleApiResponse(response); // Sử dụng hàm xử lý response chung
+
+       } catch (err) {
+         console.error("Lỗi kết nối server (Social Login):", err);
+         setError("Lỗi kết nối tới server.");
+         setSuccessMessage(null);
+       } finally {
+         setIsLoading(false);
+       }
+   };
+
+
+  // Hàm xử lý submit form đăng nhập (Username/Password)
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+>>>>>>> Stashed changes
     if (!username || !password) {
         setError("Vui lòng nhập tên đăng nhập và mật khẩu.");
         setSuccessMessage(null);
@@ -173,6 +220,9 @@ const Login = () => {
     }
     const payload = { username, password };
     await handleStandardLogin(payload); // Gọi hàm xử lý standard login
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   };
 
@@ -183,6 +233,7 @@ const Login = () => {
      setSuccessMessage(null);
     try {
       const result = await signInWithPopup(auth, googleProvider);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       const user = result.user;
       const payload = {
@@ -228,11 +279,44 @@ const Login = () => {
 
   // Hàm xử lý click nút Github Login (sử dụng Firebase)
 >>>>>>> Stashed changes
+=======
+      const user = result.user; // User object từ Firebase
+
+      // Lấy email từ Firebase user
+      const email = user.email;
+      if (!email) {
+          setError("Không thể lấy thông tin email từ Google.");
+          setSuccessMessage(null);
+          return;
+      }
+
+      const payload = { email: email }; // Payload chỉ gồm email cho social login API
+      await handleSocialLoginRequest(payload); // Gọi hàm xử lý social login API
+
+    } catch (err) {
+      console.error("Google login error:", err);
+       // Xử lý lỗi Firebase popup
+       let errorMessage = "Lỗi đăng nhập Google.";
+       if (err.code) {
+           errorMessage += ` Mã lỗi: ${err.code}`;
+       }
+       if (err.message) {
+           errorMessage += ` Chi tiết: ${err.message}`;
+       }
+      setError(errorMessage);
+       setSuccessMessage(null);
+    }
+  };
+
+
+  // Hàm xử lý click nút Github Login (sử dụng Firebase)
+>>>>>>> Stashed changes
   const handleGithubLogin = async () => {
       setError(null);
       setSuccessMessage(null);
     try {
       const result = await signInWithPopup(auth, githubProvider);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       const user = result.user;
       const payload = {
@@ -259,6 +343,23 @@ const Login = () => {
 
     } catch (err) {
       console.error("GitHub login error:", err);
+=======
+      const user = result.user; // User object từ Firebase
+
+      // Lấy email từ Firebase user
+      const email = user.email;
+       if (!email) {
+           setError("Không thể lấy thông tin email từ Github.");
+            setSuccessMessage(null);
+           return;
+       }
+
+      const payload = { email: email }; // Payload chỉ gồm email cho social login API
+      await handleSocialLoginRequest(payload); // Gọi hàm xử lý social login API
+
+    } catch (err) {
+      console.error("GitHub login error:", err);
+>>>>>>> Stashed changes
        // Xử lý lỗi Firebase popup
        let errorMessage = "Lỗi đăng nhập Github.";
         if (err.code) {
@@ -269,6 +370,9 @@ const Login = () => {
        }
       setError(errorMessage);
        setSuccessMessage(null);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
   };
