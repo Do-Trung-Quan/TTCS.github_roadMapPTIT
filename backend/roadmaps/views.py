@@ -6,6 +6,7 @@ from .serializers import RoadmapSerializer
 from rest_framework.permissions import AllowAny
 from users.permissions import IsAdmin
 from rest_framework.authentication import SessionAuthentication
+from django.db.models import Q
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -19,10 +20,19 @@ class RoadmapListCreate(APIView):
         return [AllowAny()]
 
     def get(self, request):
-        roadmaps = Roadmap.objects.all()
+        # Lấy từ khóa tìm kiếm từ query parameters (ví dụ: /roadmaps/?search=keyword)
+        search_term = request.query_params.get('search', None)
+        if search_term:
+            # Nếu có từ khóa, tìm kiếm các roadmap theo tiêu đề hoặc mô tả
+            roadmaps = Roadmap.objects.filter(
+            Q(title__icontains=search_term) | Q(description__icontains=search_term)
+            )
+        else:
+            # Nếu không có từ khóa, lấy tất cả roadmaps
+            roadmaps = Roadmap.objects.all()
         serializer = RoadmapSerializer(roadmaps, many=True)
         return Response({
-            "message": "Lấy danh sách Roadmap thành công.",
+            "message": "Lấy danh sách Roadmap thành công." if not search_term else f"Tìm kiếm Roadmap với '{search_term}' thành công.",
             "data": serializer.data
         })
 

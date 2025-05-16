@@ -10,29 +10,37 @@ import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import { auth, googleProvider, githubProvider } from "../../firebase/firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
 
+// --- Import thư viện js-cookie ---
+import Cookies from 'js-cookie';
+// --- Hết Import thư viện js-cookie ---
+
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Thêm state loading
   const [error, setError] = useState(null); // Thêm state lỗi
+  const [successMessage, setSuccessMessage] = useState(null); // Thêm state thông báo thành công
   const navigate = useNavigate();
 
-  // Hàm xử lý response API chung (lưu token, thông báo, điều hướng)
+  // Hàm xử lý response API chung (lưu token vào cookie, thông báo, điều hướng)
   const handleApiResponse = async (response) => {
     const data = await response.json();
 
     if (response.ok) {
       console.log("Đăng nhập thành công:", data);
-      // --- Lưu Token ---
+      // --- Lưu Token vào Cookie ---
       if (data.tokens && data.tokens.access && data.tokens.refresh) {
-          localStorage.setItem('access_token', data.tokens.access);
-          localStorage.setItem('refresh_token', data.tokens.refresh);
-           // Tùy chọn: lưu thêm thông tin user như username, email, role
-          localStorage.setItem('user_username', data.username);
-          localStorage.setItem('user_email', data.email);
-           // Lưu role nếu API trả về
-           // localStorage.setItem('user_role', data.role); // Cần backend trả về role trong response login
+          // Lưu access token (thường có thời gian sống ngắn hơn)
+          Cookies.set('access_token', data.tokens.access, { expires: 1/24, secure: true, sameSite: 'Strict' }); // Ví dụ: hết hạn sau 1 giờ (1/24 ngày), chỉ HTTPS, SameSite Strict
+          // Lưu refresh token (thường có thời gian sống dài hơn)
+          Cookies.set('refresh_token', data.tokens.refresh, { expires: 7, secure: true, sameSite: 'Strict' }); // Ví dụ: hết hạn sau 7 ngày, chỉ HTTPS, SameSite Strict
+
+           // Tùy chọn: lưu thêm thông tin user như username, email, role vào cookie hoặc state/context
+          Cookies.set('user_username', data.username, { expires: 7, secure: true, sameSite: 'Strict' });
+          Cookies.set('user_email', data.email, { expires: 7, secure: true, sameSite: 'Strict' });
+           // Lưu role nếu API trả về và bạn cần dùng ở frontend
+           // Cookies.set('user_role', data.role, { expires: 7, secure: true, sameSite: 'Strict' }); // Cần backend trả về role trong response login
 
           setSuccessMessage("Đăng nhập thành công!");
           setError(null);
@@ -43,16 +51,17 @@ const Login = () => {
           // setTimeout(() => navigate("/admin"), 500); // Điều hướng về trang admin nếu cần
 
       } else {
-          setError("Lỗi đăng nhập: API không trả về token.");
-          console.error("Lỗi đăng nhập: API không trả về token:", data);
+          // API thành công nhưng không có token (trường hợp ít xảy ra với API login)
+          setError("Đăng nhập thành công nhưng không nhận được token.");
+          console.error("API response ok but no token:", data);
           setSuccessMessage(null);
       }
 
     } else {
-      // Xử lý lỗi từ backend
+      // Xử lý lỗi từ backend (response.ok là false)
       const errorMessage = data.detail || data.message || data.error || JSON.stringify(data);
       setError("Lỗi đăng nhập: " + errorMessage);
-      console.error("Lỗi đăng nhập:", data);
+      console.error("Lỗi đăng nhập API response:", data);
       setSuccessMessage(null);
     }
   };
@@ -110,6 +119,7 @@ const Login = () => {
     e.preventDefault();
     if (!username || !password) {
         setError("Vui lòng nhập tên đăng nhập và mật khẩu.");
+        setSuccessMessage(null);
         return;
     }
     const payload = { username, password };
@@ -129,6 +139,7 @@ const Login = () => {
       const email = user.email;
       if (!email) {
           setError("Không thể lấy thông tin email từ Google.");
+          setSuccessMessage(null);
           return;
       }
 
@@ -163,6 +174,7 @@ const Login = () => {
       const email = user.email;
        if (!email) {
            setError("Không thể lấy thông tin email từ Github.");
+            setSuccessMessage(null);
            return;
        }
 
