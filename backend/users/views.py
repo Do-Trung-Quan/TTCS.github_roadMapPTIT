@@ -13,6 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import cloudinary.uploader
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdmin, IsAdminOrUser, CanAccessOwnUserData
+from rest_framework.pagination import PageNumberPagination
 
 from rest_framework.authentication import SessionAuthentication
 
@@ -129,11 +130,17 @@ def get_tokens_for_user(user):
         'access': str(access_token),
     }
 
+class UserPagination(PageNumberPagination):
+    page_size = 10  
+    page_size_query_param = 'page_size' 
+    max_page_size = 100 
+
 class UserListView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     authentication_classes = []
     permission_classes = [IsAdmin]
+    pagination_class = UserPagination
 
     def get(self, request, *args, **kwargs):
         try:
