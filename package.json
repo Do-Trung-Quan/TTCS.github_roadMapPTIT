@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "cgi": "^0.3.1",
     "react-router-dom": "^7.5.0",
     "reactflow": "^11.11.4"
   }

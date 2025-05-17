@@ -1,75 +1,104 @@
-import React, { useState, useEffect } from 'react'; // Giữ useEffect nếu cần cho mục đích khác, nhưng sẽ không fetch data
-import './ProfilePage.css'; // Import file CSS tương ứng
-// Import Font Awesome icons nếu dùng component React hoặc đảm bảo CSS global
-// import { FaGlobe, FaLock, FaCaretDown, FaCamera } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Thay Link bằng useNavigate
+import Cookies from 'js-cookie';
+import './ProfilePage.css';
 
-// Component hiển thị Profile người dùng (chế độ tĩnh/mẫu)
-// Các chức năng lưu/cập nhật chỉ là giả lập (log ra console, alert)
-function ProfilePage() {
-    // State lưu trữ dữ liệu form để chỉnh sửa (dữ liệu mẫu)
+function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
     const [formData, setFormData] = useState({
-        username: 'Sample User Name', // Dữ liệu mẫu
-        email: 'sample.user@example.com', // Dữ liệu mẫu
+        username: '',
+        email: '',
+        avatar: '',
+        github: '',
+        linkedin: '',
     });
-    // State cho file avatar mới được chọn (chỉ để hiển thị preview tạm thời)
     const [avatarFile, setAvatarFile] = useState(null);
-     // State cho URL preview của ảnh mới (nếu chọn file)
-     const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
-    // State riêng cho mật khẩu mới (không lưu vào formData chung)
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
+    const [showEmailOnProfile, setShowEmailOnProfile] = useState(false);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // State cho trạng thái hiển thị dropdown công khai
-    const [isVisibilityDropdownOpen, setIsVisibilityDropdownOpen] = useState(false);
-    const [visibility, setVisibility] = useState('public'); // Dữ liệu mẫu
+    const token = Cookies.get('access_token');
+    const userId = token ? JSON.parse(atob(token.split('.')[1])).user_id : null;
+    const navigate = useNavigate();
 
-    // TODO: Nếu bạn có dữ liệu user mẫu phức tạp hơn hoặc cần load từ JSON file tĩnh, có thể dùng useEffect ở đây
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (!token || !userId) {
+                setError("Authentication token not found. Please login.");
+                return;
+            }
 
-     // Cleanup URL.createObjectURL khi component unmount hoặc file thay đổi
-     useEffect(() => {
-         // Khi avatarPreviewUrl thay đổi (chọn file mới hoặc null), revoke URL cũ
-         return () => {
-             if (avatarPreviewUrl) {
-                 URL.revokeObjectURL(avatarPreviewUrl);
-             }
-         };
-     }, [avatarPreviewUrl]); // Chạy cleanup khi avatarPreviewUrl thay đổi
+            setIsLoading(true);
+            try {
+                const response = await fetch(`http://localhost:8000/api/users/${userId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
 
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to fetch user data');
+                }
 
-    // Hàm xử lý thay đổi input form (username, email)
+                const data = await response.json();
+                setFormData({
+                    username: data.username || '',
+                    email: data.email || '',
+                    avatar: data.avatar || '',
+                    github: data.github || '',
+                    linkedin: data.linkedin || '',
+                });
+                setShowEmailOnProfile(data.show_email_on_profile || false);
+                setAvatarPreviewUrl(data.avatar || null);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [token, userId]);
+
+    useEffect(() => {
+        return () => {
+            if (avatarPreviewUrl) {
+                URL.revokeObjectURL(avatarPreviewUrl);
+            }
+        };
+    }, [avatarPreviewUrl]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevData => ({
             ...prevData,
-            [name]: value
+            [name]: value,
         }));
     };
 
-    // Hàm xử lý thay đổi input mật khẩu mới
-    const handlePasswordInputChange = (e) => {
-        const { name, value } = e.target;
-        if (name === 'newPassword') {
-            setNewPassword(value);
-        } else if (name === 'confirmPassword') {
-            setConfirmPassword(value);
-        }
-    };
-
-     // Hàm xử lý chọn file avatar mới và tạo preview URL
     const handleAvatarFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            if (!file.type.startsWith('image/')) {
+                setError("Please select an image file.");
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                setError("Image file size must be less than 5MB.");
+                return;
+            }
             setAvatarFile(file);
-            // Tạo URL tạm thời cho ảnh preview
             const previewUrl = URL.createObjectURL(file);
-             // Thu hồi URL cũ trước khi tạo URL mới
-             if (avatarPreviewUrl) {
-                 URL.revokeObjectURL(avatarPreviewUrl);
-             }
-            setAvatarPreviewUrl(previewUrl); // Lưu URL preview
+            if (avatarPreviewUrl) {
+                URL.revokeObjectURL(avatarPreviewUrl);
+            }
+            setAvatarPreviewUrl(previewUrl);
         } else {
             setAvatarFile(null);
-            // Xóa ảnh preview nếu không chọn file
             if (avatarPreviewUrl) {
                 URL.revokeObjectURL(avatarPreviewUrl);
             }
@@ -77,174 +106,185 @@ function ProfilePage() {
         }
     };
 
+    const validateForm = () => {
+        if (!formData.username) return "Username is required.";
+        if (!formData.email) return "Email is required.";
+        const emailPattern = /^[\w.-]+@[\w.-]+\.\w+$/;
+        if (!emailPattern.test(formData.email)) return "Invalid email format.";
+        if (formData.github) {
+            const githubPattern = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/?$/;
+            if (!githubPattern.test(formData.github)) return "Invalid Github URL.";
+        }
+        if (formData.linkedin) {
+            const linkedinPattern = /^https?:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/;
+            if (!linkedinPattern.test(formData.linkedin)) return "Invalid LinkedIn URL.";
+        }
+        return null;
+    };
 
-    // Hàm xử lý click nút "Save Profile" (Giả lập)
-    const handleSaveChangesProfile = (event) => {
+    const handleSaveChangesProfile = async (event) => {
         event.preventDefault();
-        console.log("Static Save Profile Clicked:", formData, "New Avatar File:", avatarFile);
-        alert("Save Profile functionality is a placeholder in this static version.");
-        // TODO: Trong ứng dụng thật, gọi API cập nhật profile
+        if (!token || !userId) {
+            setError("Authentication token not found. Please login.");
+            return;
+        }
+
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setError(null);
+        setSuccessMessage(null);
+        setIsLoading(true);
+
+        const formDataToSend = new FormData();
+        formDataToSend.append('username', formData.username);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('github', formData.github || '');
+        formDataToSend.append('linkedin', formData.linkedin || '');
+        formDataToSend.append('show_email_on_profile', showEmailOnProfile);
+        if (avatarFile) formDataToSend.append('avatar', avatarFile);
+
+        try {
+            const response = await fetch(`http://localhost:8000/api/users/${userId}/update/`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formDataToSend,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Internal Server Error');
+            }
+
+            const data = await response.json();
+            setFormData({
+                username: data.data.username,
+                email: data.data.email,
+                avatar: data.data.avatar,
+                github: data.data.github,
+                linkedin: data.data.linkedin,
+            });
+            setShowEmailOnProfile(data.data.show_email_on_profile);
+            setAvatarPreviewUrl(data.data.avatar);
+            setAvatarFile(null);
+            setSuccessMessage(data.message || "Profile updated successfully.");
+            if (data.warning) setError(data.warning);
+        } catch (err) {
+            setError(`Error saving profile: ${err.message}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-
-    // Hàm xử lý click nút "Update Password" (Giả lập)
-     const handleUpdatePassword = (event) => {
-        event.preventDefault();
-         console.log("Static Update Password Clicked:", { newPassword, confirmPassword });
-
-         // Client-side validation đơn giản
-         if (!newPassword || !confirmPassword) {
-             alert("Please enter new password and confirm password.");
-             return;
-         }
-         if (newPassword !== confirmPassword) {
-             alert("New password and confirm password do not match.");
-             return;
-         }
-        alert("Update Password functionality is a placeholder in this static version.");
-        // TODO: Trong ứng dụng thật, gọi API cập nhật password
-         setNewPassword(''); // Xóa mật khẩu đã nhập sau khi giả lập
-         setConfirmPassword('');
+    const handleVisitSettings = () => {
+        if (onProfileUpdated) {
+            onProfileUpdated({}, true); // Gọi với navigateToSettings = true
+        }
     };
-
-
-    // Hàm xử lý dropdown hiển thị công khai
-    const toggleVisibilityDropdown = () => {
-        setIsVisibilityDropdownOpen(!isVisibilityDropdownOpen);
-    };
-
-    const handleVisibilitySelect = (value) => {
-        setVisibility(value);
-        setIsVisibilityDropdownOpen(false);
-        console.log("Static Visibility changed to:", value);
-    };
-
 
     return (
-        <div className="page-content profile-page-container"> {/* Sử dụng className cho container chính */}
-            {/* Không có hiển thị lỗi/thành công từ API ở đây trong bản tĩnh */}
+        <div className="page-content profile-page-container">
+            {error && <p className="error-message" style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+            {successMessage && <p style={{ color: 'green', textAlign: 'center' }}>{successMessage}</p>}
+            {isLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
 
             <div className="profile-header">
-              <h2>Skill Profile</h2>
-              {/* Phần hiển thị công khai */}
-              <div className="visibility-selector">
-                <button id="visibility-dropdown-btn" className="visibility-btn" onClick={toggleVisibilityDropdown}>
-                   {visibility === 'public' ? '🌐 Public' : '🔒 Private'} ▼
-                </button>
-                {isVisibilityDropdownOpen && (
-                    <div id="visibility-dropdown" className="visibility-dropdown">
-                      <div className="dropdown-item" onClick={() => handleVisibilitySelect('public')}>
-                         Public
-                      </div>
-                      <div className="dropdown-item" onClick={() => handleVisibilitySelect('private')}>
-                         Private
-                      </div>
-                    </div>
-                )}
-              </div>
+                <h2>Skill Profile</h2>
             </div>
             <p className="profile-description">Create your skill profile to showcase your skills.</p>
 
-            {/* --- Phần Profile Section --- */}
             <div className="profile-section">
-              <h3>Profile picture</h3>
-              <div className="profile-picture-container">
-                 {/* Hiển thị avatar mẫu hoặc preview ảnh mới */}
-                <img
-                    src={avatarPreviewUrl || '/creator-ava.png'} // Sử dụng avatarPreviewUrl nếu có, ngược lại dùng ảnh mẫu
-                    alt="Profile Picture"
-                    id="profile-image"
-                    className="profile-picture"
-                 />
-                 {/* Nút Edit và input file ẩn cho avatar */}
-                <button className="edit-btn" onClick={() => document.getElementById('profile-pic-upload').click()}>Edit</button>
-                <input
-                    type="file"
-                    id="profile-pic-upload"
-                    accept="image/*"
-                    style={{display:'none'}} // Ẩn input file gốc
-                    onChange={handleAvatarFileChange} // Xử lý khi file được chọn
-                />
-              </div>
+                <h3>Profile picture</h3>
+                <div className="profile-picture-container">
+                    <img
+                        src={avatarPreviewUrl || '/creator-ava.png'}
+                        alt="Profile"
+                        id="profile-image"
+                        className="profile-picture"
+                    />
+                    <button className="edit-btn" onClick={() => document.getElementById('profile-pic-upload').click()}>Edit</button>
+                    <input
+                        type="file"
+                        id="profile-pic-upload"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleAvatarFileChange}
+                    />
+                </div>
             </div>
 
             <div className="profile-section">
-              <h3>Name<span className="required">*</span></h3>
-              <input
-                type="text"
-                className="form-control-us"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="profile-section">
-              <h3>Email<span className="required">*</span></h3>
-              <div className="email-section">
+                <h3>Name<span className="required">*</span></h3>
                 <input
-                    type="email"
+                    type="text"
                     className="form-control-us"
-                    name="email"
-                    value={formData.email}
+                    name="username"
+                    value={formData.username}
                     onChange={handleInputChange}
-                    // email mẫu tĩnh, không disable
                 />
-              </div>
             </div>
 
-
-            {/* --- Phần Update Password --- */}
-            <div className="settings-section">
-              <h2>Password</h2>
-              <p className="settings-description">Use the form below to update your password.</p>
-
-              <div className="password-fields">
-                <div className="field-group">
-                  <label htmlFor="new-password">New Password</label>
-                  <input
-                    type="password"
-                    className="form-control-us"
-                    id="new-password"
-                    name="newPassword"
-                    placeholder="New password"
-                    value={newPassword}
-                    onChange={handlePasswordInputChange}
-                  />
+            <div className="profile-section">
+                <h3>Email<span className="required">*</span></h3>
+                <div className="email-section">
+                    <input
+                        type="email"
+                        className="form-control-us"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        disabled
+                    />
+                    <p>
+                        <a href="#" onClick={handleVisitSettings} style={{ color: 'purple' }}>
+                            Visit settings page to change email
+                        </a>
+                    </p>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={showEmailOnProfile}
+                            onChange={(e) => setShowEmailOnProfile(e.target.checked)}
+                        /> Show my email on profile
+                    </label>
                 </div>
+            </div>
 
-                <div className="field-group">
-                  <label htmlFor="confirm-password">Confirm New Password</label>
-                  <input
-                    type="password"
+            <div className="profile-section">
+                <h3>Github</h3>
+                <input
+                    type="url"
                     className="form-control-us"
-                    id="confirm-password"
-                    name="confirmPassword"
-                    placeholder="Confirm New Password"
-                    value={confirmPassword}
-                    onChange={handlePasswordInputChange}
-                  />
-                </div>
+                    name="github"
+                    value={formData.github}
+                    onChange={handleInputChange}
+                    placeholder="https://github.com/username"
+                />
+            </div>
 
+            <div className="profile-section">
+                <h3>LinkedIn</h3>
+                <input
+                    type="url"
+                    className="form-control-us"
+                    name="linkedin"
+                    value={formData.linkedin}
+                    onChange={handleInputChange}
+                    placeholder="https://www.linkedin.com/in/username/"
+                />
+            </div>
+
+            <div className="profile-actions-section" style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'right' }}>
                 <button
-                    className="update-password-btn"
-                    onClick={handleUpdatePassword} // Gọi hàm giả lập
-                    // disabled={isUpdatingPassword} // Bỏ disabled loading API
+                    className="save-profile-btn"
+                    onClick={handleSaveChangesProfile}
+                    disabled={isLoading}
                 >
-                    Update Password
+                    Save Profile
                 </button>
-              </div>
-            </div>
-
-            {/* --- Phần Save Profile Actions --- */}
-            <div className="profile-actions-section" style={{marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'right'}}>
-              <button
-                className="save-profile-btn"
-                onClick={handleSaveChangesProfile} // Gọi hàm giả lập
-                 // disabled={isSavingProfile} // Bỏ disabled loading API
-              >
-                Save Profile
-              </button>
             </div>
         </div>
     );

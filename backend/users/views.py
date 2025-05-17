@@ -1,4 +1,3 @@
-# accounts/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,11 +12,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import cloudinary.uploader
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdmin, IsAdminOrUser, CanAccessOwnUserData
-from rest_framework.pagination import PageNumberPagination
-
 from rest_framework.authentication import SessionAuthentication
-
 import logging
+import re
+from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger(__name__)
 
@@ -130,17 +128,11 @@ def get_tokens_for_user(user):
         'access': str(access_token),
     }
 
-class UserPagination(PageNumberPagination):
-    page_size = 10  
-    page_size_query_param = 'page_size' 
-    max_page_size = 100 
-
 class UserListView(ListAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.order_by('username')
     serializer_class = UserSerializer
     authentication_classes = []
     permission_classes = [IsAdmin]
-    pagination_class = UserPagination
 
     def get(self, request, *args, **kwargs):
         try:
@@ -155,16 +147,60 @@ class UserDetailView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'id'
-    authentication_classes = []
+    authentication_classes = []  # Middleware xử lý xác thực
     permission_classes = [IsAdminOrUser, CanAccessOwnUserData]
 
     def get_object(self):
         user_id = self.kwargs.get(self.lookup_field)
-        # Permission checks (IsAdminOrUser, CanAccessOwnUserData) should have already run
-        # If we reach here, either the user is an admin or accessing their own data
-        if self.request.auth_user.get('role') == 'admin':
-            return User.objects.get(id=user_id)
-        return self.request.user
+        logger.info(f"Processing get_object - URL user_id: {user_id}")
+
+        # Lấy thông tin từ middleware
+        auth_user = getattr(self.request, 'auth_user', None)
+        if not auth_user:
+            logger.error("No auth_user found in request")
+            return Response(
+                {'success': False, 'message': 'Authentication data not available'},
+                status=401
+            )
+
+        auth_user_id = auth_user.get('_id')
+        auth_user_role = auth_user.get('role', '').lower()
+        logger.info(f"Authenticated user: user_id={auth_user_id}, role={auth_user_role}")
+
+        # Debug thông tin
+        logger.info(f"Token user_id: {auth_user_id}, URL user_id: {user_id}")
+
+        # Nếu là admin, trả về user từ URL
+        if auth_user_role == 'admin':
+            logger.info(f"Admin access granted for user_id: {user_id}")
+            try:
+                return User.objects.get(id=user_id)
+            except ObjectDoesNotExist:
+                logger.error(f"User with id {user_id} not found in database")
+                return Response(
+                    {'success': False, 'message': 'User not found'},
+                    status=404
+                )
+
+        # Nếu là user, chỉ cho phép truy cập chính mình
+        if str(auth_user_id) != str(user_id):
+            logger.warning(f"User {auth_user_id} attempted to access data of user {user_id}")
+            return Response(
+                {'success': False, 'message': 'You can only access your own data'},
+                status=403
+            )
+
+        # Trả về user từ database dựa trên auth_user_id
+        try:
+            user = User.objects.get(id=auth_user_id)
+            logger.info(f"Retrieved user from DB: {user}")
+            return user
+        except ObjectDoesNotExist:
+            logger.error(f"User with id {auth_user_id} not found in database")
+            return Response(
+                {'success': False, 'message': 'User not found'},
+                status=404
+            )
 
 class UserDeleteView(APIView):
     authentication_classes = []
@@ -176,17 +212,18 @@ class UserDeleteView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get the authenticated user's ID and role
         authenticated_user_id = request.auth_user['_id']
         user_role = request.auth_user['role']
 
-        # Prevent admins from deleting their own account
-        if user_role == 'admin' and id == authenticated_user_id:
+        if user_role != 'admin':
+            return Response({"detail": "Chỉ admin mới được phép xóa tài khoản."}, status=status.HTTP_403_FORBIDDEN)
+
+        if str(authenticated_user_id) == str(id):
             return Response({"detail": "Admin không thể tự xóa tài khoản của chính mình."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Permission checks (IsAdminOrUser, CanAccessOwnUserData) already ensure:
-        # - Users can only delete their own account (id matches authenticated_user_id)
-        # - Admins can delete any account except their own (handled above)
+        if user_to_delete.role == 'admin':
+            return Response({"detail": "Admin không thể xóa tài khoản admin khác."}, status=status.HTTP_403_FORBIDDEN)
+
         user_to_delete.delete()
         return Response({"message": "Xóa người dùng thành công."}, status=status.HTTP_204_NO_CONTENT)
 
@@ -201,29 +238,87 @@ class UserUpdateView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Permission checks (IsAdminOrUser, CanAccessOwnUserData) already ensure the user can modify this data
         data = request.data
+        avatar_updated = False
 
+        # Validation
         if 'username' in data:
+            if not data['username']:
+                return Response({"detail": "Username không được để trống."}, status=status.HTTP_400_BAD_REQUEST)
+            if User.objects.filter(username=data['username']).exclude(id=id).exists():
+                return Response({"detail": "Username đã tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
             user.username = data['username']
 
         if 'email' in data:
+            if not data['email']:
+                return Response({"detail": "Email không được để trống."}, status=status.HTTP_400_BAD_REQUEST)
+            email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+            if not re.match(email_pattern, data['email']):
+                return Response({"detail": "Email không đúng định dạng."}, status=status.HTTP_400_BAD_REQUEST)
+            if User.objects.filter(email=data['email']).exclude(id=id).exists():
+                return Response({"detail": "Email đã tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
             user.email = data['email']
 
         if 'password' in data:
             user.set_password(data['password'])
 
+        if 'github' in data:
+            if data['github']:
+                url_pattern = r'^https?://(www\.)?github\.com/[\w-]+/?$'
+                if not re.match(url_pattern, data['github']):
+                    return Response({"detail": "Github URL không đúng định dạng."}, status=status.HTTP_400_BAD_REQUEST)
+            user.github = data['github']
+
+        if 'linkedin' in data:
+            if data['linkedin']:
+                url_pattern = r'^https?://(www\.)?linkedin\.com/in/[\w-]+/?$'
+                if not re.match(url_pattern, data['linkedin']):
+                    return Response({"detail": "LinkedIn URL không đúng định dạng."}, status=status.HTTP_400_BAD_REQUEST)
+            user.linkedin = data['linkedin']
+
+        if 'show_email_on_profile' in data:
+            show_email = data['show_email_on_profile']
+            if isinstance(show_email, str):
+                show_email = show_email.lower() == 'true'
+            elif show_email not in [True, False]:
+                return Response({"detail": "show_email_on_profile phải là true hoặc false."}, status=status.HTTP_400_BAD_REQUEST)
+            user.show_email_on_profile = bool(show_email)
+
         if 'avatar' in request.FILES:
             avatar_file = request.FILES['avatar']
             try:
+                logger.info(f"Uploading avatar for user {id}: {avatar_file.name}, size: {avatar_file.size}")
                 result = cloudinary.uploader.upload(avatar_file)
+                if 'secure_url' not in result:
+                    logger.error("Cloudinary upload failed: No secure_url in response")
+                    return Response(
+                        {"detail": "Lỗi khi tải ảnh lên Cloudinary: Không nhận được URL ảnh"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
                 user.avatar = result['secure_url']
+                avatar_updated = True
+                logger.info(f"Avatar uploaded successfully: {user.avatar}")
             except Exception as e:
-                return Response({"detail": f"Lỗi khi tải ảnh lên Cloudinary: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                logger.error(f"Error uploading avatar to Cloudinary: {str(e)}")
+                return Response(
+                    {"detail": f"Lỗi khi tải ảnh lên Cloudinary: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
-        user.save()
+        try:
+            user.save()
+        except Exception as e:
+            logger.error(f"Error saving user to database: {str(e)}")
+            return Response(
+                {"detail": f"Lỗi khi lưu dữ liệu: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
         serializer = UserSerializer(user)
-        return Response({
+        response_data = {
             "message": "Cập nhật thông tin người dùng thành công.",
             "data": serializer.data
-        })
+        }
+        if 'avatar' in request.FILES and not avatar_updated:
+            response_data["warning"] = "Ảnh avatar không được cập nhật do lỗi upload."
+        return Response(response_data)

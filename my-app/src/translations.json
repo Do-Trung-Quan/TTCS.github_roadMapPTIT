@@ -1,0 +1,26 @@
+{
+  "vi": {
+    "logo": "RoadMapPTIT",
+    "searchPlaceholder": "Tìm kiếm...",
+    "searchButton": "Tìm",
+    "roadmapLink": "Lộ Trình",
+    "aboutUsLink": "Về Chúng Tôi",
+    "loginButton": "Đăng nhập",
+    "profileButton": "Trang cá nhân",
+    "welcome": "Chào mừng",
+    "description": "Đây là trang chủ.",
+    "copyright": "© 2025 RoadMapPTIT"
+  },
+  "en": {
+    "logo": "RoadMapPTIT",
+    "searchPlaceholder": "Search...",
+    "searchButton": "Search",
+    "roadmapLink": "Roadmap",
+    "aboutUsLink": "About Us",
+    "loginButton": "Login",
+    "profileButton": "Profile",
+    "welcome": "Welcome",
+    "description": "This is the home page.",
+    "copyright": "© 2025 RoadMapPTIT"
+  }
+}

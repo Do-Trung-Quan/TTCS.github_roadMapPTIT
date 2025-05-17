@@ -1,0 +1,80 @@
+/* AboutUs.css */
+
+.about-us-container {
+    max-width: 800px; /* Giới hạn chiều rộng nội dung */
+    margin: 40px auto; /* Căn giữa và tạo khoảng cách trên dưới */
+    padding: 20px;
+    background-color: #ffffff; /* Màu nền trắng sáng */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ */
+    color: #333; /* Màu chữ đen xám */
+    font-family: 'Poppins', sans-serif; /* Sử dụng font quen thuộc */
+    line-height: 1.6;
+}
+
+.about-us-title {
+    text-align: center;
+    color: #007bff; /* Màu xanh dương tươi sáng cho tiêu đề chính */
+    margin-bottom: 40px;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.about-us-section {
+    margin-bottom: 30px; /* Khoảng cách giữa các phần */
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee; /* Đường phân cách mờ */
+}
+
+.about-us-section:last-child {
+    border-bottom: none; /* Không có đường kẻ ở phần cuối */
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.section-title {
+    color: #dc3545; /* Màu đỏ nhấn tương tự màu nút Đăng nhập */
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.about-us-section p {
+    margin-bottom: 15px;
+}
+
+.core-values-list {
+    list-style: disc; /* Dùng dấu chấm cho danh sách */
+    margin-left: 20px;
+    padding-left: 0;
+}
+
+.core-values-list li {
+    margin-bottom: 10px;
+}
+
+.core-values-list li strong {
+    color: #007bff; /* Màu nhấn cho tiêu đề giá trị cốt lõi */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .about-us-container {
+        margin: 20px; /* Khoảng cách nhỏ hơn trên mobile */
+        padding: 15px;
+    }
+
+    .about-us-title {
+        font-size: 2rem;
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .core-values-list {
+        margin-left: 15px;
+    }
+}

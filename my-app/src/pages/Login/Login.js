@@ -2,28 +2,32 @@ import React, { useState } from "react";
 import "./Login.css";
 import githubIcon from "../../assets/img/github_Icon.png";
 import googleIcon from "../../assets/img/google_Icon.png";
-// Đảm bảo component Header tồn tại
-import Header from "../../components/Header/header";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 
 // Đảm bảo firebaseConfig, auth, googleProvider, githubProvider được cấu hình đúng
 import { auth, googleProvider, githubProvider } from "../../firebase/firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
 
-// --- Import thư viện js-cookie ---
+// Import thư viện js-cookie
 import Cookies from 'js-cookie';
-// --- Hết Import thư viện js-cookie ---
+
+// Import useAuth từ AuthContext của bạn
+import { useAuth } from '../../context/AuthContext'; // <-- Đảm bảo đường dẫn đúng
 
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Thêm state loading
-  const [error, setError] = useState(null); // Thêm state lỗi
-  const [successMessage, setSuccessMessage] = useState(null); // Thêm state thông báo thành công
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const navigate = useNavigate();
 
-  // Hàm xử lý response API chung (lưu token vào cookie, thông báo, điều hướng)
+  // Sử dụng useAuth để lấy hàm loginSuccess
+  const { loginSuccess } = useAuth(); // <-- Lấy loginSuccess từ Context
+
+
+  // Hàm xử lý response API chung (lưu token vào cookie, thông báo, điều hướng, và cập nhật AuthContext)
   const handleApiResponse = async (response) => {
     const data = await response.json();
 
@@ -31,24 +35,21 @@ const Login = () => {
       console.log("Đăng nhập thành công:", data);
       // --- Lưu Token vào Cookie ---
       if (data.tokens && data.tokens.access && data.tokens.refresh) {
-          // Lưu access token (thường có thời gian sống ngắn hơn)
-          Cookies.set('access_token', data.tokens.access, { expires: 1/24, secure: true, sameSite: 'Strict' }); // Ví dụ: hết hạn sau 1 giờ (1/24 ngày), chỉ HTTPS, SameSite Strict
-          // Lưu refresh token (thường có thời gian sống dài hơn)
-          Cookies.set('refresh_token', data.tokens.refresh, { expires: 7, secure: true, sameSite: 'Strict' }); // Ví dụ: hết hạn sau 7 ngày, chỉ HTTPS, SameSite Strict
+          // Lưu token vào cookie (có thể điều chỉnh expires, secure, sameSite)
+          Cookies.set('access_token', data.tokens.access, { expires: 1/24, secure: true, sameSite: 'Strict' });
+          Cookies.set('refresh_token', data.tokens.refresh, { expires: 7, secure: true, sameSite: 'Strict' });
 
            // Tùy chọn: lưu thêm thông tin user như username, email, role vào cookie hoặc state/context
           Cookies.set('user_username', data.username, { expires: 7, secure: true, sameSite: 'Strict' });
           Cookies.set('user_email', data.email, { expires: 7, secure: true, sameSite: 'Strict' });
-           // Lưu role nếu API trả về và bạn cần dùng ở frontend
-           // Cookies.set('user_role', data.role, { expires: 7, secure: true, sameSite: 'Strict' }); // Cần backend trả về role trong response login
+
+          // --- GỌI loginSuccess ĐỂ CẬP NHẬT TRẠNG THÁI TRONG AuthContext ---
+          loginSuccess(data.tokens.access); // Truyền token hoặc chỉ gọi không tham số tùy AuthContext
 
           setSuccessMessage("Đăng nhập thành công!");
           setError(null);
-
-          // Điều hướng đến trang chính sau khi đăng nhập thành công
-          // TODO: Điều hướng dựa trên vai trò (role) nếu cần (admin -> /admin, user -> /)
-          setTimeout(() => navigate("/"), 500); // Điều hướng về trang gốc (UserPage) sau 0.5s
-          // setTimeout(() => navigate("/admin"), 500); // Điều hướng về trang admin nếu cần
+          // Điều hướng sau một khoảng thời gian ngắn
+          setTimeout(() => navigate("/"), 500);
 
       } else {
           // API thành công nhưng không có token (trường hợp ít xảy ra với API login)
@@ -72,7 +73,7 @@ const Login = () => {
      setError(null);
      setSuccessMessage(null);
     try {
-      const response = await fetch("http://localhost:8000/api/login/", {
+      const response = await fetch("http://localhost:8000/api/login/", { // <-- Đảm bảo đúng endpoint API login
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -96,10 +97,10 @@ const Login = () => {
       setSuccessMessage(null);
        try {
          // API social login nhận email
-         const response = await fetch("http://localhost:8000/api/social-login/", {
+         const response = await fetch("http://localhost:8000/api/social-login/", { // <-- Đảm bảo đúng endpoint API social login
              method: "POST",
              headers: { "Content-Type": "application/json" },
-             body: JSON.stringify(payload), // Payload chỉ chứa email
+             body: JSON.stringify(payload),
          });
 
          await handleApiResponse(response); // Sử dụng hàm xử lý response chung
@@ -131,6 +132,7 @@ const Login = () => {
   const handleGoogleLogin = async () => {
      setError(null);
      setSuccessMessage(null);
+     setIsLoading(true); // Bắt đầu loading cho social login
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user; // User object từ Firebase
@@ -140,6 +142,7 @@ const Login = () => {
       if (!email) {
           setError("Không thể lấy thông tin email từ Google.");
           setSuccessMessage(null);
+          setIsLoading(false); // Kết thúc loading
           return;
       }
 
@@ -158,6 +161,8 @@ const Login = () => {
        }
       setError(errorMessage);
        setSuccessMessage(null);
+    } finally {
+         setIsLoading(false); // Luôn kết thúc loading
     }
   };
 
@@ -166,6 +171,7 @@ const Login = () => {
   const handleGithubLogin = async () => {
       setError(null);
       setSuccessMessage(null);
+      setIsLoading(true); // Bắt đầu loading cho social login
     try {
       const result = await signInWithPopup(auth, githubProvider);
       const user = result.user; // User object từ Firebase
@@ -175,6 +181,7 @@ const Login = () => {
        if (!email) {
            setError("Không thể lấy thông tin email từ Github.");
             setSuccessMessage(null);
+            setIsLoading(false); // Kết thúc loading
            return;
        }
 
@@ -193,14 +200,14 @@ const Login = () => {
        }
       setError(errorMessage);
        setSuccessMessage(null);
+    } finally {
+        setIsLoading(false); // Luôn kết thúc loading
     }
   };
 
 
   return (
     <>
-      {/* Đảm bảo component Header tồn tại và hoạt động */}
-      <Header />
       <div className="login-container">
         <div className="login-box">
           <h2 className="login-title">Đăng nhập</h2>

@@ -10,4 +10,7 @@ urlpatterns = [
 
     # Tính % hoàn thành của user
     path('user-topic-progress/percentage/<str:pk>/', views.CompletionPercentageAPIView.as_view(), name='user-topic-progress-percentage'),
+
+    # API mới: Đếm Topics Completed và Currently Learning
+   path('user-topic-progress/status-count/', views.UserTopicStatusCountAPIView.as_view(), name='user-topic-progress-status-count'),
 ]

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './ResetPassword.css';
-import Header from '../../components/Header/header';
 import { useNavigate } from 'react-router-dom';
 
 const ResetPassword = () => {
@@ -44,7 +43,6 @@ const ResetPassword = () => {
 
   return (
     <>
-      <Header />
       <div className="reset-container">
         <div className="reset-box">
           <h2 className="reset-title">Đặt lại mật khẩu</h2>

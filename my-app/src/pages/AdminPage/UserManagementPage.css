@@ -1,157 +1,230 @@
-/* src/pages/AdminPage/UserManagementPage.css - Updated */
+/* UserManagementPage.css */
 
-/* Style cho container chính của nội dung trang User Management */
+/*----------------------------------------*/
+/* 1. General & Layout */
+/*----------------------------------------*/
 .page-content#Users {
-    padding: 20px;
+    margin-left: 250px;
+    padding: 20px 30px;
+    max-width: 1200px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    line-height: 1.6;
+    box-sizing: border-box;
 }
 
 .users-container {
-     max-width: 1000px;
-     margin: 0 auto;
-     padding: 20px;
-     background-color: #fff;
-     border-radius: 8px;
-     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 30px;
 }
 
-/* Style cho header (Chỉ còn tiêu đề User Management) */
-/* Bỏ các style flexbox và justify-content nếu không còn nút actions */
-.users-header {
-    /* display: flex; */ /* Bỏ nếu chỉ còn h2 */
-    /* justify-content: space-between; */ /* Bỏ nếu chỉ còn h2 */
-    align-items: center; /* Giữ lại căn giữa dọc nếu cần */
+.page-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 20px;
+}
+
+.page-header h2 {
+    font-size: 2em;
+    color: #343a40;
+    margin: 0;
+    font-weight: 600;
+}
+
+/*----------------------------------------*/
+/* 2. Messages (Error/Success) */
+/*----------------------------------------*/
+.error-message,
+.success-message {
+    padding: 12px 20px;
+    border-radius: 5px;
     margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    /* Nếu chỉ còn h2, có thể bỏ margin-bottom và padding-bottom ở đây,
-       thêm margin-top cho users-table */
+    font-weight: 500;
+    border: 1px solid transparent;
 }
 
-.users-header h2 {
-    margin: 0; /* Bỏ margin mặc định của h2 */
-    font-size: 1.5em;
-    color: #333;
+.error-message {
+    color: #dc3545;
+    background: #f8d7da;
+    border-color: #f5c6cb;
 }
 
-/* Bỏ style cho container các nút actions vì đã bỏ các nút */
-/* .users-actions { ... } */
+.success-message {
+    color: #28a745;
+    background: #d4edda;
+    border-color: #c3e6cb;
+}
 
-
-/* Style cho container bảng */
+/*----------------------------------------*/
+/* 3. User Table */
+/*----------------------------------------*/
 .users-table {
-    overflow-x: auto; /* Thêm scroll ngang nếu bảng quá rộng */
-    margin-bottom: 20px;
-    /* Thêm bo góc và overflow: hidden để bo góc bảng con bên trong */
-    border-radius: 8px; /* Bo góc cho container */
-    overflow: hidden; /* Cắt nội dung thừa để bo góc có hiệu lực */
-    border: 1px solid #dee2e6; /* Thêm viền cho toàn bảng theo hình */
+    margin-bottom: 30px;
 }
 
-/* Style cho bảng */
+.total-users-info {
+    font-size: 1em;
+    color: #5a6268;
+    margin-bottom: 15px;
+}
+
 .table {
     width: 100%;
-    border-collapse: collapse; /* Gộp các border lại */
-    /* Bỏ border trên table vì border đã ở users-table */
-    /* border: 1px solid #dee2e6; */
+    border-collapse: collapse;
+    font-size: 1em;
+    table-layout: fixed; /* Sử dụng fixed để áp dụng đúng chiều rộng cột */
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
-/* Style cho header của bảng */
-.table thead th {
+.table th,
+.table td {
+    padding: 12px 15px;
     text-align: left;
-    padding: 12px 15px;
-    background-color: #f8f9fa; /* Nền xám nhạt cho header */
-    border-bottom: 1px solid #dee2e6; /* Chỉ cần viền dưới 1px */
-    font-size: 0.9em;
-    color: #333;
-    font-weight: bold;
+    border-bottom: 1px solid #e9ecef;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Style cho body của bảng */
-.table tbody td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #dee2e6; /* Viền dưới */
-    vertical-align: middle;
-    font-size: 0.95em;
-    color: #555;
+.table th:nth-child(1),
+.table td:nth-child(1) {
+    width: 5%;
+    text-align: center;
 }
 
-/* Bỏ viền dưới cho hàng cuối cùng (tùy chọn) */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 8%;
+    text-align: center;
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+    width: 30%; /* Tăng thêm để hiển thị username đầy đủ */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+    width: 15%;
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+    width: 22%;
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+    width: 10%;
+    text-align: center;
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+    width: 10%;
+    text-align: center;
+}
+
+.table th {
+    background: #e9ecef;
+    font-weight: 600;
+    color: #495057;
+    border-top: 1px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+    background-color: #f2f2f2;
+}
+
 .table tbody tr:last-child td {
     border-bottom: none;
 }
 
-
-/* Style cho hàng khi hover (tùy chọn) */
-.table tbody tr:hover {
-    background-color: #f0f0f0;
+.avatar-cell {
+    text-align: center;
 }
 
-
-/* Style cho cột Name (user info) */
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.user-avatar {
-    width: 30px;
-    height: 30px;
+.user-avatar-sm {
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     object-fit: cover;
-    /* border: 1px solid #eee; */ /* Có thể thêm viền avatar */
+    vertical-align: middle;
 }
 
+.user-info-cell {
+    /* Bỏ display: flex để tránh khoảng trắng thừa */
+    max-width: 100%;
+    overflow: hidden;
+}
 
-/* Style cho cột Action buttons */
-.action-buttons {
+.user-info-cell span {
+    display: block; /* Đảm bảo span chiếm toàn bộ chiều rộng */
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
-    text-align: center; /* Căn giữa icon xóa */
+    max-width: 100%;
 }
 
-/* Style cho nút hành động riêng lẻ (ví dụ: nút xóa) */
-.action-btn {
-    background: none;
+/*----------------------------------------*/
+/* 4. Action Buttons */
+/*----------------------------------------*/
+.action-buttons {
+    text-align: center;
+}
+
+.action-button {
+    padding: 6px 12px;
     border: none;
+    border-radius: 5px;
     cursor: pointer;
-    padding: 5px;
-    font-size: 1em;
-    transition: color 0.2s ease;
-    /* Nếu muốn nút có hover background như hình mẫu trước */
-     border-radius: 4px; /* Bo góc nhẹ */
-     transition: background-color 0.2s ease;
-     padding: 8px; /* Tăng padding cho vùng click */
-}
-.action-btn:hover {
-     background-color: #eee; /* Nền xám nhạt khi hover */
+    font-size: 0.9em;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    display: inline-block; /* Đảm bảo nút không bị ảnh hưởng bởi flex */
 }
 
-
-/* Style riêng cho nút delete */
-.action-btn.delete-btn {
-     color: #dc3545; /* Màu đỏ */
+.action-button svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
 }
 
-.action-btn.delete-btn:hover {
-     color: #c82333;
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-/* Bỏ style liên quan đến status badge vì cột Status đã được thay thế */
-/* .status-badge { ... } */
-/* .status-badge.active { ... } */
-/* .status-badge.suspended { ... } */
-/* .status-badge.inactive { ... } */
+.action-button.delete-btn {
+    background-color: #dc3545;
+    color: #fff;
+}
 
-/* Style cho thông báo lỗi (nếu có) */
-.error-message {
-    color: red;
+.action-button.delete-btn:hover:not(:disabled) {
+    background-color: #c82333;
+}
+
+/*----------------------------------------*/
+/* 5. Pagination (Style giả định) */
+/*----------------------------------------*/
+.pagination-loading,
+.pagination-error {
     text-align: center;
     margin-top: 20px;
+    font-size: 1em;
 }
 
-/* Style cho container danh sách roadmap (sẽ chứa các item roadmap) */
-/* .roadmap-list { ... } */ /* Style này thuộc RoadmapPage, không phải UserManagementPage */
+.pagination-loading {
+    color: #007bff;
+}
 
-
-/* Style cho component phân trang - Đảm bảo nó được import đúng cách */
-/* Các style cho .pagination, .pagination-info, .pagination-controls, .pagination-btn, .pagination-btn.active nằm trong Pagination.css */
+.pagination-error {
+    color: #dc3545;
+}

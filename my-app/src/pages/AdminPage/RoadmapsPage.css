@@ -1,41 +1,42 @@
 /* src/pages/AdminPage/RoadmapsPage.css */
 
-/* Style cho container chính của nội dung trang Roadmaps */
+/* Style cho container chính của nội dung trang */
 .page-content#roadmaps {
-    padding: 20px; /* Khoảng cách lề xung quanh nội dung trang */
-    /* Các style khác liên quan đến layout toàn trang nếu cần */
+    margin-left: 250px; /* Tạo khoảng cách với Sidebar */
+    padding: 20px;
+    box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
 }
 
+/* Container cho nội dung roadmaps */
 .roadmap-container {
-     max-width: 900px; /* Đặt chiều rộng tối đa cho nội dung */
-     margin: 0 auto; /* Căn giữa container */
-     padding: 20px;
-     background-color: #fff; /* Nền trắng */
-     border-radius: 8px; /* Bo góc */
-     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 
 /* Style cho phần header (Tiêu đề và nút Create) */
-.roadmap-tabs { /* Tên class trong HTML là roadmap-tabs, dù trông không giống tabs */
-    display: flex; /* Dùng flexbox */
-    justify-content: space-between; /* Đẩy tiêu đề sang trái, nút sang phải */
-    align-items: center; /* Căn giữa theo chiều dọc */
-    margin-bottom: 20px; /* Khoảng cách dưới header */
-    padding-bottom: 10px; /* Padding dưới */
-    border-bottom: 1px solid #eee; /* Đường kẻ dưới */
+.roadmap-tabs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
 }
 
 .roadmap-tabs h2 {
-    margin: 0; /* Bỏ margin mặc định của h2 */
+    margin: 0;
     font-size: 1.5em;
     color: #333;
 }
 
 /* Style cho nút "Create Roadmap" */
 .create-roadmap-btn {
-    background-color: #dc3545; /* Màu đỏ Bootstrap danger */
-    color: #fff; /* Chữ trắng */
+    background-color: #dc3545;
+    color: #fff;
     border: none;
     border-radius: 5px;
     padding: 8px 15px;
@@ -45,32 +46,29 @@
 }
 
 .create-roadmap-btn:hover {
-    background-color: #c82333; /* Màu đỏ sẫm hơn khi hover */
+    background-color: #c82333;
 }
 
 /* Style cho trạng thái rỗng (No roadmaps) */
 .no-roadmaps {
-    text-align: center; /* Căn giữa toàn bộ nội dung */
-    padding: 40px 20px; /* Padding xung quanh */
-    /* background-color: #f9f9f9;  Có thể thêm nền nhạt */
-    /* border: 1px solid #eee; Border */
-    border-radius: 8px; /* Bo góc */
+    text-align: center;
+    padding: 40px 20px;
+    border-radius: 8px;
 }
 
 .roadmap-icon {
-    display: inline-flex; /* Dùng flexbox để căn giữa icon */
+    display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 60px; /* Kích thước hình vuông */
+    width: 60px;
     height: 60px;
-    /* background-color: #e0e0e0;  Nền xám nhạt cho icon */
-    border-radius: 50%; /* Có thể làm tròn nếu muốn icon trong hình tròn */
+    border-radius: 50%;
     margin-bottom: 20px;
 }
 
-.roadmap-icon .fa-solid { /* Style cho icon Font Awesome */
-    font-size: 30px; /* Kích thước icon */
-    color: #555; /* Màu icon */
+.roadmap-icon .fa-solid {
+    font-size: 30px;
+    color: #555;
 }
 
 .no-roadmaps h2 {
@@ -83,7 +81,84 @@
     font-size: 1em;
 }
 
-/* Style cho container danh sách roadmap (sẽ chứa các item roadmap) */
+/* Style cho container danh sách roadmap */
+.roadmap-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Style cho từng item trong danh sách roadmap */
+.roadmap-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.item-details {
+    flex-grow: 1;
+    margin-right: 15px;
+}
+
+.item-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.item-stats {
+    font-size: 0.9em;
+    color: #555;
+    display: block;
+}
+
+.item-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    white-space: nowrap;
+}
+
+/* Style chung cho các nút hành động (Edit, Delete) trong item */
+.item-actions .action-btn {
+    background-color: #e9ecef;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.item-actions .action-btn:hover {
+    background-color: #dee2e6;
+}
+
+/* Style riêng cho nút Edit */
+.item-actions .edit-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+}
+
+/* Style riêng cho nút Delete */
+.item-actions .delete-btn {
+    color: #dc3545;
+    border-color: #dc3545;
+    background-color: #fff;
+}
+
+.item-actions .delete-btn:hover {
+    background-color: #f8d7da;
+}
 
 /* Style cho thông báo lỗi (nếu có) */
 .error-message {

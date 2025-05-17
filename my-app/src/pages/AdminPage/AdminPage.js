@@ -1,193 +1,239 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // Import các component trang con
 import ProfilePage from './ProfilePage';
 import RoadmapsPage from './RoadmapsPage';
 import SettingsPage from './SettingsPage';
 import UserManagementPage from './UserManagementPage';
-import EditRoadmapPage from './EditRoadmapPage'; // <-- Đảm bảo import EditRoadmapPage
+import EditRoadmapPage from './EditRoadmapPage';
 
-// Import Sidebar component (Nếu bạn có component Sidebar thật)
-// import Sidebar from './Sidebar';
-import './AdminPage.css'; // File CSS cho layout AdminPage
+// Import Header và Sidebar
+import Header from "../../components/Header/header";
+import Sidebar from "../../components/Sidebar/Sidebar";
 
-// --- Import thư viện js-cookie để xử lý logout ---
+import './AdminPage.css';
 import Cookies from 'js-cookie';
-// --- Hết Import thư viện js-cookie ---
-
 
 function AdminPage() {
-    // State để quản lý trang con nào đang hiển thị
-    const [currentAdminView, setCurrentAdminView] = useState('roadmaps-list'); // Mặc định là trang Roadmaps
-
-    // State để lưu ID của roadmap đang được chỉnh sửa
+    const [currentAdminView, setCurrentAdminView] = useState('profile');
     const [editingRoadmapId, setEditingRoadmapId] = useState(null);
 
-    // State để lưu thông tin user admin (username, avatar) nếu cần hiển thị ở Sidebar
-    // Tùy chọn: Lấy từ cookie hoặc context sau khi đăng nhập
+    const token = Cookies.get('access_token');
+    const userId = token ? JSON.parse(atob(token.split('.')[1])).user_id : null;
+
     const [adminUserInfo, setAdminUserInfo] = useState({
         username: Cookies.get('user_username') || 'Admin User',
-        avatar: Cookies.get('user_avatar') || '/default-admin-avatar.png', // Giả định lưu avatar trong cookie
-         userId: Cookies.get('user_id') || null, // Giả định lưu userId trong cookie
+        avatar: Cookies.get('user_avatar') || '/default-admin-avatar.png',
+        userId: userId,
+        role: Cookies.get('user_role') || 'user',
     });
 
+    const fetchUserData = useCallback(async () => {
+        console.log("AdminPage fetch: Token:", token ? "Exists" : "Missing", "UserId:", userId ? "Exists" : "Missing");
 
-    // Hàm xử lý khi một mục trên Sidebar được click
+        if (!token || !userId) {
+            console.log("AdminPage fetch: Token or UserId missing, cannot fetch user data.");
+            setAdminUserInfo({
+                username: 'Unknown User',
+                avatar: '/default-admin-avatar.png',
+                userId: null,
+                role: 'user',
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8000/api/users/${userId}/`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log("AdminPage fetch: API Response Status:", response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error("AdminPage fetch: Failed to fetch user data:", response.status, errorData);
+                if (response.status === 401) {
+                    console.log("AdminPage fetch: Received 401, token likely expired. Logging out.");
+                    // handleLogout(); // Uncomment để tự động logout khi token hết hạn
+                }
+                setAdminUserInfo({
+                    username: 'Unknown User',
+                    avatar: '/default-admin-avatar.png',
+                    userId: null,
+                    role: 'user',
+                });
+                throw new Error(errorData.detail || `Failed to fetch user data: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("AdminPage fetch: Successfully fetched user data:", data);
+
+            setAdminUserInfo({
+                username: data.username || 'Admin User',
+                avatar: data.avatar || '/default-admin-avatar.png',
+                userId: userId,
+                role: data.role || 'user',
+            });
+            Cookies.set('user_username', data.username, { expires: 7, secure: true, sameSite: 'Strict' });
+            Cookies.set('user_avatar', data.avatar, { expires: 7, secure: true, sameSite: 'Strict' });
+            Cookies.set('user_role', data.role, { expires: 7, secure: true, sameSite: 'Strict' });
+
+            console.log("AdminPage: Admin user info updated from fetch:", {
+                username: data.username,
+                avatar: data.avatar,
+                role: data.role
+            });
+
+        } catch (err) {
+            console.error('AdminPage fetch: Error fetching user data:', err.message);
+            setAdminUserInfo({
+                username: Cookies.get('user_username') || 'Unknown User',
+                avatar: Cookies.get('user_avatar') || '/default-admin-avatar.png',
+                userId: Cookies.get('user_id') || null,
+                role: Cookies.get('user_role') || 'user',
+            });
+        }
+    }, [token, userId]);
+
+    useEffect(() => {
+        fetchUserData();
+    }, [fetchUserData]);
+
     const handleSidebarMenuItemClick = (viewName) => {
+        console.log("AdminPage: Navigating to view:", viewName);
         setCurrentAdminView(viewName);
         if (viewName !== 'edit-roadmap') {
             setEditingRoadmapId(null);
         }
-        console.log("AdminPage: Navigating to view:", viewName);
     };
 
-    // Hàm xử lý khi nút "Edit" trên RoadmapListItem được click
     const handleEditRoadmapClick = (roadmapId) => {
+        console.log("AdminPage: Editing roadmap with ID:", roadmapId);
         setEditingRoadmapId(roadmapId);
         setCurrentAdminView('edit-roadmap');
-        console.log("AdminPage: Editing roadmap with ID:", roadmapId);
     };
 
-     // Hàm xử lý khi lưu thay đổi trong EditRoadmapPage (Placeholder)
-    const handleSaveChangesRoadmap = (roadmapId, updatedData, updatedTopics) => {
-        console.log("AdminPage: Received data to save:", roadmapId, updatedData, updatedTopics);
-        alert(`AdminPage: Saving changes for roadmap ${roadmapId} (Static mode - no API call)`);
+    const handleSaveChangesRoadmap = (roadmapId, updatedData) => {
+        console.log("AdminPage: Received data to save roadmap:", roadmapId, updatedData);
     };
 
-     // Hàm xử lý khi topic được cập nhật (Placeholder)
-     const handleTopicUpdated = () => {
-         console.log("AdminPage: A topic was updated in EditRoadmapPage. Need to potentially refresh.");
-     };
+    const handleTopicAdded = () => {
+        console.log("AdminPage: A topic was added/unlinked in EditRoadmapPage. Need to potentially refresh roadmap topics.");
+    };
 
-     // Hàm xử lý khi resource được lưu (Placeholder)
-     const handleSaveResource = (resourceData) => {
-          console.log("AdminPage: Received resource data to save:", resourceData);
-          alert(`AdminPage: Saving resource ${resourceData.id || 'new'} (Static mode - no API call)`);
-     };
+    const handleSaveResource = (resourceData) => {
+        console.log("AdminPage: Received resource data to save:", resourceData);
+    };
 
-     // Hàm xử lý khi resource bị xóa (Placeholder)
-     const handleDeleteResource = (resourceId) => {
-         console.log("AdminPage: Received resource ID to delete:", resourceId);
-         alert(`AdminPage: Deleting resource ${resourceId} (Static mode - no API call)`);
-     };
+    const handleDeleteResource = (resourceId) => {
+        console.log("AdminPage: Received resource ID to delete:", resourceId);
+    };
 
-      // Hàm xử lý khi exercise được lưu (Placeholder)
-     const handleSaveExercise = (exerciseData) => {
-          console.log("AdminPage: Received exercise data to save:", exerciseData);
-           alert(`AdminPage: Saving exercise ${exerciseData.id || 'new'} (Static mode - no API call)`);
-     };
+    const handleSaveExercise = (exerciseData) => {
+        console.log("AdminPage: Received exercise data to save:", exerciseData);
+    };
 
-      // Hàm xử lý khi exercise bị xóa (Placeholder)
-     const handleDeleteExercise = (exerciseId) => {
-         console.log("AdminPage: Received exercise ID to delete:", exerciseId);
-         alert(`AdminPage: Deleting exercise ${exerciseId} (Static mode - no API call)`);
-     };
+    const handleDeleteExercise = (exerciseId) => {
+        console.log("AdminPage: Received exercise ID to delete:", exerciseId);
+    };
 
-    // --- Hàm xử lý Logout ---
     const handleLogout = () => {
         console.log("Admin Logout initiated.");
-        // --- Xóa Token và User Info từ Cookie ---
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
-        Cookies.remove('user_username'); // Xóa các cookie user info
-        Cookies.remove('user_email');
+        Cookies.remove('user_username');
+        Cookies.remove('user_avatar');
         Cookies.remove('user_id');
-        // --- Hết Xóa Token và User Info từ Cookie ---
-
-        alert("Logging out...");
-        // TODO: Gọi API đăng xuất nếu có
-        // TODO: Chuyển hướng về trang đăng nhập
-        window.location.href = '/login'; // <-- Chuyển hướng về trang /login
+        Cookies.remove('user_role');
+        window.location.href = '/login';
     };
-    // --- Hết Hàm xử lý Logout ---
 
-     // Hàm cập nhật thông tin user admin sau khi ProfilePage lưu thành công (tùy chọn)
-     const handleAdminProfileUpdated = (updatedUserData) => {
-         setAdminUserInfo(prev => ({
-             ...prev,
-             username: updatedUserData.username,
-             avatar: updatedUserData.avatar,
-         }));
-         // Cập nhật cookie user info nếu cần
-         Cookies.set('user_username', updatedUserData.username, { expires: 7, secure: true, sameSite: 'Strict' });
-         Cookies.set('user_avatar', updatedUserData.avatar, { expires: 7, secure: true, sameSite: 'Strict' });
-         console.log("Admin user info updated:", updatedUserData);
-     };
+    const handleAdminProfileUpdated = (updatedUserData, navigateToSettings = false) => {
+        console.log("AdminPage: Received updated user data from ProfilePage:", updatedUserData);
+        setAdminUserInfo(prev => ({
+            ...prev,
+            username: updatedUserData.username || prev.username,
+            avatar: updatedUserData.avatar || prev.avatar,
+        }));
+        Cookies.set('user_username', updatedUserData.username, { expires: 7, secure: true, sameSite: 'Strict' });
+        Cookies.set('user_avatar', updatedUserData.avatar, { expires: 7, secure: true, sameSite: 'Strict' });
+        if (navigateToSettings) {
+            handleSidebarMenuItemClick('settings');
+        }
+    };
 
+    const handleSettingsUpdated = (updatedUserData) => {
+        console.log("AdminPage: Received updated user data from SettingsPage:", updatedUserData);
+        setAdminUserInfo(prev => ({
+            ...prev,
+            username: updatedUserData.username || prev.username,
+            avatar: updatedUserData.avatar || prev.avatar,
+        }));
+        if (updatedUserData.email) {
+            Cookies.set('user_email', updatedUserData.email, { expires: 7, secure: true, sameSite: 'Strict' });
+        }
+        if (updatedUserData.username) {
+            Cookies.set('user_username', updatedUserData.username, { expires: 7, secure: true, sameSite: 'Strict' });
+        }
+        if (updatedUserData.avatar) {
+            Cookies.set('user_avatar', updatedUserData.avatar, { expires: 7, secure: true, sameSite: 'Strict' });
+        }
+    };
 
-    // Hàm render nội dung chính dựa trên trạng thái
     const renderPageContent = () => {
-         // Lấy token và userId từ cookie để truyền xuống các trang con nếu cần
-         const authToken = Cookies.get('access_token');
-         const currentUserId = Cookies.get('user_id'); // Lấy ID user đăng nhập để truyền cho ProfilePage
-
+        if (!token || !userId) {
+            return <div>Loading user data or authentication failed...</div>;
+        }
 
         switch (currentAdminView) {
             case 'profile':
-                 // Truyền userId và authToken cho ProfilePage
-                return <ProfilePage userId={currentUserId} authToken={authToken} onProfileUpdated={handleAdminProfileUpdated} />; // Trang Profile cho Admin user
+                return <ProfilePage userId={userId} authToken={token} onProfileUpdated={handleAdminProfileUpdated} />;
+            case 'settings':
+                return <SettingsPage userId={userId} authToken={token} onSettingsUpdated={handleSettingsUpdated} />;
             case 'roadmaps-list':
-                 // RoadmapsPage có thể cần authToken để fetch danh sách
-                return <RoadmapsPage onEditRoadmap={handleEditRoadmapClick} authToken={authToken} />; // TODO: Có thể truyền handler xóa roadmap nếu cần
+                return <RoadmapsPage onEditRoadmap={handleEditRoadmapClick} authToken={token} />;
             case 'edit-roadmap':
-                 if (editingRoadmapId) {
-                    // EditRoadmapPage cần roadmapId và authToken để fetch chi tiết
+                if (editingRoadmapId) {
                     return (
-                         <EditRoadmapPage
+                        <EditRoadmapPage
                             roadmapId={editingRoadmapId}
-                            authToken={authToken} // Truyền authToken
+                            authToken={token}
                             onSave={handleSaveChangesRoadmap}
-                            onTopicAdded={handleTopicUpdated}
+                            onTopicAdded={handleTopicAdded}
                             onSaveResource={handleSaveResource}
                             onDeleteResource={handleDeleteResource}
                             onSaveExercise={handleSaveExercise}
                             onDeleteExercise={handleDeleteExercise}
                             onCancelEdit={() => handleSidebarMenuItemClick('roadmaps-list')}
-                         />
+                        />
                     );
-                 } else {
-                     return <div>Error: No roadmap selected for editing.</div>;
-                 }
-            case 'settings':
-                 // SettingsPage có thể cần authToken/userId
-                return <SettingsPage userId={currentUserId} authToken={authToken} />; // Trang Settings cho Admin user
+                } else {
+                    return <div>Error: No roadmap selected for editing.</div>;
+                }
             case 'users':
-                 // UserManagementPage chắc chắn cần authToken và có thể cần logic admin
-                return <UserManagementPage authToken={authToken} />; // Quản lý User
+                return <UserManagementPage authToken={token} />;
+            case 'activity':
+                if (adminUserInfo.role === 'user') {
+                    return <div>Activity Page (Placeholder for User Role)</div>; // Placeholder cho activity
+                }
+                return <div>Access Denied: Activity is only for Users</div>;
             default:
-                return <div>Admin Page Not Found or Select an option from Sidebar</div>;
+                return <div>Admin Page: Select an option from Sidebar.</div>;
         }
     };
 
     return (
         <div className="admin-page-container">
-            {/* Sidebar mẫu */}
-             <div className="sidebar-mock">
-                 {/* Hiển thị tên và avatar user admin từ state/cookie */}
-                  <div className="team-selector-mock">
-                     {/* <img src={adminUserInfo.avatar} alt="Admin Avatar" style={{width:'30px', height:'30px', borderRadius:'50%', marginRight:'10px'}}/> */}
-                     {adminUserInfo.username}
-                 </div>
-                 {/* Các mục Sidebar cho Admin */}
-                 <a href="#" className={`menu-item-mock ${currentAdminView === 'profile' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); handleSidebarMenuItemClick('profile'); }}>Profile</a>
-                 <a href="#" className={`menu-item-mock ${currentAdminView === 'settings' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); handleSidebarMenuItemClick('settings'); }}>Settings</a>
-                 <a href="#" className={`menu-item-mock ${currentAdminView === 'roadmaps-list' || currentAdminView === 'edit-roadmap' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); handleSidebarMenuItemClick('roadmaps-list'); }}>Roadmaps Management</a>
-                 <a href="#" className={`menu-item-mock ${currentAdminView === 'users' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); handleSidebarMenuItemClick('users'); }}>User Management</a>
-
-
-                 {/* Nút Back/Cancel Edit Roadmap (tùy chọn hiển thị) */}
-                 {currentAdminView === 'edit-roadmap' && (
-                      <a href="#" className="menu-item-mock back-link" onClick={(e) => { e.preventDefault(); handleSidebarMenuItemClick('roadmaps-list'); }}>&lt; Back to Roadmaps List</a>
-                 )}
-
-                 {/* Nút Logout */}
-                 <a href="#" className="menu-item-mock logout-item" onClick={(e) => { e.preventDefault(); handleLogout(); }}>
-                     <i className="fa-solid fa-right-from-bracket"></i>
-                     Logout
-                 </a>
-             </div>
-            {/* Hết Sidebar mẫu */}
-
-            {/* Khu vực hiển thị nội dung chính */}
+            <Sidebar
+                userName={adminUserInfo.username}
+                role={adminUserInfo.role}
+                activePageId={currentAdminView}
+                onMenuItemClick={handleSidebarMenuItemClick}
+                onLogout={handleLogout}
+            />
             <div className="main-content-area">
                 {renderPageContent()}
             </div>

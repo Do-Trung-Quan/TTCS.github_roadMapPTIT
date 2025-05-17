@@ -11,12 +11,12 @@ urlpatterns = [
     path('api/', include('exercise.urls')),  # Endpoint cho API quản lý exercises
     path('api/', include('quizquestions.urls')),  # Endpoint cho API quản lý câu hỏi quiz
     path('api/', include('quizanswers.urls')),  # Endpoint cho API quản lý câu trả lời quiz
-    path('api/', include('bookmark.urls')),  # Endpoint cho API quản lý bookmark
     path('api/', include('enroll.urls')),  # Endpoint cho API quản lý đăng ký (enroll)
     path('api/', include('roadmaps.urls')),  # Endpoint cho API quản lý roadmap
     path('api/', include('resources_types.urls')),  # Endpoint cho API quản lý loại tài nguyên
     path('api/', include('topic_roadmaps.urls')),  # Endpoint cho API quản lý mối quan hệ topic-roadmap
-    path('api/', include('user_topic_progresses.urls')) # Endpoint cho API theo dõi tiến trình topic của người dùng
+    path('api/', include('user_topic_progresses.urls')), # Endpoint cho API theo dõi tiến trình topic của người dùng
+    path('api/', include('translate.urls')),  # Endpoint cho API dịch thuật
 ]
 # Cấu hình URL cho static và media khi debug
 if settings.DEBUG:
