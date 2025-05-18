@@ -1,8 +1,86 @@
-import React from 'react';
-import './Home.css'; 
-import '../../context/LanguageContext';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import './Home.css';
 
 function Home() {
+  const navigate = useNavigate();
+  // Lấy thông tin user và hàm lấy token từ useAuth.
+  // Đảm bảo useAuth cung cấp user object (có id và role) và hàm getToken().
+  const { user, getToken } = useAuth();
+
+  // Hàm xử lý khi click vào một roadmap
+  const handleRoadmapClick = async (roadmapId) => {
+    // Kiểm tra nếu user đã đăng nhập VÀ user có vai trò là 'user' (không phải admin hoặc guest)
+    // Dựa trên code AuthContext.js mới, user object có thuộc tính 'role' và 'id'
+    if (user && user.role === 'user') {
+      // Lấy token từ AuthContext (giờ đã được cung cấp bởi AuthContext.js)
+      const token = getToken();
+      if (token) {
+        try {
+          const response = await fetch('http://localhost:8000/api/enrolls/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`, // Thêm header Authorization với token
+            },
+            body: JSON.stringify({
+              // === CHỈNH SỬA TÊN TRƯỜNG Ở ĐÂY ĐỂ KHỚP VỚI BACKEND SERIALIZER ===
+              UserID: user.id,     // Sử dụng 'UserID' thay vì 'user'
+              RoadmapID: roadmapId, // Sử dụng 'RoadmapID' thay vì 'roadmap'
+              // ==============================================================
+            }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log('API enrolls thành công:', result);
+            alert('Bạn đã đăng ký lộ trình thành công!'); // Ví dụ thông báo thành công
+            // Có thể thêm logic hiển thị thông báo cho người dùng tại đây
+          } else {
+             const errorData = await response.json();
+             console.error('API enrolls thất bại. Status:', response.status, 'Error Data:', errorData);
+             // Xử lý các trạng thái lỗi cụ thể
+             if (response.status === 400) {
+                  if (errorData.errors) {
+                      console.error("Lỗi validation từ backend:", errorData.errors);
+                      // Hiển thị lỗi validation cho người dùng nếu có
+                      // Ví dụ: alert('Lỗi ghi danh: ' + JSON.stringify(errorData.errors));
+                  } else {
+                      console.error("Lỗi Bad Request không xác định:", errorData);
+                  }
+                  // Có thể kiểm tra thêm các thông báo lỗi cụ thể từ backend nếu có
+             } else if (response.status === 403) {
+                  console.error("Thông báo lỗi: Bạn không có quyền thực hiện thao tác này (API returned 403 Forbidden).");
+                  alert('Lỗi: Bạn không có quyền ghi danh.'); // Ví dụ thông báo lỗi quyền
+             } else {
+                  console.error("Thông báo lỗi: Có lỗi xảy ra khi ghi danh. Vui lòng thử lại. Status:", response.status);
+                  alert('Đã xảy ra lỗi khi ghi danh. Vui lòng thử lại sau.'); // Ví dụ thông báo lỗi chung
+             }
+             // Có thể thêm logic hiển thị thông báo lỗi cho người dùng tại đây
+          }
+        } catch (error) {
+          console.error('Lỗi mạng hoặc lỗi khác khi gọi API enrolls:', error);
+           alert('Lỗi kết nối mạng hoặc hệ thống. Vui lòng thử lại.'); // Ví dụ thông báo lỗi mạng
+        }
+      } else {
+        console.warn('Không tìm thấy token sau khi kiểm tra user hợp lệ. User đã đăng nhập nhưng AuthContext không cung cấp token.');
+        alert('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.'); // Thông báo cần đăng nhập lại
+        // Có thể tự động điều hướng đến trang login navigate('/login');
+      }
+    } else {
+      // Nếu không phải user thông thường (là Admin, guest hoặc chưa đăng nhập)
+      console.log('Người dùng không đủ điều kiện để ghi nhận enroll (Admin/Guest/Chưa đăng nhập). Chỉ điều hướng.');
+       alert('Vui lòng đăng nhập với tài khoản người dùng để đăng ký lộ trình.'); // Thông báo cho người dùng chưa đăng nhập/admin
+      // Không làm gì thêm ngoài việc điều hướng
+    }
+
+    // Luôn điều hướng đến trang roadmap sau khi xử lý (hoặc bỏ qua xử lý API)
+    // Có thể trì hoãn navigate nếu muốn người dùng thấy thông báo API trước
+    // Ví dụ: setTimeout(() => navigate(`/roadmap/${roadmapId}`), 2000); // Điều hướng sau 2 giây
+    navigate(`/roadmap/${roadmapId}`);
+  };
+
   return (
     <> {/* Sử dụng Fragment để nhóm các phần tử */}
       <div className="sc-1">
@@ -11,39 +89,38 @@ function Home() {
       </div>
       <div className="container">
         <h3>Lập Trình web:</h3>
-        {/* Cần thay thế onclick bằng event handler của React và xử lý logic chuyển trang */}
-        {/* ... các div class="course" ... */}
-         <div className="course" onClick={() => window.location.href='http://localhost:3000/roadmap'}>
-           <div className="progress-circle" data-progress="70"></div>
+        {/* Thay thế onClick trực tiếp bằng handleRoadmapClick */}
+         <div className="course" onClick={() => handleRoadmapClick('RM001')}>
+           <div className="progress-circle" data-progress="70"></div> {/* Data progress này có thể cần fetch từ API riêng cho từng user và roadmap */}
            <span><i className="ri-computer-line"></i> Lộ Trình học front-end</span>
          </div>
-         <div className="course" onClick={() => window.location.href='http://localhost:3000/roadmap'}>
-           <div className="progress-circle" data-progress="70"></div>
+         <div className="course" onClick={() => handleRoadmapClick('RM002')}>
+           <div className="progress-circle" data-progress="70"></div> {/* Data progress này có thể cần fetch từ API riêng cho từng user và roadmap */}
            <span><i className="ri-code-s-slash-line"></i> Lộ Trình học back-end</span>
          </div>
-         <div className="course" onClick={() => window.location.href='http://localhost:3000/roadmap'}>
-           <div className="progress-circle" data-progress="70"></div>
+         <div className="course" onClick={() => handleRoadmapClick('RM003')}>
+           <div className="progress-circle" data-progress="70"></div> {/* Data progress này có thể cần fetch từ API riêng cho từng user và roadmap */}
            <span><i className="ri-terminal-window-line"></i> Lộ Trình học full stacks</span>
          </div>
 
         <h3>Các hướng đi khác:</h3>
-         <div className="course" onClick={() => window.location.href='http://localhost:3000/roadmap'}>
-           <div className="progress-circle" data-progress="70"></div>
+         <div className="course" onClick={() => handleRoadmapClick('RM004')}>
+           <div className="progress-circle" data-progress="70"></div> {/* Data progress này có thể cần fetch từ API riêng cho từng user và roadmap */}
            <span>Dev-ops</span>
          </div>
-         <div className="course" onClick={() => window.location.href='http://localhost:3000/roadmap'}>
-           <div className="progress-circle" data-progress="70"></div>
+         <div className="course" onClick={() => handleRoadmapClick('RM005')}>
+           <div className="progress-circle" data-progress="70"></div> {/* Data progress này có thể cần fetch từ API riêng cho từng user và roadmap */}
            <span>Cybersecurity</span>
          </div>
-         <div className="course" onClick={() => window.location.href='http://localhost:3000/roadmap'}>
-           <div className="progress-circle" data-progress="70"></div>
+         <div className="course" onClick={() => handleRoadmapClick('RM006')}>
+           <div className="progress-circle" data-progress="70"></div> {/* Data progress này có thể cần fetch từ API riêng cho từng user và roadmap */}
            <span>Lập trình nhúng</span>
          </div>
 
         <h3>Một số tài liệu tham khảo:</h3>
         <h4 className="mt-4 text-dark">🔗 Tài liệu cho Lập trình Web</h4>
         <div className="row">
-          {/* ... các div class="col-md-4" cho tài liệu ... */}
+          {/* Giữ nguyên các liên kết tài liệu */}
           <div className="col-md-4 mb-3">
             <div className="card h-100 shadow-sm">
               <div className="card-body">

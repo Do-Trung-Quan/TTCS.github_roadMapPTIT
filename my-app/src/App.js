@@ -47,7 +47,7 @@ export default function App() {
             {/* Các Route của ứng dụng */}
             <Route path="/" element={<Home />} />
             <Route path="/about-us" element={<AboutUs />} />
-            <Route path="/roadmap" element={<Roadmap />} />
+            <Route path="/roadmap/:id" element={<Roadmap />} />
 
             {/* Các route không cần Header/Footer nếu bạn dùng Layout Component */}
             {/* Nếu không dùng Layout, Header/Footer vẫn hiển thị ở đây */}

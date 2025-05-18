@@ -5,7 +5,6 @@ from .models import Exercise
 from .serializers import ExerciseSerializer
 from rest_framework.permissions import AllowAny
 from users.permissions import IsAdmin
-
 from rest_framework.authentication import SessionAuthentication
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -19,9 +18,12 @@ class ExerciseListCreate(APIView):
             return [IsAdmin()]
         return [AllowAny()]
 
-    # GET: Lấy danh sách tất cả bài tập
+    # GET: Lấy danh sách tất cả bài tập hoặc lọc theo topic
     def get(self, request):
         exercises = Exercise.objects.all()
+        topic_id = request.query_params.get('topic', None)
+        if topic_id:
+            exercises = exercises.filter(topic__id=topic_id)
         serializer = ExerciseSerializer(exercises, many=True)
         return Response({
             'message': 'Lấy danh sách bài tập thành công.',
