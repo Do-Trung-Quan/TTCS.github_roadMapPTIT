@@ -1,16 +1,10 @@
-.main-wrapper {
-  width: 100%;
-  max-width: none;
-  overflow: auto;
-}
-
-
 .roadmap-container {
   width: 100%;
-  height: 100%;
   background-color: #fff;
-  /* padding: 16px; */
+  padding: 16px;
   box-sizing: border-box;
+  padding: 0 50px; /* Sửa lỗi cú pháp: thay auto 50px bằng 0 50px */
+  margin-bottom: 200px; /* Tăng margin-bottom để tạo khoảng cách lớn hơn với footer */
 }
 
 /* Tùy chỉnh node */
@@ -18,27 +12,69 @@
   background-color: #b22222;
   border: 2px solid #333;
   border-radius: 12px;
-  padding: 10px;
-  font-size: 14px;
+  padding: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: #fff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
+  width: 250px; /* Kích thước node */
+  height: 80px; /* Chiều cao node */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
-.react-flow__node:hover {
+/* Remove hover scale if dragging is enabled, it can interfere */
+/* .react-flow__node:hover {
   transform: scale(1.05);
-  cursor: pointer;
+  cursor: grab; /* Change cursor to indicate draggable */
+/* } */
+
+/* Add grab cursor when dragging is possible */
+.react-flow__node.draggable {
+  cursor: grab;
+}
+
+.react-flow__node.react-flow__node-dragging {
+  cursor: grabbing;
+}
+
+/* Tùy chỉnh node khi skip - using data attribute */
+.react-flow__node[data-status="skip"] {
+  text-decoration: line-through;
+}
+
+/* Tùy chỉnh node khi done - using data attribute */
+.react-flow__node[data-status="done"] {
+  background-color: green; /* Changed background based on status */
+  border-color: black; /* Keep border visible */
 }
 
 /* Tùy chỉnh đường nối */
+/* Keep default styling for curved edges */
 .react-flow__edge-path {
   stroke: #333;
-  stroke-width: 2;
+  stroke-width: 3; /* Đường nối dày hơn */
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
+
+/* Remove specific straight/step edge styles */
+/* .react-flow__edge-straight .react-flow__edge-path {
+  stroke: #333;
+  stroke-width: 3;
+}
+.react-flow__edge-step .react-flow__edge-path {
+  stroke: #333;
+  stroke-width: 3;
+} */
 
 .react-flow__arrowhead {
   fill: #333;
+  stroke: #333;
+  stroke-width: 1;
 }
 
 /* Tùy chỉnh lớp phủ overlay */
@@ -46,107 +82,195 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  width: 100vw; /* Che toàn bộ màn hình khi modal ở giữa */
+  height: 100vh; /* Che toàn bộ màn hình khi modal ở giữa */
+  background: rgba(0, 0, 0, 0.6); /* Tăng độ mờ cho overlay */
   z-index: 9998;
 }
 
-/* Tùy chỉnh panel hiển thị thông tin */
+/* Tùy chỉnh panel hiển thị thông tin (Model) - Ở giữa màn hình */
 .info-panel {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
+  top: 50%; /* Đặt ở giữa theo chiều dọc */
+  left: 50%; /* Đặt ở giữa theo chiều ngang */
+  transform: translate(-50%, -50%); /* Dịch chuyển ngược lại 50% kích thước của chính nó để căn giữa hoàn hảo */
+  width: 600px; /* Chiều rộng modal, điều chỉnh nếu cần */
+  max-height: 80vh; /* Chiều cao tối đa để không tràn màn hình */
+  overflow-y: auto; /* Thêm thanh cuộn khi nội dung dài */
   background: #fff;
-  border: 2px solid #333;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid #ddd; /* Quay lại viền 1px */
+  border-radius: 15px; /* Quay lại bo góc đều */
+  padding: 30px; /* Quay lại padding 30px */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Quay lại bóng đổ ở dưới */
   z-index: 9999;
   font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
 
 /* Tùy chỉnh tiêu đề trong panel */
 .info-panel h3 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+  margin-top: 0; /* Đảm bảo tiêu đề sát mép trên panel */
+  font-size: 28px;
+  font-weight: 700;
   color: #b22222;
+  border-bottom: 2px solid #b22222;
+  padding-bottom: 10px;
 }
 
-/* Tùy chỉnh tiêu đề "Thông tin" và "Bài tập" */
+/* Tùy chỉnh tiêu đề "Mô tả", "Free Resources", "Bài tập", "Quiz Questions" */
 .info-panel h4 {
-  margin: 15px 0 5px;
-  font-size: 18px;
+  margin: 25px 0 15px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  border-left: 4px solid #b22222;
+  padding-left: 10px;
+}
+
+/* Tùy chỉnh đoạn văn bản mô tả */
+.info-panel p {
+  margin: 10px 0;
+  font-size: 16px;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Tùy chỉnh danh sách tài nguyên và bài tập */
+.info-panel ul {
+  margin: 5px 0;
+  padding-left: 20px;
+  list-style-type: none; /* Bỏ dấu chấm mặc định */
+}
+
+/* Tùy chỉnh từng mục tài nguyên và bài tập */
+.info-panel li {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Tùy chỉnh màu sắc cho từng loại tài nguyên */
+.resource-video a {
+  color: #007bff; /* Xanh dương */
+}
+
+.resource-article a {
+  color: #28a745; /* Xanh lá */
+}
+
+.resource-book a {
+  color: #dc3545; /* Đỏ */
+}
+
+.resource-tutorial a {
+  color: #ffc107; /* Vàng */
+}
+
+/* Tùy chỉnh câu hỏi quiz */
+.quiz-question {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.quiz-question p {
+  font-size: 16px;
   font-weight: 500;
   color: #333;
 }
 
-/* Tùy chỉnh đoạn văn bản thông tin */
-.info-panel p {
-  margin: 5px 0;
-  font-size: 16px;
-  color: #555;
-  line-height: 1.5;
+.quiz-question ul {
+  list-style-type: none;
+  padding-left: 0;
 }
 
-/* Tùy chỉnh danh sách bài tập */
-.info-panel ul {
+.quiz-question li {
+  padding: 10px;
   margin: 5px 0;
-  padding-left: 20px;
-  list-style-type: disc;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
 }
 
-/* Tùy chỉnh từng mục bài tập */
-.info-panel li {
-  font-size: 16px;
-  color: #555;
-  margin-bottom: 8px;
+.quiz-question li:hover {
+  background-color: #e9ecef;
+}
+
+.quiz-question li.correct {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.quiz-question li.incorrect {
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 /* Tùy chỉnh nút đóng panel */
 .info-panel button {
-  background: none;
+  background: #b22222;
   border: none;
-  font-size: 18px;
-  color: #333;
+  font-size: 20px;
+  color: #fff;
+  width: 40px; /* Quay lại kích thước nút đóng 40px */
+  height: 40px; /* Quay lại kích thước nút đóng 40px */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+  position: absolute; /* Vẫn dùng absolute để đặt ở góc panel */
+  top: 10px; /* Cách mép trên */
+  right: 10px; /* Cách mép phải */
+  z-index: 10000; /* Đảm bảo nút luôn ở trên cùng */
 }
 
 .info-panel button:hover {
-  color: #b22222;
+  background: #900000;
 }
 
 /* Đảm bảo layout của header trong panel */
 .info-panel-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Quay lại justify-content */
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  position: relative; /* Vẫn cần relative cho nút đóng */
 }
 
-/* Tùy chỉnh checkbox hoàn thành */
-.completion-checkbox {
-  margin: 10px 0;
-}
-
-.completion-checkbox label {
-  font-size: 16px;
-  color: #333;
+/* Tùy chỉnh dropdown trạng thái */
+.completion-dropdown {
+  margin: 15px 0;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
-.completion-checkbox input {
-  width: 18px;
-  height: 18px;
+.completion-dropdown label {
+  font-size: 16px;
+  color: #333;
+  margin-right: 10px;
+  font-weight: 500;
+}
+
+.completion-dropdown select {
+  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
   cursor: pointer;
+  background-color: #f8f9fa;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.completion-dropdown select:hover {
+  border-color: #b22222;
 }
 
 /* Tùy chỉnh progress bar */

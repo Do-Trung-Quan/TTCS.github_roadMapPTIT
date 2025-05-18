@@ -1,11 +1,11 @@
 import React from "react";
 import '../../context/LanguageContext';
-import './footer.css'; // Đảm bảo rằng đường dẫn này chính xác
+import './footer.css';
 
 export default function Footer() {
     return (
-        <footer className="footer mt-5 py-4" style={{ backgroundColor: '#0b0b0b', color: '#fff' }}> {/* Thêm py-4 class nếu cần padding */}
-            <div className="container-2"> {/* <-- Sửa thành container-2 */}
+        <footer className="footer py-4" style={{ backgroundColor: '#0b0b0b', color: '#fff' }}>
+            <div className="container-2">
                 <div className="row">
                     {/* About Section */}
                     <div className="col-md-4 mb-3">

@@ -20,7 +20,19 @@ class TopicRoadmapListCreate(APIView):
         return [AllowAny()]
 
     def get(self, request):
-        topic_roadmaps = TopicRoadmap.objects.all()
+        # Lấy query parameter roadmap_id
+        roadmap_id = request.query_params.get('roadmap_id', None)
+        
+        # Lọc TopicRoadmap theo roadmap_id nếu có
+        if roadmap_id:
+            topic_roadmaps = TopicRoadmap.objects.filter(RoadmapID=roadmap_id)
+            if not topic_roadmaps.exists():
+                return Response({
+                    "message": f"Không tìm thấy TopicRoadmap cho RoadmapID {roadmap_id}."
+                }, status=status.HTTP_404_NOT_FOUND)
+        else:
+            topic_roadmaps = TopicRoadmap.objects.all()
+
         serializer = TopicRoadmapSerializer(topic_roadmaps, many=True)
         return Response({
             "message": "Lấy danh sách TopicRoadmap thành công.",
@@ -39,7 +51,6 @@ class TopicRoadmapListCreate(APIView):
             "message": "Tạo mới TopicRoadmap thất bại.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
-
 
 class TopicRoadmapDetail(APIView):
     authentication_classes = []

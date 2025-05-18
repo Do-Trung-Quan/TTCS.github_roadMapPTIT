@@ -18,9 +18,12 @@ class ResourceListCreate(APIView):
             return [IsAdmin()]
         return [AllowAny()]
     
-    # GET: Lấy danh sách tài nguyên
+    # GET: Lấy danh sách tài nguyên hoặc lọc theo topic
     def get(self, request):
         resources = Resource.objects.all()
+        topic_id = request.query_params.get('topic', None)
+        if topic_id:
+            resources = resources.filter(topic__id=topic_id)
         serializer = ResourceSerializer(resources, many=True)
         return Response({
             "message": "Lấy danh sách tài nguyên thành công.",
