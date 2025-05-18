@@ -1,151 +1,275 @@
-/* src/pages/AdminPage/EditRoadmapPage.css */
-
-/* Style cho container chính của nội dung trang Edit Roadmap */
+/* EditRoadmapPage.css */
 .page-content#edit-roadmap {
-    padding: 20px;
-    /* Thêm style nếu cần cho layout toàn trang */
+  max-width: 1200px;
+  margin-left: 250px; /* Tạo khoảng cách với Sidebar */
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
 }
 
 .edit-roadmap-container {
-     max-width: 900px; /* Chiều rộng tối đa */
-     margin: 0 auto; /* Căn giữa */
-     padding: 20px;
-     background-color: #fff;
-     border-radius: 8px;
-     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Style cho header (Tiêu đề và nút Save changes) */
 .edit-roadmap-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .edit-roadmap-header h1 {
-    margin: 0;
-    font-size: 1.8em;
-    color: #333;
+  font-size: 1.8em;
+  color: #333;
+  margin: 0;
 }
 
-/* Style cho nút "Save changes" */
 .save-changes-btn {
-    background-color: #007bff; /* Màu xanh */
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 15px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
 }
 
 .save-changes-btn:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
-/* Style cho form groups (label + input/textarea) - Sử dụng lại form-control-us */
-.form-group { /* Sử dụng style đã định nghĩa ở các component khác */
-    margin-bottom: 20px;
-}
-.form-group label { /* Sử dụng style đã định nghĩa ở các component khác */
-    display: block;
-    font-size: 0.9em;
-    color: #555;
-    margin-bottom: 8px;
-    font-weight: bold;
+.form-group {
+  margin-bottom: 20px;
 }
 
-/* Ensure form-control-us style is accessible (global or imported) */
-/* .form-control-us { ... } */
+.form-group label {
+  display: block;
+  font-size: 1em;
+  color: #555;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
 
+.form-control-us {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+  box-sizing: border-box;
+}
 
-/* Style cho phần quản lý Topics */
+.form-control-us:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
 .topics-section {
-    margin-top: 30px; /* Khoảng cách phía trên phần topics */
-    border-top: 1px solid #eee; /* Đường kẻ phía trên */
-    padding-top: 20px; /* Padding phía trên */
+  margin-top: 30px;
 }
 
 .topics-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .topics-header h2 {
-    margin: 0;
-    font-size: 1.5em;
-    color: #333;
+  font-size: 1.5em;
+  color: #333;
+  margin: 0;
 }
 
-/* Style cho nút "Add topic" */
 .add-topic-btn {
-    background-color: #28a745; /* Màu xanh lá */
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 15px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
 }
 
 .add-topic-btn:hover {
-    background-color: #218838;
+  background-color: #218838;
 }
 
-/* Style cho trạng thái "No topics" */
-.no-topics { /* Sử dụng lại style từ RoadmapsPage.css hoặc định nghĩa lại */
-    text-align: center;
-    padding: 40px 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9; /* Nền nhạt hơn */
-    margin-top: 10px;
+.no-topics {
+  text-align: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
 }
 
-.topic-icon { /* Sử dụng lại style từ RoadmapsPage.css */
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 60px;
-    height: 60px;
-    /* background-color: #e0e0e0; */
-    border-radius: 50%;
-    margin-bottom: 20px;
-}
-
-.topic-icon .fa-solid { /* Style cho icon Font Awesome */
-    font-size: 30px;
-    color: #555;
+.topic-icon {
+  font-size: 2em;
+  color: #666;
+  margin-bottom: 10px;
 }
 
 .no-topics h3 {
-    margin-bottom: 10px;
-    color: #333;
+  font-size: 1.2em;
+  color: #666;
+  margin: 0 0 5px 0;
 }
 
 .no-topics p {
-    color: #555;
-    font-size: 1em;
+  color: #888;
+  margin: 0;
 }
 
+/* Removed .topic-item and .topic-header styles from here
+   as the entire topic item content is now handled by TopicItemEditable */
+/* .topic-item { ... } */
+/* .topic-header { ... } */
+/* .topic-actions { ... } */ /* This is for the original buttons, now moved */
 
-/* Style cho danh sách topics (khi có data) */
-.topic-list {
-    margin-top: 10px;
-    /* Thêm style cho danh sách (ul, li) hoặc các item topic */
-    /* Nếu mỗi item topic là một component riêng (TopicItem), style sẽ nằm trong TopicItem.css */
+.edit-btn, .delete-btn {
+  /* These styles are now less relevant for the buttons inside TopicItemEditable
+     but might be used elsewhere in EditRoadmapPage */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* Style cho thông báo lỗi */
-.error-message {
-    color: red;
-    text-align: center;
-    margin-top: 20px;
+.edit-btn {
+  background-color: #ffc107;
+  color: #fff;
+}
+
+.edit-btn:hover {
+  background-color: #e0a800;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  color: #333;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-close-btn:hover {
+  color: #dc3545;
+}
+
+.modal-body {
+  padding: 10px 0;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  margin-bottom: 10px;
+}
+
+.unlink-btn {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.unlink-btn:hover {
+  background-color: #5a6268;
+}
+
+.modal-save-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.modal-save-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Specific styles for the delete button in the modal */
+.modal-body .delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.modal-body .delete-btn:hover {
+  background-color: #c82333;
 }

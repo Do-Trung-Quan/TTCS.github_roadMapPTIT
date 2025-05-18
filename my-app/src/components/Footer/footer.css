@@ -1,50 +1,87 @@
+/* src/components/Footer/footer.css */
+
+/* Style toàn cục cần thiết cho footer */
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+body, html {
+  overflow-x: hidden;
+}
+
+body {
+  background-color: #CCCCCC !important;
+}
+
+/* Footer styles */
+.footer {
+  background-color: #0b0b0b !important;
+  color: #fff;
+  padding: 40px 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.container-2 {
+  margin: 0 auto;
+  width: 700px !important;
+  color: white;
+  background-color: #0b0b0b !important;
+}
+
 .footer h5 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 20px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 20px;
 }
-  
-.footer p, .footer li {
-    font-size: 0.9rem;
-    line-height: 1.6;
+
+.footer p,
+.footer li {
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
-  
+
 .footer a {
-    color: #fff;
-    transition: color 0.3s ease;
+  color: #fff;
+  transition: color 0.3s ease;
 }
-  
+
 .footer a:hover {
-    color: #dc3545;
-    text-decoration: none;
+  color: #dc3545;
+  text-decoration: none;
 }
-  
+
 .footer .social-icons a {
-    font-size: 1.5rem;
-    margin-right: 15px;
-    transition: color 0.3s ease;
+  font-size: 1.5rem;
+  margin-right: 15px;
+  transition: color 0.3s ease;
 }
-  
+
 .footer .social-icons a:hover {
-    color: #dc3545;
+  color: #dc3545;
 }
-  
+
 .footer .list-unstyled li {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
-  
+
 .footer .text-center p {
-    font-size: 0.85rem;
-    color: #adb5bd;
+  font-size: 0.85rem;
+  color: #adb5bd;
 }
-  
+
+/* Media queries cho footer */
 @media (max-width: 768px) {
-    .footer .col-md-4 {
-      margin-bottom: 30px;
-      text-align: center;
-    }
-  
-    .footer .social-icons {
-      justify-content: center;
-    }
+  .footer .col-md-4 {
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .footer .social-icons {
+    justify-content: center;
+  }
 }

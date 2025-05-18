@@ -1,98 +1,165 @@
 import React, { useState } from 'react';
-import './RoadmapModal.css'; // Import file CSS tương ứng
+import Cookies from 'js-cookie';
+import './RoadmapModal.css';
 
-// Component Modal tạo Roadmap
-// Props:
-// - isVisible: boolean - Trạng thái hiển thị của modal
-// - onClose: function - Hàm callback để đóng modal
-// - onCreate: function - Hàm callback được gọi khi form submit thành công, truyền data roadmap mới
-function RoadmapModal({ isVisible, onClose, onCreate }) {
-  // State cho các input của form
+function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  // State cho đếm ký tự (nếu cần validation hoặc hiển thị)
-  const descriptionCharLimit = 80; // Giới hạn ký tự theo HTML gốc
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const descriptionCharLimit = 80;
 
-  // Nếu modal không hiển thị, không render gì cả
   if (!isVisible) {
     return null;
   }
 
-  // Hàm xử lý submit form
-  const handleSubmit = (event) => {
-    event.preventDefault(); // Ngăn chặn reload trang mặc định của form
+  const checkTitleExists = async (title) => {
+    const token = Cookies.get('access_token');
+    if (!token) return false;
 
-    // Kiểm tra validation cơ bản (title required)
+    try {
+      const response = await fetch(`http://localhost:8000/api/roadmaps/?title=${encodeURIComponent(title)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) return false;
+      const data = await response.json();
+      const roadmaps = data.data || [];
+      return roadmaps.some(roadmap => roadmap.title === title);
+    } catch (err) {
+      console.error('Error checking title:', err);
+      return false;
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     if (!title.trim()) {
-      alert("Roadmap Title is required.");
+      setError("Roadmap Title is required.");
       return;
     }
 
-    // Tạo object data roadmap mới
-    const newRoadmapData = {
+    if (description.length > descriptionCharLimit) {
+      setError(`Description must not exceed ${descriptionCharLimit} characters.`);
+      return;
+    }
+
+    const token = Cookies.get('access_token');
+    if (!token) {
+      setError("Authentication token not found. Please login.");
+      return;
+    }
+
+    // Kiểm tra xem title đã tồn tại chưa
+    const titleExists = await checkTitleExists(title.trim());
+    if (titleExists) {
+      setError("A roadmap with this title already exists. Please use a different title.");
+      return;
+    }
+
+    setError(null);
+    setSuccessMessage(null);
+
+    const payload = {
       title: title.trim(),
       description: description.trim(),
-      // TODO: Thêm các trường khác nếu cần (ví dụ: user ID, status mặc định)
     };
+    console.log('Sending payload to create roadmap:', payload);
 
-    // Gọi hàm onCreate được truyền từ component cha, truyền data mới
-    onCreate(newRoadmapData);
+    try {
+      const response = await fetch('http://localhost:8000/api/roadmaps/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    // Reset form sau khi submit (hoặc sau khi onCreate báo thành công)
-    setTitle('');
-    setDescription('');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.log('API error response:', errorData);
+        const errorDetails = errorData.errors
+          ? Object.entries(errorData.errors).map(([key, value]) => `${key}: ${value}`).join(', ')
+          : errorData.message || errorData.detail || `Failed to create roadmap: ${response.statusText}`;
+        throw new Error(errorDetails);
+      }
+
+      const data = await response.json();
+      console.log('Created roadmap data:', data);
+      const newRoadmap = data.data;
+      setSuccessMessage(data.message || "Roadmap created successfully.");
+
+      // Gọi callback để làm mới danh sách roadmaps ở RoadmapsPage
+      if (onRoadmapCreated) {
+        onRoadmapCreated(newRoadmap);
+      }
+
+      setTimeout(() => {
+        setTitle('');
+        setDescription('');
+        setSuccessMessage(null);
+        setError(null);
+        onClose();
+      }, 3000);
+    } catch (err) {
+      console.error('Create roadmap error:', err);
+      setError(err.message);
+    }
   };
 
-  // Hàm xử lý click nút Cancel hoặc nút đóng (x)
   const handleCancelOrClose = () => {
-    // TODO: Hỏi người dùng nếu có thay đổi chưa lưu (tùy chọn)
-    setTitle(''); // Reset form khi đóng
+    setTitle('');
     setDescription('');
-    onClose(); // Gọi hàm onClose được truyền từ component cha
+    setError(null);
+    setSuccessMessage(null);
+    onClose();
   };
 
   return (
-    // Overlay làm mờ nền - chỉ hiển thị khi isVisible là true
-    // Style display: flex/none sẽ được áp dụng bởi CSS class .modal-overlay.visible
-    // Hoặc bạn có thể dùng style inline: style={{ display: isVisible ? 'flex' : 'none' }}
-    <div className="modal-overlay visible"> {/* Thêm class 'visible' để CSS kiểm soát display */}
-      <div className="modal-content"> {/* Nội dung modal */}
-        <div className="modal-header"> {/* Header modal */}
+    <div className="modal-overlay visible">
+      <div className="modal-content">
+        <div className="modal-header">
           <h3>Create Roadmap</h3>
-          <button className="modal-close-btn" onClick={handleCancelOrClose}>&times;</button> {/* Nút đóng */}
+          <button className="modal-close-btn" onClick={handleCancelOrClose}>×</button>
         </div>
-        <div className="modal-body"> {/* Body modal */}
-          <form onSubmit={handleSubmit}> {/* Form */}
-            <div className="form-group"> {/* Group input Title */}
-              <label htmlFor="roadmap-name">ROADMAP TITLE</label> {/* htmlFor */}
+        <div className="modal-body">
+          {error && <p style={{color: 'red', textAlign: 'center'}}>{error}</p>}
+          {successMessage && <p style={{color: 'green', textAlign: 'center'}}>{successMessage}</p>}
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="roadmap-name">ROADMAP TITLE</label>
               <input
                 type="text"
-                className="form-control-us" // Sử dụng className
+                className="form-control-us"
                 id="roadmap-name"
                 placeholder="Enter Title"
-                required // Thuộc tính HTML5 required
-                value={title} // Value được điều khiển bởi state
-                onChange={(e) => setTitle(e.target.value)} // Cập nhật state khi input thay đổi
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
-            <div className="form-group"> {/* Group input Description */}
-              <label htmlFor="roadmap-desc">DESCRIPTION</label> {/* htmlFor */}
+            <div className="form-group">
+              <label htmlFor="roadmap-desc">DESCRIPTION</label>
               <textarea
-                className="form-control-us" // Sử dụng className
+                className="form-control-us"
                 id="roadmap-desc"
                 placeholder="Enter Description"
                 rows="4"
-                value={description} // Value được điều khiển bởi state
-                onChange={(e) => setDescription(e.target.value)} // Cập nhật state khi textarea thay đổi
-                maxLength={descriptionCharLimit} // Giới hạn ký tự (cho HTML5)
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={descriptionCharLimit}
               ></textarea>
-              {/* Hiển thị số ký tự */}
-              {/* Bạn có thể thêm logic kiểm tra giới hạn JS ở đây */}
-              <div className="character-count text-end mt-1 text-muted">{description.length}/{descriptionCharLimit}</div> {/* Sử dụng className */}
+              <div className="character-count text-end mt-1 text-muted">{description.length}/{descriptionCharLimit}</div>
             </div>
-            <div className="modal-actions"> {/* Nút hành động */}
-              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>Cancel</button> {/* type="button" để không submit form */}
-              <button type="submit" className="create-btn">Create</button> {/* type="submit" */}
+            <div className="modal-actions">
+              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>Cancel</button>
+              <button type="submit" className="create-btn">Create</button>
             </div>
           </form>
         </div>

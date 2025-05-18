@@ -1,4 +1,3 @@
-# accounts/models.py
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from core.models import AutoIDModel
@@ -12,6 +11,9 @@ class User(AutoIDModel):
     avatar = models.URLField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(blank=True, null=True)
+    github = models.URLField(max_length=255, blank=True, null=True)  # Thêm trường github
+    linkedin = models.URLField(max_length=255, blank=True, null=True)  # Thêm trường linkedin
+    show_email_on_profile = models.BooleanField(default=False)  # Thêm trường show_email_on_profile
 
     class Meta:
         db_table = 'User'

@@ -1,252 +1,357 @@
-import React, { useState } from 'react';
-import './TopicItemEditable.css'; // Import file CSS tương ứng
-// Import Font Awesome icons nếu dùng component React (hoặc đảm bảo CSS global)
-// import { FaChevronUp, FaChevronDown, FaTrashCan, FaGear, FaPencil, FaBookOpen, FaLaptopCode } from 'react-icons/fa6'; // Icons ví dụ
-// Đảm bảo Font Awesome CSS được link global
-
-// Import các component modal con
+import React, { useState, useEffect, useCallback } from 'react';
+import Cookies from 'js-cookie';
+import './TopicItemEditable.css';
 import ResourceFormModal from './ResourceFormModal';
 import ExerciseFormModal from './ExerciseFormModal';
+import QuizManagerModal from './QuizManagerModal';
+import { FontAwesomeIcon } from '../../fontawesome';
 
+// Added onEditTopic and onDeleteTopicClick props
+function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children }) {
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState(null);
+  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
+  const [editingExercise, setEditingExercise] = useState(null);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [resources, setResources] = useState([]);
+  const [exercises, setExercises] = useState([]);
+  const token = Cookies.get('access_token');
 
-// Component hiển thị và quản lý một Topic có thể chỉnh sửa trong Edit Roadmap Page
-// Props:
-// - topic: Object chứa dữ liệu của topic ({ id, name, description, resources, exercises })
-// - onEditTopic: Hàm callback khi click Edit Topic (nếu có)
-// - onDeleteTopic: Hàm callback khi click Delete Topic
-// - onSaveResource: Hàm callback khi thêm/sửa Resource (truyền data resource)
-// - onDeleteResource: Hàm callback khi xóa Resource (truyền resourceId)
-// - onSaveExercise: Hàm callback khi thêm/sửa Exercise (truyền data exercise)
-// - onDeleteExercise: Hàm callback khi xóa Exercise (truyền exerciseId)
-function TopicItemEditable({
-    topic,
-    onEditTopic,
-    onDeleteTopic,
-    onSaveResource, // Handler Save/Add Resource
-    onDeleteResource, // Handler Delete Resource
-    onSaveExercise, // Handler Save/Add Exercise
-    onDeleteExercise, // Handler Delete Exercise
-}) {
-    // State để đóng mở phần hiển thị Resources/Exercises của topic
-    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const fetchResources = useCallback(async () => {
+    if (!token || !topic?.TopicID) { // Added check for topic?.TopicID
+      console.warn("Token or TopicID not available, skipping resource fetch.");
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:8000/api/resources/', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch resources');
+      const data = await response.json();
+      console.log('Fetched all resources:', data); // Log all fetched resources
+      console.log('Current topic.TopicID for filtering resources:', topic.TopicID); // Log the TopicID being used for filtering
+      const filteredResources = (data.data || []).filter(r => r.topic === topic.TopicID);
+      console.log(`Filtered resources for TopicID ${topic.TopicID}:`, filteredResources); // Log filtered resources
+      setResources(filteredResources);
+    } catch (err) {
+      console.error('Error fetching resources:', err);
+    }
+  }, [token, topic?.TopicID]); // Added topic?.TopicID to dependency array
 
-    // State để quản lý modal Add/Edit Resource
-    const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
-    // State để lưu resource đang được chỉnh sửa (null nếu đang add)
-    const [editingResource, setEditingResource] = useState(null);
+  const fetchExercises = useCallback(async () => {
+    if (!token || !topic?.TopicID) { // Added check for topic?.TopicID
+       console.warn("Token or TopicID not available, skipping exercise fetch.");
+       return;
+    }
+    try {
+      const response = await fetch('http://localhost:8000/api/exercises/', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch exercises');
+      const data = await response.json();
+      console.log('Fetched all exercises:', data); // Log all fetched exercises
+      console.log('Current topic.TopicID for filtering exercises:', topic.TopicID); // Log the TopicID being used for filtering
+      const filteredExercises = (data.data || []).filter(e => e.topic === topic.TopicID);
+       console.log(`Filtered exercises for TopicID ${topic.TopicID}:`, filteredExercises); // Log filtered exercises
+      setExercises(filteredExercises);
+    } catch (err) {
+      console.error('Error fetching exercises:', err);
+    }
+  }, [token, topic?.TopicID]); // Added topic?.TopicID to dependency array
 
-    // State để quản lý modal Add/Edit Exercise
-    const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false); // <-- Đã sửa lỗi, đảm bảo khai báo này tồn tại
-    // State để lưu exercise đang được chỉnh sửa (null nếu đang add)
-    const [editingExercise, setEditingExercise] = useState(null);
+  useEffect(() => {
+    // Fetch resources and exercises when details are open and topic.TopicID is available
+    if (isDetailsOpen && topic?.TopicID) {
+      fetchResources();
+      fetchExercises();
+    }
+  }, [isDetailsOpen, topic?.TopicID, fetchResources, fetchExercises]); // Added topic?.TopicID to dependency array
 
+  const toggleDetails = () => {
+    setIsDetailsOpen(!isDetailsOpen);
+  };
 
-    // Hàm xử lý click nút mở rộng/thu gọn chi tiết topic
-    const toggleDetails = () => {
-        setIsDetailsOpen(!isDetailsOpen);
-    };
+  const handleAddResourceClick = () => {
+    setEditingResource(null);
+    setIsResourceModalOpen(true);
+  };
 
-    // --- Xử lý Modals Resource ---
-    const handleAddResourceClick = () => {
-        setEditingResource(null); // Resetting for add mode
-        setIsResourceModalOpen(true);
-    };
+  const handleEditResourceClick = (resource) => {
+    setEditingResource(resource);
+    setIsResourceModalOpen(true);
+  };
 
-    const handleEditResourceClick = (resource) => {
-        setEditingResource(resource); // Set data resource cần edit
-        setIsResourceModalOpen(true);
-    };
+  const handleCloseResourceModal = () => {
+    setIsResourceModalOpen(false);
+    setEditingResource(null);
+  };
 
-    const handleCloseResourceModal = () => {
-        setIsResourceModalOpen(false);
-        setEditingResource(null); // Reset editing state khi đóng
-    };
+  const handleSaveResource = async (resourceData) => {
+    console.log("Submit resource data:", resourceData, "for topic:", topic?.TopicID); // Use optional chaining
+    if (!token || !topic?.TopicID) return; // Added check for topic?.TopicID
+    const method = editingResource ? 'PUT' : 'POST';
+    const url = editingResource
+      ? `http://localhost:8000/api/resources/${editingResource.id}/`
+      : 'http://localhost:8000/api/resources/';
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        // Ensure topic is sent as topic.TopicID
+        body: JSON.stringify({ ...resourceData, topic: topic.TopicID, resource_type: resourceData.resource_type }),
+      });
+      if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API error response:', errorData);
+          throw new Error(errorData.detail || `Failed to save resource: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Saved resource data:', data);
+      fetchResources(); // Refresh the list
+    } catch (err) {
+      console.error('Error saving resource:', err);
+      // Optionally set an error state to display to the user
+    }
+    handleCloseResourceModal();
+  };
 
-    const handleSaveResource = (resourceData) => {
-        console.log("Submit resource data:", resourceData, "for topic:", topic.id);
-        // Gọi handler Save/Add Resource được truyền từ cha (EditRoadmapPage)
-        if (onSaveResource) {
-            onSaveResource(resourceData); // Truyền data, bao gồm topicId và có thể cả resource.id
-        }
-        handleCloseResourceModal(); // Đóng modal sau khi xử lý
-        // TODO: Cha (EditRoadmapPage) cần fetch lại data hoặc cập nhật state topics để hiển thị thay đổi
-    };
+  const handleAddExerciseClick = () => {
+    setEditingExercise(null);
+    setIsExerciseModalOpen(true);
+  };
 
-     // --- Xử lý Modals Exercise ---
-    const handleAddExerciseClick = () => {
-        setEditingExercise(null); // Resetting for add mode
-        setIsExerciseModalOpen(true); // <-- Sử dụng đúng state setter
-    };
+  const handleEditExerciseClick = (exercise) => {
+    setEditingExercise(exercise);
+    setIsExerciseModalOpen(true);
+  };
 
-    const handleEditExerciseClick = (exercise) => {
-        setEditingExercise(exercise); // Set data exercise cần edit
-        setIsExerciseModalOpen(true); // <-- Sử dụng đúng state setter
-    };
+  const handleCloseExerciseModal = () => {
+    setIsExerciseModalOpen(false);
+    setEditingExercise(null);
+  };
 
-     const handleCloseExerciseModal = () => {
-        setIsExerciseModalOpen(false); // <-- Sử dụng đúng state setter
-        setEditingExercise(null); // Reset editing state khi đóng
-    };
+  const handleSaveExercise = async (exerciseData) => {
+    console.log("Submit exercise data:", exerciseData, "for topic:", topic?.TopicID); // Use optional chaining
+    if (!token || !topic?.TopicID) return; // Added check for topic?.TopicID
+    const method = editingExercise ? 'PUT' : 'POST';
+    const url = editingExercise
+      ? `http://localhost:8000/api/exercises/${editingExercise.id}/`
+      : 'http://localhost:8000/api/exercises/';
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+         // Ensure topic is sent as topic.TopicID
+        body: JSON.stringify({ ...exerciseData, topic: topic.TopicID }),
+      });
+       if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API error response:', errorData);
+          throw new Error(errorData.detail || `Failed to save exercise: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Saved exercise data:', data);
+      fetchExercises(); // Refresh the list
+    } catch (err) {
+      console.error('Error saving exercise:', err);
+       // Optionally set an error state to display to the user
+    }
+    handleCloseExerciseModal();
+  };
 
-    const handleSaveExercise = (exerciseData) => {
-        console.log("Submit exercise data:", exerciseData, "for topic:", topic.id);
-         // Gọi handler Save/Add Exercise được truyền từ cha (EditRoadmapPage)
-        if (onSaveExercise) {
-            onSaveExercise(exerciseData); // Truyền data, bao gồm topicId và có thể cả exercise.id
-        }
-        handleCloseExerciseModal(); // Đóng modal sau khi xử lý
-        // TODO: Cha (EditRoadmapPage) cần fetch lại data hoặc cập nhật state topics để hiển thị thay đổi
-    };
+  const handleDeleteResourceClick = async (resourceId) => {
+    if (!token) return;
+    try {
+      const response = await fetch(`http://localhost:8000/api/resources/${resourceId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+           const errorData = await response.json().catch(() => ({}));
+           console.error('API error response:', errorData);
+           throw new Error(errorData.detail || `Failed to delete resource: ${response.statusText}`);
+      }
+      console.log('Deleted resource:', resourceId);
+      fetchResources(); // Refresh the list
+    } catch (err) {
+      console.error('Error deleting resource:', err);
+       // Optionally set an error state to display to the user
+    }
+  };
 
-    // --- Xử lý Xóa Resource/Exercise ---
-    const handleDeleteResourceClick = (resourceId) => {
-         if (onDeleteResource) {
-             onDeleteResource(resourceId); // Gọi handler xóa resource được truyền từ cha
-         }
-    };
+  const handleDeleteExerciseClick = async (exerciseId) => {
+    if (!token) return;
+    try {
+      const response = await fetch(`http://localhost:8000/api/exercises/${exerciseId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API error response:', errorData);
+          throw new Error(errorData.detail || `Failed to delete exercise: ${response.statusText}`);
+      }
+      console.log('Deleted exercise:', exerciseId);
+      fetchExercises(); // Refresh the list
+    } catch (err) {
+      console.error('Error deleting exercise:', err);
+       // Optionally set an error state to display to the user
+    }
+  };
 
-     const handleDeleteExerciseClick = (exerciseId) => {
-         if (onDeleteExercise) {
-             onDeleteExercise(exerciseId); // Gọi handler xóa exercise được truyền từ cha
-         }
-     };
+  const handleManageQuizClick = (exercise) => {
+    setSelectedExercise(exercise);
+    setIsQuizModalOpen(true);
+  };
 
+  const handleCloseQuizModal = () => {
+    setIsQuizModalOpen(false);
+    setSelectedExercise(null);
+  };
 
-    return (
-        <div className="topic-item-editable">
-            {/* Header tóm tắt */}
-            <div className="topic-header-summary" onClick={toggleDetails}>
-                {/* Tên topic */}
-                <span className="topic-name">{topic.name}</span>
-                {/* Số lượng Resources và Exercises */}
-                <span className="topic-stats">
-                    {topic.resources?.length || 0} resources, {topic.exercises?.length || 0} exercises
-                </span>
-                {/* Icon mở rộng/thu gọn */}
-                <span className={`details-toggle-icon ${isDetailsOpen ? 'open' : ''}`}>
-                     <i className={`fa-solid ${isDetailsOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
-                </span>
-                 {/* Nút Edit Topic (nếu có) */}
-                 {/* <button className="action-btn edit-topic-btn" onClick={(e) => { e.stopPropagation(); onEditTopic(topic); }}><i className="fa-solid fa-gear"></i></button> */}
-                 {/* Nút Delete Topic */}
-                 {onDeleteTopic && (
-                     <button
-                         className="action-btn delete-topic-btn"
-                         onClick={(e) => { e.stopPropagation(); onDeleteTopic(topic.id); }} // Ngăn sự kiện click lan ra header
-                     >
-                          <i className="fa-solid fa-xmark"></i>
-                     </button>
-                 )}
-            </div>
+  const getResourceTypeIcon = (typeName) => {
+    switch (typeName?.toLowerCase()) {
+      case 'article': return 'file-alt';
+      case 'video': return 'video';
+      case 'tutorial': return 'graduation-cap';
+      case 'book': return 'book';
+      // Add more cases for other resource types if needed
+      default: return 'link'; // Default icon
+    }
+  };
 
-            {/* Phần chi tiết Resources và Exercises (chỉ hiển thị khi isDetailsOpen là true) */}
-            {isDetailsOpen && (
-                <div className="topic-details">
-                    {/* Phần Resources */}
-                    <div className="topic-resources-section">
-                        <h4>Resources</h4>
-                         <button className="add-item-btn" onClick={handleAddResourceClick}>+ Add Resource</button>
-                        {/* Hiển thị danh sách Resources */}
-                        {topic.resources && topic.resources.length > 0 ? (
-                            <ul>
-                                {topic.resources.map(resource => (
-                                    <li key={resource.id}>
-                                        {/* Nội dung Resource: Title, URL, Type */}
-                                        <span>
-                                            {/* Có thể thêm icon tùy loại Resource */}
-                                            {/* <i className={`fa-solid ${getResourceTypeIcon(resource.resource_type_name)}`}></i>  */}
-                                            <i className="fa-solid fa-link"></i> {/* Icon link chung */}
-                                            <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link"> {/* Link */}
-                                                {resource.title}
-                                            </a>
-                                            <span className="resource-type">({resource.resource_type_name || 'Unknown Type'})</span> {/* Loại Resource */}
-                                        </span>
-                                       {/* Nút Edit/Delete Resource */}
-                                       <span className="item-actions"> {/* Container cho các nút */}
-                                            <button className="action-btn edit-btn" onClick={() => handleEditResourceClick(resource)}>
-                                                <i className="fa-solid fa-pencil"></i> {/* Icon Edit */}
-                                            </button>
-                                            {onDeleteResource && (
-                                                <button className="action-btn delete-btn" onClick={() => handleDeleteResourceClick(resource.id)}>
-                                                    <i className="fa-solid fa-xmark"></i> {/* Icon Delete */}
-                                                </button>
-                                            )}
-                                       </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="no-items-message">No resources added yet.</p>
-                        )}
-                    </div>
-
-                     {/* Phần Exercises */}
-                    <div className="topic-exercises-section">
-                        <h4>Exercises</h4>
-                         <button className="add-item-btn" onClick={handleAddExerciseClick}>+ Add Exercise</button>
-                         {/* Hiển thị danh sách Exercises */}
-                        {topic.exercises && topic.exercises.length > 0 ? (
-                            <ul>
-                                {topic.exercises.map(exercise => (
-                                     <li key={exercise.id}>
-                                         {/* Nội dung Exercise: Title, Difficulty, Description (có thể ẩn) */}
-                                        <span>
-                                             <i className="fa-solid fa-laptop-code"></i> {/* Icon Exercise chung */}
-                                             {exercise.title}
-                                             <span className={`exercise-difficulty difficulty-${exercise.difficulty}`}>({exercise.difficulty})</span> {/* Độ khó */}
-                                        </span>
-                                        {/* Nút Edit/Delete Exercise */}
-                                         <span className="item-actions"> {/* Container cho các nút */}
-                                             <button className="action-btn edit-btn" onClick={() => handleEditExerciseClick(exercise)}>
-                                                 <i className="fa-solid fa-pencil"></i> {/* Icon Edit */}
-                                             </button>
-                                             {onDeleteExercise && (
-                                                <button className="action-btn delete-btn" onClick={() => handleDeleteExerciseClick(exercise.id)}>
-                                                     <i className="fa-solid fa-xmark"></i> {/* Icon Delete */}
-                                                 </button>
-                                             )}
-                                        </span>
-                                     </li>
-                                     // TODO: Có thể thêm phần hiển thị description khi click mở rộng item exercise
-                                     // TODO: Thêm phần quản lý Quiz nếu cần (link đến modal/component khác)
-                                ))}
-                            </ul>
-                        ) : (
-                             <p className="no-items-message">No exercises added yet.</p>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Modals */}
-            <ResourceFormModal
-                isVisible={isResourceModalOpen} // Điều khiển hiển thị
-                onClose={handleCloseResourceModal} // Handler đóng modal
-                onSubmit={handleSaveResource} // Handler Save/Add Resource
-                topicId={topic.id} // Truyền topicId
-                initialData={editingResource} // Truyền data nếu đang edit
-            />
-             <ExerciseFormModal
-                isVisible={isExerciseModalOpen} // <-- Sử dụng đúng state variable
-                onClose={handleCloseExerciseModal} // Handler đóng modal
-                onSubmit={handleSaveExercise} // Handler Save/Add Exercise
-                topicId={topic.id} // Truyền topicId
-                initialData={editingExercise} // Truyền data nếu đang edit
-             />
-
+  return (
+    <div className="topic-item-editable">
+      {/* Topic header always visible */}
+      <div className="topic-header-summary" onClick={toggleDetails}>
+        {/* Children typically renders the topic name */}
+        <span className="topic-name">{children}</span>
+        <span className={`details-toggle-icon ${isDetailsOpen ? 'open' : ''}`}>
+          <FontAwesomeIcon icon={isDetailsOpen ? 'chevron-up' : 'chevron-down'} />
+        </span>
+        {/* Add Edit and Delete buttons here */}
+        <div className="topic-actions-within-item"> {/* Added a new class for clarity */}
+             <button className="edit-btn" onClick={(e) => { e.stopPropagation(); onEditTopic(topic); }}>
+                <FontAwesomeIcon icon="pencil" title="Edit Topic" /> {/* Added tooltip */}
+             </button>
+             <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDeleteTopicClick(topic); }}> {/* Use the new prop name */}
+                <FontAwesomeIcon icon="trash" title="Delete Topic" /> {/* Added tooltip */}
+             </button>
         </div>
-    );
+      </div>
+
+      {/* Topic details section (resources and exercises) */}
+      {isDetailsOpen && (
+        <div className="topic-details">
+          <div className="topic-resources-section">
+            <h4>Resources</h4>
+            <button className="add-item-btn" onClick={handleAddResourceClick}>+ Add Resource</button>
+            {resources.length > 0 ? (
+              <ul>
+                {resources.map(resource => (
+                  <li key={resource.id}>
+                    <span className="resource-item-content"> {/* Added a span for content */}
+                       {/* Added title attribute for tooltip */}
+                      <FontAwesomeIcon icon={getResourceTypeIcon(resource.resource_type_name)} title={resource.resource_type_name || 'Resource'} />
+                      <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">
+                        {resource.title}
+                      </a>
+                      {/* Removed the resource type name text */}
+                    </span>
+                    <span className="item-actions">
+                      <button className="action-btn edit-btn" onClick={() => handleEditResourceClick(resource)}>
+                        <FontAwesomeIcon icon="pencil" title="Edit Resource" /> {/* Added tooltip */}
+                      </button>
+                      <button className="action-btn delete-btn" onClick={() => handleDeleteResourceClick(resource.id)}>
+                        <FontAwesomeIcon icon="times" title="Delete Resource" /> {/* Added tooltip */}
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="no-items-message">No resources added yet.</p>
+            )}
+          </div>
+
+          <div className="topic-exercises-section">
+            <h4>Exercises</h4>
+            <button className="add-item-btn" onClick={handleAddExerciseClick}>+ Add Exercise</button>
+            {exercises.length > 0 ? (
+              <ul>
+                {exercises.map(exercise => (
+                  <li key={exercise.id}>
+                    <span className="exercise-item-content"> {/* Added a span for content */}
+                       {/* Added title attribute for tooltip */}
+                      <FontAwesomeIcon icon="laptop-code" title="Exercise" />
+                      {exercise.title}
+                      <span className={`exercise-difficulty difficulty-${exercise.difficulty}`}>({exercise.difficulty})</span>
+                    </span>
+                    <span className="item-actions">
+                      <button className="action-btn manage-quiz-btn" onClick={() => handleManageQuizClick(exercise)}>
+                        <FontAwesomeIcon icon="question-circle" title="Manage Quiz" /> Manage Quiz {/* Added tooltip */}
+                      </button>
+                      <button className="action-btn edit-btn" onClick={() => handleEditExerciseClick(exercise)}>
+                        <FontAwesomeIcon icon="pencil" title="Edit Exercise" /> {/* Added tooltip */}
+                      </button>
+                      <button className="action-btn delete-btn" onClick={() => handleDeleteExerciseClick(exercise.id)}>
+                        <FontAwesomeIcon icon="times" title="Delete Exercise" /> {/* Added tooltip */}
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="no-items-message">No exercises added yet.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modals for adding/editing resources, exercises, and managing quizzes */}
+      <ResourceFormModal
+        isVisible={isResourceModalOpen}
+        onClose={handleCloseResourceModal}
+        onSubmit={handleSaveResource}
+        topicId={topic?.TopicID} // Pass TopicID, use optional chaining
+        initialData={editingResource}
+      />
+      <ExerciseFormModal
+        isVisible={isExerciseModalOpen}
+        onClose={handleCloseExerciseModal}
+        onSubmit={handleSaveExercise}
+        topicId={topic?.TopicID} // Pass TopicID, use optional chaining
+        initialData={editingExercise}
+      />
+      <QuizManagerModal
+        isVisible={isQuizModalOpen}
+        onClose={handleCloseQuizModal}
+        exercise={selectedExercise}
+      />
+    </div>
+  );
 }
 
 export default TopicItemEditable;
-
-// TODO: Helper function để lấy icon dựa trên resource type name (tùy chọn)
-// function getResourceTypeIcon(typeName) {
-//     switch (typeName?.toLowerCase()) {
-//         case 'article': return 'fa-file-alt';
-//         case 'video': return 'fa-video';
-//         case 'tutorial': return 'fa-graduation-cap';
-//         case 'book': return 'fa-book';
-//         default: return 'fa-link'; // Icon mặc định
-//     }
-// }

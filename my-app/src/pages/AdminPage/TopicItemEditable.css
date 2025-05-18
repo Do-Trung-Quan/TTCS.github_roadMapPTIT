@@ -16,60 +16,77 @@
     background-color: #f8f9fa; /* Nền nhẹ cho header */
     border-bottom: 1px solid #eee; /* Viền dưới */
     user-select: none; /* Ngăn chọn văn bản */
+    justify-content: space-between; /* Distribute space */
 }
 
 .topic-item-editable:last-child .topic-header-summary {
      border-bottom: none; /* Bỏ viền dưới cho header item cuối cùng */
 }
 
-
 .topic-header-summary .topic-name {
     font-weight: bold;
     font-size: 1.1em;
     color: #333;
-    flex-grow: 1; /* Cho phép tên topic chiếm hết không gian */
-    margin-right: 10px; /* Khoảng cách với stats */
-}
-
-.topic-header-summary .topic-stats {
-    font-size: 0.9em;
-    color: #555;
-    margin-right: 15px; /* Khoảng cách với icon mũi tên */
+    flex-grow: 1; /* Allow topic name to take available space */
+    margin-right: 10px; /* Space between topic name and other elements */
+    /* Prevent text wrapping issues */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .topic-header-summary .details-toggle-icon {
     font-size: 0.9em;
     color: #555;
     transition: transform 0.2s ease; /* Hiệu ứng xoay */
+    margin-right: 10px; /* Space between toggle icon and buttons */
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .topic-header-summary .details-toggle-icon.open {
     transform: rotate(180deg); /* Xoay khi mở */
 }
 
-/* Style cho các nút hành động trong header (Edit, Delete Topic) */
-.topic-header-summary .action-btn {
+/* Style for the container holding Edit and Delete buttons within the header */
+.topic-actions-within-item {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* Prevent shrinking */
+    gap: 5px; /* Space between buttons */
+}
+
+/* Styles for the Edit and Delete buttons within topic-actions-within-item */
+.topic-actions-within-item .edit-btn,
+.topic-actions-within-item .delete-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 5px;
-    font-size: 0.9em;
-    color: #555; /* Màu icon mặc định */
-    margin-left: 5px; /* Khoảng cách giữa các nút */
-    transition: color 0.2s ease;
+    font-size: 0.9em; /* Adjusted font size */
+    padding: 4px 8px; /* Adjusted padding */
+    border-radius: 4px; /* Adjusted border radius */
+    display: flex; /* Use flexbox for icon and text alignment */
+    align-items: center; /* Align icon and text vertically */
+    gap: 5px; /* Space between icon and text */
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.topic-header-summary .action-btn:hover {
-     color: #333; /* Màu đậm hơn khi hover */
-}
-/* Style riêng cho nút delete topic */
-.topic-header-summary .delete-topic-btn {
-    color: #dc3545; /* Màu đỏ */
-}
-.topic-header-summary .delete-topic-btn:hover {
-    color: #c82333;
+.topic-actions-within-item .edit-btn {
+  background-color: #ffc107;
+  color: #fff;
 }
 
+.topic-actions-within-item .edit-btn:hover {
+  background-color: #e0a800;
+}
+
+.topic-actions-within-item .delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.topic-actions-within-item .delete-btn:hover {
+  background-color: #c82333;
+}
 
 /* Style cho phần chi tiết Resources/Exercises (khi mở) */
 .topic-details {
@@ -91,7 +108,6 @@
      margin-bottom: 0;
 }
 
-
 .topic-resources-section h4,
 .topic-exercises-section h4 {
     font-size: 1.1em;
@@ -107,8 +123,8 @@
     background-color: #28a745; /* Màu xanh lá */
     color: #fff;
     border: none;
-    border-radius: 4px; /* Bo góc nhỏ hơn */
     padding: 5px 10px; /* Padding nhỏ hơn */
+    border-radius: 4px; /* Bo góc nhỏ hơn */
     font-size: 0.9em;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -142,28 +158,68 @@
     margin-bottom: 0; /* Bỏ khoảng cách dưới item cuối cùng */
 }
 
-/* Style cho nút Edit/Delete Resource/Exercise (nếu thêm vào li) */
-.topic-details ul li .action-btn {
+/* Style for the content span within list items */
+.topic-details ul li .resource-item-content,
+.topic-details ul li .exercise-item-content {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Allow content to take available space */
+    margin-right: 10px; /* Space between content and actions */
+    /* Ensure content doesn't wrap under action buttons */
+    min-width: 0; /* Allow flex item to shrink below its content size */
+}
+
+/* Add spacing between icon and text within resource/exercise list items */
+.topic-details ul li .resource-item-content .svg-inline--fa,
+.topic-details ul li .exercise-item-content .svg-inline--fa {
+    margin-right: 8px; /* Adjust spacing as needed */
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+/* Style for the resource link to prevent text wrapping issues */
+.topic-details ul li .resource-item-content .resource-link {
+    white-space: nowrap; /* Prevent wrapping */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Add ellipsis for truncated text */
+    display: inline-block; /* Required for text-overflow to work */
+    max-width: calc(100% - 30px); /* Adjust max-width considering icon and padding/margin */
+     /* You might need to fine-tune this max-width based on your layout */
+}
+
+/* Style for the exercise difficulty span */
+.topic-details ul li .exercise-item-content .exercise-difficulty {
+    margin-left: 8px; /* Add space before the difficulty */
+    flex-shrink: 0; /* Prevent difficulty text from shrinking */
+}
+
+/* Style for the action buttons within resource/exercise list items */
+.topic-details ul li .item-actions {
+     flex-shrink: 0; /* Prevent action buttons from shrinking */
+     display: flex; /* Use flexbox for buttons within item actions */
+     align-items: center; /* Align buttons vertically */
+     gap: 5px; /* Space between buttons */
+}
+
+.topic-details ul li .item-actions .action-btn { /* Specific selector */
     background: none;
     border: none;
     cursor: pointer;
-    padding: 3px; /* Padding nhỏ */
+    padding: 3px; /* Padding small */
     font-size: 0.8em;
     color: #555;
-    margin-left: 5px;
+    /* margin-left handled by gap in .item-actions */
     transition: color 0.2s ease;
 }
-.topic-details ul li .action-btn:hover {
+.topic-details ul li .item-actions .action-btn:hover { /* Specific selector */
     color: #333;
 }
 /* Style riêng cho nút delete resource/exercise */
-.topic-details ul li .delete-btn {
+.topic-details ul li .item-actions .delete-btn { /* Specific selector */
     color: #dc3545;
 }
-.topic-details ul li .delete-btn:hover {
+.topic-details ul li .item-actions .delete-btn:hover { /* Specific selector */
     color: #c82333;
 }
-
 
 /* Style cho thông báo "No items" */
 .no-items-message {

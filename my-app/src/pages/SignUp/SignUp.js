@@ -3,7 +3,6 @@ import "./SignUp.css";
 import githubIcon from "../../assets/img/github_Icon.png";
 import googleIcon from "../../assets/img/google_Icon.png";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
-import Header from "../../components/Header/header"; // Đảm bảo component Header tồn tại
 
 // Đảm bảo firebaseConfig, auth, googleProvider, githubProvider được cấu hình đúng
 import { auth, googleProvider, githubProvider } from "../../firebase/firebaseConfig";
@@ -249,8 +248,6 @@ const handleGithubSignUp = async () => {
 
   return (
     <>
-      {/* Đảm bảo component Header tồn tại */}
-      <Header />
       <div className="signup-container">
         <div className="signup-box">
           <h2 className="signup-title">Đăng ký</h2>

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import ReactFlow, {Background } from "reactflow";
 import "reactflow/dist/style.css";
 import "./roadmap.css";
-import Header from "../../components/Header/header";
-import Footer from "../../components/Footer/footer";
+// import Header from "../../components/Header/header";
+// import Footer from "../../components/Footer/footer";
 
 const nodeDetails = {
   "1": { 
@@ -269,7 +269,7 @@ export default function Roadmap() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div style={{ textAlign: "center", marginTop: "10px" }}>
         <h1>Front-end Roadmap</h1>
         <p>Chào mừng, đây là lộ trình front-end cho các anh chị em</p>
@@ -335,7 +335,7 @@ export default function Roadmap() {
           </>
         )}
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

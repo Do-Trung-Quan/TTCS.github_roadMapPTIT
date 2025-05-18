@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './ResetPasswordEmail.css';
-import Header from '../../components/Header/header';
 import { Link } from "react-router-dom";
 
 const ResetPasswordEmail = () => {
@@ -36,7 +35,6 @@ const ResetPasswordEmail = () => {
 
   return (
     <>
-      <Header />
       <div className="email-container">
         <div className="email-box">
           <h2 className="email-title">Đặt lại mật khẩu</h2>

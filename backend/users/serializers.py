@@ -17,10 +17,13 @@ class UserSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=[('user', 'User'), ('admin', 'Admin')], default='user')
     created_at = serializers.DateTimeField(read_only=True)
     last_login = serializers.DateTimeField(read_only=True)
+    github = serializers.URLField(required=False, allow_null=True, allow_blank=True)  # Thêm trường github
+    linkedin = serializers.URLField(required=False, allow_null=True, allow_blank=True)  # Thêm trường linkedin
+    show_email_on_profile = serializers.BooleanField(default=False)  # Thêm trường show_email_on_profile
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'password', 'role', 'avatar', 'created_at', 'last_login')
+        fields = ('id', 'email', 'username', 'password', 'role', 'avatar', 'created_at', 'last_login', 'github', 'linkedin', 'show_email_on_profile')
         read_only_fields = ('id', 'created_at', 'last_login')
 
     def validate_email(self, value):
@@ -54,35 +57,34 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
         
-        # Kiểm tra quyền cập nhật (admin có thể thay đổi tất cả, user chỉ có thể cập nhật bản thân)
         user = self.context['request'].user
         if user != instance and not user.is_admin():
             raise serializers.ValidationError("Bạn không có quyền cập nhật thông tin của người khác.")
         
-        # Nếu là admin, có thể thay đổi vai trò
         if 'role' in validated_data and not user.is_admin():
-            validated_data.pop('role')  # Nếu không phải admin, không thể thay đổi vai trò
+            validated_data.pop('role')
         
-        # Cập nhật thông tin người dùng
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         
-        # Cập nhật mật khẩu nếu có
         if password:
             instance.set_password(password)
         
         instance.save()
         return instance
-    
+
 class SocialUserSerializer(serializers.ModelSerializer):
     avatar = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     role = serializers.ChoiceField(choices=[('user', 'User'), ('admin', 'Admin')], default='user')
     created_at = serializers.DateTimeField(read_only=True)
     last_login = serializers.DateTimeField(read_only=True)
+    github = serializers.URLField(required=False, allow_null=True, allow_blank=True)  # Thêm trường github
+    linkedin = serializers.URLField(required=False, allow_null=True, allow_blank=True)  # Thêm trường linkedin
+    show_email_on_profile = serializers.BooleanField(default=False)  # Thêm trường show_email_on_profile
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'role', 'avatar', 'created_at', 'last_login')
+        fields = ('id', 'email', 'username', 'role', 'avatar', 'created_at', 'last_login', 'github', 'linkedin', 'show_email_on_profile')
         read_only_fields = ('id', 'created_at', 'last_login')
 
     def validate_email(self, value):

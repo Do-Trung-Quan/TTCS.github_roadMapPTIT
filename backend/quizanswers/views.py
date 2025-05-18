@@ -5,30 +5,34 @@ from .models import QuizAnswer
 from .serializers import QuizAnswerSerializer
 from rest_framework.permissions import AllowAny
 from users.permissions import IsAdmin
-
 from rest_framework.authentication import SessionAuthentication
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
-        return  # Bỏ qua kiểm tra CSRF
+        return # Bỏ qua kiểm tra CSRF
 
 class QuizAnswerListCreate(APIView):
     authentication_classes = []
+
     def get_permissions(self):
         if self.request.method == 'POST':
             return [IsAdmin()]
         return [AllowAny()]
 
-    # GET: Lấy danh sách tất cả quiz answer
+    # GET: Lấy danh sách câu trả lời theo quiz_question
     def get(self, request):
-        quiz_answers = QuizAnswer.objects.all()
+        quiz_question_id = request.query_params.get('quiz_question')
+        if quiz_question_id:
+            quiz_answers = QuizAnswer.objects.filter(quiz_question_id=quiz_question_id)
+        else:
+            quiz_answers = QuizAnswer.objects.all()
         serializer = QuizAnswerSerializer(quiz_answers, many=True)
         return Response({
             'message': 'Lấy danh sách câu trả lời bài quiz thành công.',
             'data': serializer.data
         })
 
-    # POST: Tạo mới quiz answer
+    # POST: Tạo mới câu trả lời
     def post(self, request):
         serializer = QuizAnswerSerializer(data=request.data)
         if serializer.is_valid():
@@ -42,15 +46,15 @@ class QuizAnswerListCreate(APIView):
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
-
 class QuizAnswerDetail(APIView):
     authentication_classes = []
+
     def get_permissions(self):
         if self.request.method == 'PUT' or self.request.method == 'DELETE':
             return [IsAdmin()]
         return [AllowAny()]
 
-    # GET: Lấy thông tin quiz answer theo pk
+    # GET: Lấy thông tin câu trả lời theo pk
     def get(self, request, pk):
         try:
             quiz_answer = QuizAnswer.objects.get(pk=pk)
@@ -58,14 +62,13 @@ class QuizAnswerDetail(APIView):
             return Response({
                 'message': 'Câu trả lời bài quiz không tồn tại.'
             }, status=status.HTTP_404_NOT_FOUND)
-
         serializer = QuizAnswerSerializer(quiz_answer)
         return Response({
             'message': 'Lấy thông tin câu trả lời thành công.',
             'data': serializer.data
         })
 
-    # PUT: Cập nhật quiz answer theo pk
+    # PUT: Cập nhật câu trả lời theo pk
     def put(self, request, pk):
         try:
             quiz_answer = QuizAnswer.objects.get(pk=pk)
@@ -73,7 +76,6 @@ class QuizAnswerDetail(APIView):
             return Response({
                 'message': 'Câu trả lời bài quiz không tồn tại.'
             }, status=status.HTTP_404_NOT_FOUND)
-
         serializer = QuizAnswerSerializer(quiz_answer, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -86,7 +88,7 @@ class QuizAnswerDetail(APIView):
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    # DELETE: Xóa quiz answer theo pk
+    # DELETE: Xóa câu trả lời theo pk
     def delete(self, request, pk):
         try:
             quiz_answer = QuizAnswer.objects.get(pk=pk)
@@ -94,7 +96,6 @@ class QuizAnswerDetail(APIView):
             return Response({
                 'message': 'Câu trả lời bài quiz không tồn tại.'
             }, status=status.HTTP_404_NOT_FOUND)
-
         quiz_answer.delete()
         return Response({
             'message': 'Xóa câu trả lời thành công.'

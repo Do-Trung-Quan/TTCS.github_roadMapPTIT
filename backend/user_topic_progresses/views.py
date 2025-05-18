@@ -20,21 +20,17 @@ class UserTopicProgressListCreate(APIView):
     permission_classes = [IsAdminOrUser]
 
     def get(self, request):
-        # If the request is authenticated, filter bookmarks based on user role
         if hasattr(request, 'auth_user') and request.auth_user:
             user_role = request.auth_user.get('role', '')
             authenticated_user_id = request.auth_user.get('_id', '')
 
             if user_role == 'admin':
-                # Admins can see all progresses
                 progresses = UserTopicProgress.objects.all()
                 logger.info("Admin accessed all progresses")
             else:
-                # Non-admins can only see their own progresses
                 progresses = UserTopicProgress.objects.filter(UserID=authenticated_user_id)
                 logger.info(f"User {authenticated_user_id} accessed their own progresses")
         else:
-            # Unauthenticated requests are denied (due to IsAdminOrUser)
             return Response({
                 'message': 'Authentication required to access progresses.'
             }, status=status.HTTP_401_UNAUTHORIZED)
@@ -46,11 +42,9 @@ class UserTopicProgressListCreate(APIView):
         })
 
     def post(self, request):
-        # Ensure the request is authenticated (handled by IsAdminOrUser)
         authenticated_user_id = request.auth_user['_id']
         user = User.objects.get(id=authenticated_user_id)
 
-        # Modify the request data to set UserID from the token
         data = request.data.copy()
         data['UserID'] = authenticated_user_id
 
@@ -84,9 +78,8 @@ class UserTopicProgressDetail(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        # Ensure UserID cannot be changed during update
         data = request.data.copy()
-        data['UserID'] = str(instance.UserID.id)  # Keep the original UserID
+        data['UserID'] = str(instance.UserID.id)
         serializer = self.get_serializer(instance, data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -110,30 +103,20 @@ class CompletionPercentageAPIView(GenericAPIView):
     lookup_field = 'pk'
 
     def get(self, request, *args, **kwargs):
-        # Retrieve the specific UserTopicProgress object
-        progress = self.get_object()  # This will use pk from the URL (e.g., PRG002)
-
-        # Check object-level permissions (calls has_object_permission)
-        # This ensures only the owner (UserID matches authenticated user) or an admin can proceed
+        progress = self.get_object()
         self.check_object_permissions(request, progress)
 
-        # Get the user_id from the UserTopicProgress object
         user_id = progress.UserID.id
-
-        # Log the access
         authenticated_user_id = request.auth_user.get('_id', '')
+
         if request.auth_user.get('role', '') == 'admin':
             logger.info(f"Admin {authenticated_user_id} accessed progress for user {user_id}")
         else:
             logger.info(f"User {authenticated_user_id} accessed their own progress")
 
-        # Calculate total topics for this user
         total = UserTopicProgress.objects.filter(UserID=user_id).count()
-
-        # Calculate completed topics (status == 'done')
         done = UserTopicProgress.objects.filter(UserID=user_id, status='done').count()
 
-        # Calculate completion percentage
         if total == 0:
             percentage = 0
         else:
@@ -145,4 +128,45 @@ class CompletionPercentageAPIView(GenericAPIView):
             'completed_topics': done,
             'total_topics': total,
             'percentage_complete': f"{percentage}%"
+        }, status=status.HTTP_200_OK)
+
+# API mới: Đếm số lượng Topics Completed và Currently Learning
+class UserTopicStatusCountAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [IsAdminOrUser]
+
+    def get(self, request):
+        # Lấy UserID từ token xác thực
+        if not hasattr(request, 'auth_user') or not request.auth_user:
+            return Response({
+                'message': 'Authentication required to access status count.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+        authenticated_user_id = request.auth_user.get('_id', '')
+        user_role = request.auth_user.get('role', '')
+
+        # Nếu là admin, có thể xem dữ liệu của user khác qua query param
+        if user_role == 'admin':
+            user_id = request.query_params.get('user_id', authenticated_user_id)
+            logger.info(f"Admin {authenticated_user_id} accessed status count for user {user_id}")
+        else:
+            user_id = authenticated_user_id
+            logger.info(f"User {authenticated_user_id} accessed their own status count")
+
+        # Kiểm tra user_id hợp lệ
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({
+                'message': 'User không tồn tại.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # Đếm các trạng thái
+        completed = UserTopicProgress.objects.filter(UserID=user_id, status='done').count()
+        currently_learning = UserTopicProgress.objects.filter(UserID=user_id, status__in=['pending', 'skip']).count()
+
+        return Response({
+            'user_id': user_id,
+            'completed_topics': completed,
+            'currently_learning': currently_learning
         }, status=status.HTTP_200_OK)

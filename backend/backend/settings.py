@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'django.contrib.admin', 
     'django.contrib.auth',
     'users',
-    'bookmark',
     'enroll',
     'exercise',
     'quizanswers',
@@ -47,6 +46,7 @@ INSTALLED_APPS = [
     'topic_roadmaps',
     'topics',
     'user_topic_progresses',
+    'translate',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -238,11 +238,15 @@ FRONTEND_URL = 'http://localhost:3000'  # Hoặc URL frontend của bạn
 
 
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dsm1uhecl',
+    'API_KEY': '118225892873696',
+    'API_SECRET': 'Ks-yVnCE9rmTML5wOPmYmoozy74',
+}
 
 cloudinary.config(
-    cloud_name= "dsm1uhecl",
-    api_key= "118225892873696",
-    api_secret= "Ks-yVnCE9rmTML5wOPmYmoozy74"
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET']
 )
