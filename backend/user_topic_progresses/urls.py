@@ -9,8 +9,7 @@ urlpatterns = [
     path('user-topic-progress/<str:pk>/', views.UserTopicProgressDetail.as_view(), name='user-topic-progress-detail'),
     
     # API: Đếm Topics Completed và Currently Learning
-    path('user-topic-progress/status-count/', views.UserTopicStatusCountAPIView.as_view(), name='user-topic-progress-status-count'),
-    
+    path('status-count-by-user/', views.UserTopicProgressStatusCountByUser.as_view(), name='user-topic-progress-status-count-by-user'),
     # API: Tính % hoàn thành theo từng roadmap
-    path('user-topic-progress/roadmap-progress/', views.UserRoadmapProgressAPIView.as_view(), name='user-roadmap-progress'),
+    path('roadmap-progress/', views.UserRoadmapProgressAPIView.as_view(), name='user-roadmap-progress'),
 ]

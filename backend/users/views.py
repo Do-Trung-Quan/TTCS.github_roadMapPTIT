@@ -1,9 +1,11 @@
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from .models import User
+from UserVisitLog.views import record_user_visit
 from .serializers import (
     UserSerializer, SocialUserSerializer, LoginSerializer,
     EmailLoginSerializer, ResetPasswordEmailSerializer, ResetPasswordSerializer
@@ -58,6 +60,12 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            user.last_login = timezone.now()
+            user.save(update_fields=['last_login'])
+
+            # Ghi nhận lượt truy cập
+            record_user_visit(user)
+
             tokens = get_tokens_for_user(user)
             return Response({
                 'message': 'Đăng nhập thành công',
@@ -75,6 +83,12 @@ class SocialLoginView(APIView):
         serializer = EmailLoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            user.last_login = timezone.now()
+            user.save(update_fields=['last_login'])
+
+            # Ghi nhận lượt truy cập
+            record_user_visit(user)
+
             tokens = get_tokens_for_user(user)
             return Response({
                 'message': 'Đăng nhập thành công qua email (xác thực social)',

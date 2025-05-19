@@ -25,7 +25,7 @@ import SettingsPage from "./pages/AdminPage/SettingsPage";
 import UserManagementPage from "./pages/AdminPage/UserManagementPage";
 import EditRoadmapPage from "./pages/AdminPage/EditRoadmapPage";
 import RoadmapsPage from "./pages/AdminPage/RoadmapsPage";
-// import UserPage from "./pages/AdminPage/UserPage";
+import ActivityPage from './pages/AdminPage/ActivityPage';
 
 // Import LanguageProvider và AuthProvider
 import { LanguageProvider } from './context/LanguageContext';
@@ -35,7 +35,7 @@ export default function App() {
   return (
     // Bọc toàn bộ ứng dụng bằng LanguageProvider và AuthProvider
     <LanguageProvider>
-      <AuthProvider> {/* <-- Bọc Router bằng AuthProvider */}
+      <AuthProvider>
         <Router>
           {/*
             Đặt Header và Footer ở đây (bên ngoài Routes)
@@ -63,16 +63,15 @@ export default function App() {
                <Route path="roadmaps-list" element={<RoadmapsPage />} />
                <Route path="edit-roadmap" element={<EditRoadmapPage />} />
                <Route path="users" element={<UserManagementPage />} />
+               <Route path="activity" element={<ActivityPage />} /> {/* Added ActivityPage under /admin */}
             </Route>
 
             {/* ... các route khác ... */}
-
           </Routes>
 
           <Footer />
-
         </Router>
-      </AuthProvider> {/* <-- Kết thúc AuthProvider */}
+      </AuthProvider>
     </LanguageProvider>
   );
 }

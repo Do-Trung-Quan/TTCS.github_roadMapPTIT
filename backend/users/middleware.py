@@ -16,7 +16,8 @@ class AuthMiddleware:
             '/api/social-login/',
             '/api/password/reset-email/',
             '/api/password/reset/',
-            '/api/translate/'
+            '/api/translate/',
+            '/api/roadmap-search/'
         ]
         self.allow_any_prefixes = [
             '/api/roadmaps/',

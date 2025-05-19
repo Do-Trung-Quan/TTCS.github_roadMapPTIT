@@ -1,45 +1,149 @@
-import React from 'react';
-import './ActivityPage.css'; // Import file CSS tương ứng
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import './ActivityPage.css';
 
-// Component hiển thị nội dung trang Activity
-// Hiện tại component này là tĩnh, hiển thị placeholder data
-// Trong ứng dụng thực tế, dữ liệu sẽ được truyền qua props hoặc fetch từ API
 function ActivityPage() {
+  const navigate = useNavigate();
+  const { getToken, user } = useAuth();
+  const [progressData, setProgressData] = useState([]);
+  const [statsData, setStatsData] = useState({ done_count: 0, pending_or_skip_count: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      const token = getToken();
+      if (!token) {
+        setError('Please log in to view your progress.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch stats data (Topics Completed and Currently Learning)
+        const statsResponse = await fetch('http://localhost:8000/api/status-count-by-user/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (statsResponse.ok) {
+          const statsResult = await statsResponse.json();
+          setStatsData(statsResult.data || { done_count: 0, pending_or_skip_count: 0 });
+        } else {
+          const statsErrorData = await statsResponse.json();
+          setError(`Failed to fetch stats: ${statsErrorData.message || 'Unknown error'}`);
+          return;
+        }
+
+        // Fetch progress data (Roadmap Progress)
+        const progressResponse = await fetch('http://localhost:8000/api/roadmap-progress/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (progressResponse.ok) {
+          const progressResult = await progressResponse.json();
+          setProgressData(progressResult.data || []);
+        } else {
+          const progressErrorData = await progressResponse.json();
+          setError(`Failed to fetch progress: ${progressErrorData.message || 'Unknown error'}`);
+        }
+      } catch (err) {
+        setError('Network error. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, getToken]);
+
+  const handleRoadmapClick = (roadmapId) => {
+    navigate(`/roadmap/${roadmapId}`);
+  };
+
+  if (isLoading) {
+    return <div className="page-content" id="activity">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="page-content" id="activity">
+        <div className="activity-container">
+          <div className="activity-empty">
+            <h2>Error</h2>
+            <p>{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="page-content" id="activity">
+        <div className="activity-container">
+          <div className="activity-empty">
+            <h2>Please Log In</h2>
+            <p>
+              <a href="/login" className="link-text">Log in</a> to view your progress.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // Giữ lại class và ID để dễ dàng áp dụng lại CSS gốc
-    <div className="page-content" id="activity"> {/* Sử dụng className */}
-      <div className="activity-container"> {/* Sử dụng className */}
-        <div className="activity-stats"> {/* Sử dụng className */}
-          <div className="stats-item"> {/* Sử dụng className */}
-            <span className="stats-value">0</span> {/* Dữ liệu này nên động */}
-            <span className="stats-label">Topics Completed</span> {/* Label tĩnh */}
+    <div className="page-content" id="activity">
+      <div className="activity-container">
+        <div className="activity-stats">
+          <div className="stats-item">
+            <span className="stats-value">{statsData.done_count}</span>
+            <span className="stats-label">Topics Completed</span>
           </div>
-          <div className="stats-item"> {/* Sử dụng className */}
-            <span className="stats-value">0</span> {/* Dữ liệu này nên động */}
-            <span className="stats-label">Currently Learning</span> {/* Label tĩnh */}
-          </div>
-          <div className="stats-item"> {/* Sử dụng className */}
-            <span className="stats-value">2d</span> {/* Dữ liệu này nên động */}
-            <span className="stats-label">Visit Streak</span> {/* Label tĩnh */}
+          <div className="stats-item">
+            <span className="stats-value">{statsData.pending_or_skip_count}</span>
+            <span className="stats-label">Currently Learning</span>
           </div>
         </div>
 
-        <div className="activity-empty"> {/* Sử dụng className */}
-          <div className="icon-circle"> {/* Sử dụng className */}
-            {/* SVG icon - copy trực tiếp */}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 9V19H8V9H16ZM14.5 3H9.5L8.5 4H5V6H19V4H15.5L14.5 3ZM18 7H6V19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7Z" fill="#ddd"/>
-            </svg>
+        {progressData.length === 0 ? (
+          <div className="activity-empty">
+            <h2>Start your progress now</h2>
+            <p>
+              <a href="/" className="link-text">Go to Home</a> to start exploring roadmaps.
+            </p>
           </div>
-          <h2>No Progress</h2>
-          <p>Progress will appear here as you start tracking your</p>
-          <p>
-            {/* Link - Trong React Router, bạn có thể thay bằng <Link to="/roadmaps"> */}
-            <a href="#" className="link-text">Roadmaps</a> {/* Sử dụng className */}
-             progress.
-             {/* Thêm event.preventDefault() vào onClick nếu muốn giữ nguyên thẻ <a> nhưng không chuyển trang */}
-          </p>
-        </div>
+        ) : (
+          <>
+            <h3 className="continue-following">CONTINUE FOLLOWING</h3>
+            <div className="progress-list">
+              {progressData.map((item) => (
+                <div
+                  key={item.roadmap_id}
+                  className="progress-item"
+                  onClick={() => handleRoadmapClick(item.roadmap_id)}
+                >
+                  <span className="progress-title">{item.roadmap_title}</span>
+                  <span className="progress-percentage">{item.percentage_complete}%</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

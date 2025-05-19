@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/', include('topic_roadmaps.urls')),  # Endpoint cho API quản lý mối quan hệ topic-roadmap
     path('api/', include('user_topic_progresses.urls')), # Endpoint cho API theo dõi tiến trình topic của người dùng
     path('api/', include('translate.urls')),  # Endpoint cho API dịch thuật
+    path('api/', include('UserVisitLog.urls')),
 ]
 # Cấu hình URL cho static và media khi debug
 if settings.DEBUG:

@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ReactFlow, { Background } from "reactflow";
 import "reactflow/dist/style.css";
 import "./roadmap.css";
 import { useParams } from "react-router-dom";
 import { useAuth } from '../../context/AuthContext';
 
-const STORAGE_KEY = "frontend_roadmap_progress";
+// Sử dụng STORAGE_KEY với prefix để tạo key riêng cho từng user
+const STORAGE_KEY_PREFIX = "frontend_roadmap_progress_";
 
 export default function Roadmap() {
   const { id } = useParams();
@@ -21,12 +22,29 @@ export default function Roadmap() {
   const [quizAnswers, setQuizAnswers] = useState({});
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedExercise, setSelectedExercise] = useState(null);
+
+  // Memoize getStorageKey to prevent useEffect dependency changes
+  const getStorageKey = useCallback(() => (
+    user && user.id ? `${STORAGE_KEY_PREFIX}${user.id}_${id}` : `${STORAGE_KEY_PREFIX}guest_${id}`
+  ), [user, id]);
+
   const [nodeProgress, setNodeProgress] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(getStorageKey());
     return saved ? JSON.parse(saved) : {};
   });
-  const [progressPercentage, setProgressPercentage] = useState(0);
 
+  const [progressPercentage, setProgressPercentage] = useState(0);
+  const [totalTopics, setTotalTopics] = useState(0);
+
+  // Reset nodeProgress when user changes
+  useEffect(() => {
+    const resetProgress = () => {
+      setNodeProgress({}); // Reset before refetch
+    };
+    resetProgress();
+  }, [user]);
+
+  // Fetch roadmap details
   useEffect(() => {
     const fetchRoadmap = async () => {
       try {
@@ -42,6 +60,7 @@ export default function Roadmap() {
     fetchRoadmap();
   }, [id]);
 
+  // Fetch topics and initialize nodes, edges, and progress
   useEffect(() => {
     const fetchTopics = async () => {
       try {
@@ -51,7 +70,6 @@ export default function Roadmap() {
         const data = Array.isArray(result.data) ? result.data : [];
         if (!Array.isArray(data)) {
           console.error("Dữ liệu trả về không phải là mảng:", data);
-          setNodeProgress(prevNodeProgress => ({ ...prevNodeProgress }));
           return;
         }
         const filteredTopics = data.filter(topic => topic.RoadmapID === id);
@@ -81,30 +99,102 @@ export default function Roadmap() {
         setNodes(newNodes);
         setEdges(newEdges);
 
-        setNodeProgress(prevNodeProgress => {
-          const updatedProgress = { ...prevNodeProgress };
+        // Reset and initialize nodeProgress for the current roadmap
+        setNodeProgress(prev => {
+          const updatedProgress = {};
           topicsWithNames.forEach(topic => {
-            if (updatedProgress[topic.TopicID] === undefined) {
-              updatedProgress[topic.TopicID] = { status: "pending" };
-            }
+            updatedProgress[topic.TopicID] = prev[topic.TopicID] || { status: "pending" };
           });
           return updatedProgress;
         });
+
+        // Fetch user progress if authenticated
+        if (user && user.id && user.role === 'user') {
+          const token = getToken();
+          if (token) {
+            try {
+              const progressResponse = await fetch(`http://localhost:8000/api/user-topic-progress/?user_id=${user.id}&roadmap_id=${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+              });
+              if (progressResponse.ok) {
+                const progressResult = await progressResponse.json();
+                const progressData = Array.isArray(progressResult.data) ? progressResult.data : [];
+                setNodeProgress(prev => {
+                  const updatedProgress = { ...prev };
+                  progressData.forEach(item => {
+                    if (updatedProgress[item.TopicID]) {
+                      updatedProgress[item.TopicID] = {
+                        id: item.id,
+                        status: item.status,
+                      };
+                    }
+                  });
+                  return updatedProgress;
+                });
+              } else {
+                console.error("Lỗi khi lấy user progress:", await progressResponse.json());
+              }
+            } catch (error) {
+              console.error("Lỗi khi lấy user progress:", error);
+            }
+          }
+        }
       } catch (error) {
         console.error("Lỗi khi lấy topic:", error);
         setNodes([]);
         setEdges([]);
-        setNodeProgress(prevNodeProgress => ({ ...prevNodeProgress }));
       }
     };
     fetchTopics();
-  }, [id]);
+  }, [id, user, getToken]);
 
-  const fetchTopicDetails = async (topicId) => {
+  // Fetch progress percentage and total topics from API
+  const fetchProgressPercentage = useCallback(async () => {
+    if ((!user || !user.id) || (user.role && user.role.toLowerCase() !== 'user')) {
+      setProgressPercentage(0);
+      setTotalTopics(0);
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      console.warn('Không tìm thấy token để lấy phần trăm hoàn thành.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/roadmap-progress/?roadmap_id=${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Không thể lấy tiến độ roadmap");
+      const result = await response.json();
+      if (result.data && result.data.length > 0) {
+        const percentage = result.data[0].percentage_complete || 0;
+        const totalTopicsCount = result.data[0].total_topics || 0;
+        setProgressPercentage(Math.round(percentage));
+        setTotalTopics(totalTopicsCount);
+      } else {
+        setProgressPercentage(0);
+        setTotalTopics(0);
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy tiến độ và tổng số topic:', error);
+      setProgressPercentage(0);
+      setTotalTopics(0);
+    }
+  }, [id, user, getToken]);
+
+  // Update progress percentage and total topics when roadmap or user changes
+  useEffect(() => {
+    fetchProgressPercentage();
+  }, [fetchProgressPercentage]);
+
+  // Fetch topic details
+  const fetchTopicDetails = useCallback(async (topicId) => {
     try {
       const topicResponse = await fetch(`http://localhost:8000/api/topics/${topicId}/`);
       if (!topicResponse.ok) throw new Error("Không thể lấy chi tiết topic");
-      const result = await topicResponse.json();
+      const result = await topicResponse.json(); // Fixed: Changed 'response' to 'topicResponse'
       const data = result.data || {};
       setTopicDetails({ title: data.title || "", description: data.description || "" });
 
@@ -120,61 +210,6 @@ export default function Roadmap() {
       const exercisesData = Array.isArray(exercisesResult.data) ? exercisesResult.data : [];
       setExercises(exercisesData);
 
-      if (user && user.id && user.role === 'user') {
-        const token = getToken();
-        if (!token) {
-          console.warn('Không tìm thấy token để ghi nhận học topic.');
-          return;
-        }
-        const response = await fetch('http://localhost:8000/api/user-topic-progress/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            UserID: user.id,
-            TopicID: topicId,
-            status: 'pending',
-          }),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Lỗi khi ghi nhận học topic:', errorData);
-          if (response.status === 400) {
-            console.warn('Có thể progress đã tồn tại, thử lấy progress hiện có...');
-            const existingProgress = await fetch(`http://localhost:8000/api/user-topic-progress/?UserID=${user.id}&TopicID=${topicId}`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-            if (existingProgress.ok) {
-              const existingData = await existingProgress.json();
-              if (existingData.data && existingData.data.length > 0) {
-                setNodeProgress(prev => ({
-                  ...prev,
-                  [topicId]: {
-                    ...prev[topicId],
-                    id: existingData.data[0].id,
-                    status: existingData.data[0].status,
-                  },
-                }));
-              }
-            }
-          }
-        } else {
-          const result = await response.json();
-          setNodeProgress(prev => ({
-            ...prev,
-            [topicId]: {
-              ...prev[topicId],
-              id: result.data.id,
-              status: 'pending',
-            },
-          }));
-        }
-      }
-
       setSelectedExercise(null);
       setQuizQuestions([]);
       setQuizAnswers({});
@@ -182,9 +217,10 @@ export default function Roadmap() {
     } catch (error) {
       console.error("Lỗi khi lấy chi tiết topic:", error);
     }
-  };
+  }, []);
 
-  const fetchQuizQuestions = async (exerciseId) => {
+  // Fetch quiz questions
+  const fetchQuizQuestions = useCallback(async (exerciseId) => {
     try {
       const quizResponse = await fetch(`http://localhost:8000/api/quizquestions/?exercise_id=${exerciseId}`);
       if (!quizResponse.ok) throw new Error("Không thể lấy quiz questions");
@@ -208,7 +244,7 @@ export default function Roadmap() {
     } catch (error) {
       console.error("Lỗi khi lấy quiz:", error);
     }
-  };
+  }, []);
 
   const onNodeClick = (event, node) => {
     setSelectedTopic(node);
@@ -239,44 +275,9 @@ export default function Roadmap() {
   };
 
   const handleStatusChange = async (topicId, status) => {
-    if (!user || !user.id || (user.role && user.role.toLowerCase() !== 'user')) {
+    if ((!user || !user.id) || (user.role && user.role.toLowerCase() !== 'user')) {
       alert("Bạn phải đăng nhập với tài khoản người dùng để thực hiện chức năng này");
       return;
-    }
-
-    let progressId = nodeProgress[topicId]?.id;
-
-    if (!progressId) {
-      const token = getToken();
-      if (!token) {
-        console.warn('Không tìm thấy token để lấy progress.');
-        return;
-      }
-      const response = await fetch(`http://localhost:8000/api/user-topic-progress/?UserID=${user.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        console.error("Lỗi khi lấy progress:", await response.json());
-        return;
-      }
-      const result = await response.json();
-      const userProgress = result.data.find(item => item.TopicID === topicId);
-      if (userProgress) {
-        progressId = userProgress.id;
-        setNodeProgress(prev => ({
-          ...prev,
-          [topicId]: {
-            ...prev[topicId],
-            id: progressId,
-            status: userProgress.status,
-          },
-        }));
-      } else {
-        console.error("Không tìm thấy progress cho topic này");
-        return;
-      }
     }
 
     const token = getToken();
@@ -284,104 +285,100 @@ export default function Roadmap() {
       console.warn('Không tìm thấy token để cập nhật status.');
       return;
     }
-    const updateResponse = await fetch(`http://localhost:8000/api/user-topic-progress/${progressId}/`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        TopicID: topicId,
-        status,
-      }),
-    });
 
-    if (updateResponse.ok) {
-      setNodeProgress((prev) => ({
-        ...prev,
-        [topicId]: {
-          ...prev[topicId],
-          status,
-        },
-      }));
-      fetchProgressPercentage();
-    } else {
-      const errorData = await updateResponse.json();
-      console.error('Lỗi khi cập nhật status:', errorData);
-      if (updateResponse.status === 403) {
-        alert("Phiên đăng nhập của bạn có thể đã hết hạn. Vui lòng đăng nhập lại.");
+    let progressId = nodeProgress[topicId]?.id;
+
+    // If no progress ID in nodeProgress, create a new progress record (POST)
+    if (!progressId) {
+      try {
+        const createResponse = await fetch('http://localhost:8000/api/user-topic-progress/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            TopicID: topicId,
+            status: 'pending',
+          }),
+        });
+        if (createResponse.ok) {
+          const createResult = await createResponse.json();
+          progressId = createResult.data.id;
+          console.log('Progress created:', createResult);
+        } else {
+          console.error("Lỗi khi tạo progress:", await createResponse.json());
+          return;
+        }
+      } catch (error) {
+        console.error("Lỗi khi tạo progress:", error);
+        return;
       }
+    }
+
+    // Update status (PUT)
+    try {
+      const updateResponse = await fetch(`http://localhost:8000/api/user-topic-progress/${progressId}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          TopicID: topicId,
+          status,
+        }),
+      });
+
+      if (updateResponse.ok) {
+        setNodeProgress(prev => ({
+          ...prev,
+          [topicId]: {
+            id: progressId,
+            status,
+          },
+        }));
+        console.log('Status updated successfully');
+      } else {
+        console.error('Lỗi khi cập nhật status:', await updateResponse.json());
+        alert("Không thể cập nhật trạng thái. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật status:", error);
+      alert("Đã xảy ra lỗi khi cập nhật trạng thái.");
     }
   };
 
   const handleAnswerSelect = (questionId, answerId) => {
-    setSelectedAnswers((prev) => ({ ...prev, [questionId]: answerId }));
-  };
-
-  const fetchProgressPercentage = async () => {
-    if (!user || !user.id || (user.role && user.role.toLowerCase() !== 'user')) {
-      setProgressPercentage(0);
-      return;
-    }
-
-    const token = getToken();
-    if (!token) {
-      console.warn('Không tìm thấy token để lấy phần trăm hoàn thành.');
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8000/api/user-topic-progress/roadmap-progress/?roadmap_id=${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Không thể lấy tiến độ roadmap");
-      }
-      const result = await response.json();
-      if (result.data && result.data.length > 0) {
-        const progressData = result.data[0];
-        const percentage = progressData.percentage_complete || 0;
-        setProgressPercentage(Math.round(percentage));
-      } else {
-        setProgressPercentage(0); // Nếu không có dữ liệu, đặt tiến độ về 0
-      }
-    } catch (error) {
-      console.error('Lỗi khi tính tiến độ:', error);
-      setProgressPercentage(0); // Đặt tiến độ về 0 nếu có lỗi
-    }
+    setSelectedAnswers(prev => ({ ...prev, [questionId]: answerId }));
   };
 
   useEffect(() => {
-    fetchProgressPercentage();
-  }, [id, user, fetchProgressPercentage]);
+    localStorage.setItem(getStorageKey(), JSON.stringify(nodeProgress));
+  }, [nodeProgress, getStorageKey]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nodeProgress));
-  }, [nodeProgress]);
-
-  const styledNodes = nodes.map((node) => {
-    const status = nodeProgress[node.id]?.status || "pending";
+  const styledNodes = nodes.map(node => {
+    const status = nodeProgress && nodeProgress[node.id]?.status || "pending";
     return {
       ...node,
       style: {
-        ...(status === "done" && {
-          backgroundColor: "green",
-          border: "2px solid black",
-        }),
-        ...(status === "skip" && {
-          textDecoration: "line-through",
-        }),
+        backgroundColor: status === "done" ? "#28a745" : status === "skip" ? "#ffc107" : "#dc3545",
+        border: status === "done" ? "2px solid #155724" : status === "skip" ? "2px solid #856404" : "2px solid #721c24",
+        color: status === "pending" ? "#fff" : status === "skip" ? "#6c757d" : "#212529",
+        textDecoration: status === "skip" ? "line-through" : "none",
+        padding: "10px",
+        borderRadius: "5px",
+        cursor: "pointer",
       },
       data: {
         ...node.data,
         label: (
-          <>
+          <span>
             {node.data.label}
             {status === "done" && " ✅"}
             {status === "skip" && " ⏭️"}
-          </>
+          </span>
         ),
       },
     };
@@ -397,6 +394,7 @@ export default function Roadmap() {
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${progressPercentage}%` }} />
           </div>
+          <p>Tổng số topic: {totalTopics}</p>
         </div>
       </div>
 
@@ -429,7 +427,7 @@ export default function Roadmap() {
                 <label htmlFor={`status-${selectedTopic.id}`}>Trạng thái: </label>
                 <select
                   id={`status-${selectedTopic.id}`}
-                  value={nodeProgress[selectedTopic.id]?.status || "pending"}
+                  value={nodeProgress && nodeProgress[selectedTopic.id]?.status || "pending"}
                   onChange={(e) => handleStatusChange(selectedTopic.id, e.target.value)}
                 >
                   <option value="pending">Pending</option>

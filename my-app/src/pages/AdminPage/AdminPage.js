@@ -5,9 +5,8 @@ import RoadmapsPage from './RoadmapsPage';
 import SettingsPage from './SettingsPage';
 import UserManagementPage from './UserManagementPage';
 import EditRoadmapPage from './EditRoadmapPage';
+import ActivityPage from './ActivityPage'; // Import ActivityPage
 
-// Import Header và Sidebar
-import Header from "../../components/Header/header";
 import Sidebar from "../../components/Sidebar/Sidebar";
 
 import './AdminPage.css';
@@ -217,7 +216,7 @@ function AdminPage() {
                 return <UserManagementPage authToken={token} />;
             case 'activity':
                 if (adminUserInfo.role === 'user') {
-                    return <div>Activity Page (Placeholder for User Role)</div>; // Placeholder cho activity
+                    return <ActivityPage />;
                 }
                 return <div>Access Denied: Activity is only for Users</div>;
             default:
