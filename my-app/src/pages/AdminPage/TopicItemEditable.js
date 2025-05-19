@@ -6,7 +6,6 @@ import ExerciseFormModal from './ExerciseFormModal';
 import QuizManagerModal from './QuizManagerModal';
 import { FontAwesomeIcon } from '../../fontawesome';
 
-// Added onEditTopic and onDeleteTopicClick props
 function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children }) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
@@ -20,7 +19,7 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
   const token = Cookies.get('access_token');
 
   const fetchResources = useCallback(async () => {
-    if (!token || !topic?.TopicID) { // Added check for topic?.TopicID
+    if (!token || !topic?.TopicID) {
       console.warn("Token or TopicID not available, skipping resource fetch.");
       return;
     }
@@ -34,18 +33,18 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
       });
       if (!response.ok) throw new Error('Failed to fetch resources');
       const data = await response.json();
-      console.log('Fetched all resources:', data); // Log all fetched resources
-      console.log('Current topic.TopicID for filtering resources:', topic.TopicID); // Log the TopicID being used for filtering
+      console.log('Fetched all resources:', data);
+      console.log('Current topic.TopicID for filtering resources:', topic.TopicID);
       const filteredResources = (data.data || []).filter(r => r.topic === topic.TopicID);
-      console.log(`Filtered resources for TopicID ${topic.TopicID}:`, filteredResources); // Log filtered resources
+      console.log(`Filtered resources for TopicID ${topic.TopicID}:`, filteredResources);
       setResources(filteredResources);
     } catch (err) {
       console.error('Error fetching resources:', err);
     }
-  }, [token, topic?.TopicID]); // Added topic?.TopicID to dependency array
+  }, [token, topic?.TopicID]);
 
   const fetchExercises = useCallback(async () => {
-    if (!token || !topic?.TopicID) { // Added check for topic?.TopicID
+    if (!token || !topic?.TopicID) {
        console.warn("Token or TopicID not available, skipping exercise fetch.");
        return;
     }
@@ -59,30 +58,29 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
       });
       if (!response.ok) throw new Error('Failed to fetch exercises');
       const data = await response.json();
-      console.log('Fetched all exercises:', data); // Log all fetched exercises
-      console.log('Current topic.TopicID for filtering exercises:', topic.TopicID); // Log the TopicID being used for filtering
+      console.log('Fetched all exercises:', data);
+      console.log('Current topic.TopicID for filtering exercises:', topic.TopicID);
       const filteredExercises = (data.data || []).filter(e => e.topic === topic.TopicID);
-       console.log(`Filtered exercises for TopicID ${topic.TopicID}:`, filteredExercises); // Log filtered exercises
+       console.log(`Filtered exercises for TopicID ${topic.TopicID}:`, filteredExercises);
       setExercises(filteredExercises);
     } catch (err) {
       console.error('Error fetching exercises:', err);
     }
-  }, [token, topic?.TopicID]); // Added topic?.TopicID to dependency array
+  }, [token, topic?.TopicID]);
 
   useEffect(() => {
-    // Fetch resources and exercises when details are open and topic.TopicID is available
     if (isDetailsOpen && topic?.TopicID) {
       fetchResources();
       fetchExercises();
     }
-  }, [isDetailsOpen, topic?.TopicID, fetchResources, fetchExercises]); // Added topic?.TopicID to dependency array
+  }, [isDetailsOpen, topic?.TopicID, fetchResources, fetchExercises]);
 
   const toggleDetails = () => {
     setIsDetailsOpen(!isDetailsOpen);
   };
 
   const handleAddResourceClick = () => {
-    setEditingResource(null);
+    setEditingResource(null); // Ensure we're adding a new resource
     setIsResourceModalOpen(true);
   };
 
@@ -97,8 +95,8 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
   };
 
   const handleSaveResource = async (resourceData) => {
-    console.log("Submit resource data:", resourceData, "for topic:", topic?.TopicID); // Use optional chaining
-    if (!token || !topic?.TopicID) return; // Added check for topic?.TopicID
+    console.log("Submit resource data:", resourceData, "for topic:", topic?.TopicID);
+    if (!token || !topic?.TopicID) return;
     const method = editingResource ? 'PUT' : 'POST';
     const url = editingResource
       ? `http://localhost:8000/api/resources/${editingResource.id}/`
@@ -110,7 +108,6 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        // Ensure topic is sent as topic.TopicID
         body: JSON.stringify({ ...resourceData, topic: topic.TopicID, resource_type: resourceData.resource_type }),
       });
       if (!response.ok) {
@@ -120,10 +117,9 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
       }
       const data = await response.json();
       console.log('Saved resource data:', data);
-      fetchResources(); // Refresh the list
+      fetchResources();
     } catch (err) {
       console.error('Error saving resource:', err);
-      // Optionally set an error state to display to the user
     }
     handleCloseResourceModal();
   };
@@ -144,8 +140,8 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
   };
 
   const handleSaveExercise = async (exerciseData) => {
-    console.log("Submit exercise data:", exerciseData, "for topic:", topic?.TopicID); // Use optional chaining
-    if (!token || !topic?.TopicID) return; // Added check for topic?.TopicID
+    console.log("Submit exercise data:", exerciseData, "for topic:", topic?.TopicID);
+    if (!token || !topic?.TopicID) return;
     const method = editingExercise ? 'PUT' : 'POST';
     const url = editingExercise
       ? `http://localhost:8000/api/exercises/${editingExercise.id}/`
@@ -157,7 +153,6 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-         // Ensure topic is sent as topic.TopicID
         body: JSON.stringify({ ...exerciseData, topic: topic.TopicID }),
       });
        if (!response.ok) {
@@ -167,10 +162,9 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
       }
       const data = await response.json();
       console.log('Saved exercise data:', data);
-      fetchExercises(); // Refresh the list
+      fetchExercises();
     } catch (err) {
       console.error('Error saving exercise:', err);
-       // Optionally set an error state to display to the user
     }
     handleCloseExerciseModal();
   };
@@ -191,10 +185,9 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
            throw new Error(errorData.detail || `Failed to delete resource: ${response.statusText}`);
       }
       console.log('Deleted resource:', resourceId);
-      fetchResources(); // Refresh the list
+      fetchResources();
     } catch (err) {
       console.error('Error deleting resource:', err);
-       // Optionally set an error state to display to the user
     }
   };
 
@@ -214,10 +207,9 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
           throw new Error(errorData.detail || `Failed to delete exercise: ${response.statusText}`);
       }
       console.log('Deleted exercise:', exerciseId);
-      fetchExercises(); // Refresh the list
+      fetchExercises();
     } catch (err) {
       console.error('Error deleting exercise:', err);
-       // Optionally set an error state to display to the user
     }
   };
 
@@ -237,32 +229,27 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
       case 'video': return 'video';
       case 'tutorial': return 'graduation-cap';
       case 'book': return 'book';
-      // Add more cases for other resource types if needed
-      default: return 'link'; // Default icon
+      default: return 'link';
     }
   };
 
   return (
     <div className="topic-item-editable">
-      {/* Topic header always visible */}
       <div className="topic-header-summary" onClick={toggleDetails}>
-        {/* Children typically renders the topic name */}
         <span className="topic-name">{children}</span>
         <span className={`details-toggle-icon ${isDetailsOpen ? 'open' : ''}`}>
           <FontAwesomeIcon icon={isDetailsOpen ? 'chevron-up' : 'chevron-down'} />
         </span>
-        {/* Add Edit and Delete buttons here */}
-        <div className="topic-actions-within-item"> {/* Added a new class for clarity */}
+        <div className="topic-actions-within-item">
              <button className="edit-btn" onClick={(e) => { e.stopPropagation(); onEditTopic(topic); }}>
-                <FontAwesomeIcon icon="pencil" title="Edit Topic" /> {/* Added tooltip */}
+                <FontAwesomeIcon icon="pencil" title="Edit Topic" />
              </button>
-             <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDeleteTopicClick(topic); }}> {/* Use the new prop name */}
-                <FontAwesomeIcon icon="trash" title="Delete Topic" /> {/* Added tooltip */}
+             <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDeleteTopicClick(topic); }}>
+                <FontAwesomeIcon icon="trash" title="Delete Topic" />
              </button>
         </div>
       </div>
 
-      {/* Topic details section (resources and exercises) */}
       {isDetailsOpen && (
         <div className="topic-details">
           <div className="topic-resources-section">
@@ -272,20 +259,18 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
               <ul>
                 {resources.map(resource => (
                   <li key={resource.id}>
-                    <span className="resource-item-content"> {/* Added a span for content */}
-                       {/* Added title attribute for tooltip */}
+                    <span className="resource-item-content">
                       <FontAwesomeIcon icon={getResourceTypeIcon(resource.resource_type_name)} title={resource.resource_type_name || 'Resource'} />
                       <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">
                         {resource.title}
                       </a>
-                      {/* Removed the resource type name text */}
                     </span>
                     <span className="item-actions">
                       <button className="action-btn edit-btn" onClick={() => handleEditResourceClick(resource)}>
-                        <FontAwesomeIcon icon="pencil" title="Edit Resource" /> {/* Added tooltip */}
+                        <FontAwesomeIcon icon="pencil" title="Edit Resource" />
                       </button>
                       <button className="action-btn delete-btn" onClick={() => handleDeleteResourceClick(resource.id)}>
-                        <FontAwesomeIcon icon="times" title="Delete Resource" /> {/* Added tooltip */}
+                        <FontAwesomeIcon icon="times" title="Delete Resource" />
                       </button>
                     </span>
                   </li>
@@ -303,21 +288,20 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
               <ul>
                 {exercises.map(exercise => (
                   <li key={exercise.id}>
-                    <span className="exercise-item-content"> {/* Added a span for content */}
-                       {/* Added title attribute for tooltip */}
+                    <span className="exercise-item-content">
                       <FontAwesomeIcon icon="laptop-code" title="Exercise" />
                       {exercise.title}
                       <span className={`exercise-difficulty difficulty-${exercise.difficulty}`}>({exercise.difficulty})</span>
                     </span>
                     <span className="item-actions">
                       <button className="action-btn manage-quiz-btn" onClick={() => handleManageQuizClick(exercise)}>
-                        <FontAwesomeIcon icon="question-circle" title="Manage Quiz" /> Manage Quiz {/* Added tooltip */}
+                        <FontAwesomeIcon icon="question-circle" title="Manage Quiz" /> Manage Quiz
                       </button>
                       <button className="action-btn edit-btn" onClick={() => handleEditExerciseClick(exercise)}>
-                        <FontAwesomeIcon icon="pencil" title="Edit Exercise" /> {/* Added tooltip */}
+                        <FontAwesomeIcon icon="pencil" title="Edit Exercise" />
                       </button>
                       <button className="action-btn delete-btn" onClick={() => handleDeleteExerciseClick(exercise.id)}>
-                        <FontAwesomeIcon icon="times" title="Delete Exercise" /> {/* Added tooltip */}
+                        <FontAwesomeIcon icon="times" title="Delete Exercise" />
                       </button>
                     </span>
                   </li>
@@ -330,19 +314,18 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
         </div>
       )}
 
-      {/* Modals for adding/editing resources, exercises, and managing quizzes */}
       <ResourceFormModal
         isVisible={isResourceModalOpen}
         onClose={handleCloseResourceModal}
         onSubmit={handleSaveResource}
-        topicId={topic?.TopicID} // Pass TopicID, use optional chaining
+        topicId={topic?.TopicID}
         initialData={editingResource}
       />
       <ExerciseFormModal
         isVisible={isExerciseModalOpen}
         onClose={handleCloseExerciseModal}
         onSubmit={handleSaveExercise}
-        topicId={topic?.TopicID} // Pass TopicID, use optional chaining
+        topicId={topic?.TopicID}
         initialData={editingExercise}
       />
       <QuizManagerModal

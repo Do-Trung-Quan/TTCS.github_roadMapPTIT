@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import UserTopicProgress, User
@@ -117,41 +117,37 @@ class UserTopicProgressDetail(RetrieveUpdateDestroyAPIView):
             'message': 'Xóa tiến trình thành công.'
         }, status=status.HTTP_204_NO_CONTENT)
 
-# API: Đếm số lượng Topics Completed và Currently Learning
-class UserTopicStatusCountAPIView(APIView):
+# API: Đếm số topic theo trạng thái done và pending/skip theo UserID từ token
+class UserTopicProgressStatusCountByUser(APIView):
     authentication_classes = []
-    permission_classes = [IsAdminOrUser]
+    permission_classes = [IsAdminOrUser, can_access_own_data(user_field='UserID')]
 
     def get(self, request):
-        if not hasattr(request, 'auth_user') or not request.auth_user:
+        # Lấy UserID từ token
+        authenticated_user_id = request.auth_user.get('_id', '')
+        if not authenticated_user_id:
             return Response({
-                'message': 'Authentication required to access status count.'
+                'message': 'Không thể xác định UserID từ token.'
             }, status=status.HTTP_401_UNAUTHORIZED)
 
-        authenticated_user_id = request.auth_user.get('_id', '')
+        # Đếm số topic theo trạng thái
+        done_count = UserTopicProgress.objects.filter(UserID=authenticated_user_id, status='done').count()
+        pending_or_skip_count = UserTopicProgress.objects.filter(UserID=authenticated_user_id, status__in=['pending', 'skip']).count()
+
+        # Log hành động
         user_role = request.auth_user.get('role', '')
-
         if user_role == 'admin':
-            user_id = request.query_params.get('user_id', authenticated_user_id)
-            logger.info(f"Admin {authenticated_user_id} accessed status count for user {user_id}")
+            logger.info(f"Admin {authenticated_user_id} accessed status counts for themselves")
         else:
-            user_id = authenticated_user_id
-            logger.info(f"User {authenticated_user_id} accessed their own status count")
-
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return Response({
-                'message': 'User không tồn tại.'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        completed = UserTopicProgress.objects.filter(UserID=user_id, status='done').count()
-        currently_learning = UserTopicProgress.objects.filter(UserID=user_id, status__in=['pending', 'skip']).count()
+            logger.info(f"User {authenticated_user_id} accessed their own status counts")
 
         return Response({
-            'user_id': user_id,
-            'completed_topics': completed,
-            'currently_learning': currently_learning
+            'message': f'Đếm trạng thái topic thành công cho UserID {authenticated_user_id}.',
+            'data': {
+                'user_id': authenticated_user_id,
+                'done_count': done_count,
+                'pending_or_skip_count': pending_or_skip_count
+            }
         }, status=status.HTTP_200_OK)
 
 # API: Tính % hoàn thành theo từng roadmap
@@ -197,47 +193,44 @@ class UserRoadmapProgressAPIView(APIView):
                     'message': f'Không tìm thấy roadmap với ID {roadmap_id}.'
                 }, status=status.HTTP_404_NOT_FOUND)
 
-        # Bước 2: Lấy danh sách TopicID từ TopicRoadmap
-        topic_ids = topic_roadmaps.values_list('TopicID', flat=True)
+        # Lấy danh sách các RoadmapID duy nhất
+        roadmap_ids = topic_roadmaps.values_list('RoadmapID', flat=True).distinct()
 
-        # Bước 3: Lấy UserTopicProgress của user dựa trên danh sách TopicID
-        user_progresses = UserTopicProgress.objects.filter(UserID=user_id, TopicID__in=topic_ids)
-
-        # Bước 4: Nhóm theo RoadmapID và tính toán
+        # Bước 2: Lấy danh sách TopicID từ TopicRoadmap theo từng RoadmapID
         roadmap_progress = {}
-        for tr in topic_roadmaps:
-            roadmap_id = str(tr.RoadmapID)
-            if roadmap_id not in roadmap_progress:
-                # Lấy tổng số topic trong roadmap này
-                total_topics = TopicRoadmap.objects.filter(RoadmapID=roadmap_id).count()
-                # Lấy roadmap để lấy thông tin title (nếu cần)
-                try:
-                    roadmap = Roadmap.objects.get(id=roadmap_id)
-                    roadmap_title = roadmap.title
-                except Roadmap.DoesNotExist:
-                    roadmap_title = "Unknown Roadmap"
-                roadmap_progress[roadmap_id] = {
-                    'roadmap_id': roadmap_id,
-                    'roadmap_title': roadmap_title,
-                    'total_topics': total_topics,
-                    'completed_topics': 0,
-                    'percentage_complete': 0.0
-                }
+        for r_id in roadmap_ids:
+            # Lấy tất cả topic thuộc roadmap này
+            roadmap_topics = TopicRoadmap.objects.filter(RoadmapID=r_id)
+            topic_ids = roadmap_topics.values_list('TopicID', flat=True)
 
-            # Kiểm tra trạng thái của topic trong UserTopicProgress
-            progress = user_progresses.filter(TopicID=tr.TopicID).first()
-            if progress and progress.status == 'done':
-                roadmap_progress[roadmap_id]['completed_topics'] += 1
+            # Lấy UserTopicProgress của user dựa trên danh sách TopicID
+            user_progresses = UserTopicProgress.objects.filter(UserID=user_id, TopicID__in=topic_ids)
 
-        # Bước 5: Tính phần trăm hoàn thành
-        for roadmap_id, data in roadmap_progress.items():
-            total = data['total_topics']
-            done = data['completed_topics']
-            if total > 0:
-                percentage = round((done / total) * 100, 2)
+            # Lấy thông tin roadmap
+            try:
+                roadmap = Roadmap.objects.get(id=r_id)
+                roadmap_title = roadmap.title
+            except Roadmap.DoesNotExist:
+                roadmap_title = "Unknown Roadmap"
+
+            # Tính total_topics và completed_topics
+            total_topics = roadmap_topics.count()
+            completed_topics = user_progresses.filter(status='done').count()
+
+            # Tính phần trăm hoàn thành
+            if total_topics > 0:
+                percentage_complete = round((completed_topics / total_topics) * 100, 2)
             else:
-                percentage = 0.0
-            data['percentage_complete'] = percentage  # Trả về số thay vì chuỗi
+                percentage_complete = 0.0
+
+            # Lưu kết quả
+            roadmap_progress[r_id] = {
+                'roadmap_id': str(r_id),
+                'roadmap_title': roadmap_title,
+                'total_topics': total_topics,
+                'completed_topics': completed_topics,
+                'percentage_complete': percentage_complete
+            }
 
         # Chuyển dict thành list để trả về
         result = list(roadmap_progress.values())

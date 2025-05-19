@@ -5,24 +5,36 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
   const [formData, setFormData] = useState({
     title: '',
     url: '',
-    resource_type: 'RT001', // Giả sử RT001 là ID của Video
+    resource_type: 'RT001',
   });
 
   useEffect(() => {
+    if (!isVisible) {
+      // Reset form data when the modal is closed
+      setFormData({
+        title: '',
+        url: '',
+        resource_type: 'RT001',
+      });
+      return;
+    }
+
     if (initialData) {
+      // Populate form with initial data for editing
       setFormData({
         title: initialData.title || '',
         url: initialData.url || '',
         resource_type: initialData.resource_type || 'RT001',
       });
     } else {
+      // Ensure form is reset when opening for a new resource
       setFormData({
         title: '',
         url: '',
         resource_type: 'RT001',
       });
     }
-  }, [initialData]);
+  }, [isVisible, initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +47,12 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
+    // Reset form data after submission
+    setFormData({
+      title: '',
+      url: '',
+      resource_type: 'RT001',
+    });
   };
 
   if (!isVisible) return null;

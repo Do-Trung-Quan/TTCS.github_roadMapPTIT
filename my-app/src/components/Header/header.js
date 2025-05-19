@@ -23,10 +23,10 @@ function Header() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/roadmaps/?search=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`http://localhost:8000/api/roadmap-search/?search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
-        if (response.status === 404) {
-          console.warn('Không tìm thấy kết quả cho:', searchTerm);
+        if (response.status === 400) {
+          console.warn('Yêu cầu không hợp lệ:', searchTerm);
           setSearchResults([]);
           setShowResults(true);
           return;
@@ -34,6 +34,7 @@ function Header() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      // API mới trả về data trực tiếp, không lồng trong results
       setSearchResults(data.data || []);
       setShowResults(true);
       console.log('Search results:', data.data);

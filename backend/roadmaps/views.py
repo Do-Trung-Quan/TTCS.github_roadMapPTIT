@@ -29,22 +29,15 @@ class RoadmapListCreate(APIView):
 
     def get(self, request):
         # Lấy từ khóa tìm kiếm từ query parameters
-        search_term = request.query_params.get('search', None)
         paginator = self.pagination_class()
         queryset = Roadmap.objects.all()
-
-        if search_term:
-            # Tìm kiếm các roadmap theo tiêu đề hoặc mô tả
-            queryset = Roadmap.objects.filter(
-                Q(title__icontains=search_term) | Q(description__icontains=search_term)
-            )
 
         # Áp dụng phân trang
         page = paginator.paginate_queryset(queryset, request)
         serializer = RoadmapSerializer(page, many=True)
 
         return paginator.get_paginated_response({
-            "message": "Lấy danh sách Roadmap thành công." if not search_term else f"Tìm kiếm Roadmap với '{search_term}' thành công.",
+            "message": "Lấy danh sách Roadmap thành công.",
             "data": serializer.data,
             "count": paginator.page.paginator.count,  # Tổng số mục
             "next": paginator.get_next_link(),
@@ -115,3 +108,27 @@ class RoadmapDetail(APIView):
             return Response({
                 "message": "Roadmap không tồn tại."
             }, status=status.HTTP_404_NOT_FOUND)
+
+class RoadmapSearch(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # Lấy từ khóa tìm kiếm từ query parameters
+        search_term = request.query_params.get('search', None)
+
+        if not search_term:
+            return Response({
+                "message": "Vui lòng cung cấp tham số 'search' để tìm kiếm.",
+                "data": []
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Tìm kiếm các roadmap theo tiêu đề hoặc mô tả
+        queryset = Roadmap.objects.filter(
+            Q(title__icontains=search_term) | Q(description__icontains=search_term)
+        )
+        
+        serializer = RoadmapSerializer(queryset, many=True)
+        return Response({
+            "message": f"Tìm kiếm Roadmap với '{search_term}' thành công.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)

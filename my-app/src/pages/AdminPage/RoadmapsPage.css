@@ -7,7 +7,6 @@
     box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
 }
 
-<<<<<<< Updated upstream
 /* Container cho nội dung roadmaps */
 .roadmap-container {
     max-width: 1400px; /* Tăng chiều rộng từ 1200px lên 1400px */
@@ -17,15 +16,6 @@
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-=======
-.roadmap-container1 {
-     max-width: 900px; /* Đặt chiều rộng tối đa cho nội dung */
-     margin: 0 auto; /* Căn giữa container */
-     padding: 20px;
-     background-color: #fff; /* Nền trắng */
-     border-radius: 8px; /* Bo góc */
-     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
->>>>>>> Stashed changes
 }
 
 /* Style cho phần header (Tiêu đề và nút Create) */
