@@ -20,7 +20,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
   const fetchQuestionsAndAnswers = useCallback(async () => {
     if (!exercise || !exercise.id) {
-      console.warn("Exercise or exercise ID is not available, skipping fetch. Exercise:", exercise);
+      console.warn("Bài tập hoặc ID bài tập không có sẵn, bỏ qua việc tìm nạp. Bài tập:", exercise);
       setQuestions([]);
       return;
     }
@@ -28,7 +28,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
     setError(null);
 
     try {
-      console.log('Fetching questions for exercise_id:', exercise.id);
+      console.log('Đang tìm nạp câu hỏi cho exercise_id:', exercise.id);
       const questionsResponse = await fetch(`http://localhost:8000/api/quizquestions/?exercise_id=${exercise.id}`, {
         method: 'GET',
         headers: {
@@ -39,11 +39,11 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       if (!questionsResponse.ok) {
         const errorData = await questionsResponse.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to fetch questions: ${questionsResponse.statusText}`);
+        throw new Error(errorData.detail || `Không thể tìm nạp câu hỏi: ${questionsResponse.statusText}`);
       }
       const questionsData = await questionsResponse.json();
       const fetchedQuestions = questionsData.data || [];
-      console.log('Fetched questions response:', questionsData);
+      console.log('Phản hồi câu hỏi đã tìm nạp:', questionsData);
 
       const questionsWithAnswers = await Promise.all(fetchedQuestions.map(async (question) => {
         const answersResponse = await fetch(`http://localhost:8000/api/quizanswers/?quiz_question=${question.id}`, {
@@ -56,13 +56,13 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
         if (!answersResponse.ok) {
           const errorData = await answersResponse.json().catch(() => ({}));
-          console.warn(`Failed to fetch answers for question ${question.id}: ${errorData.detail || answersResponse.statusText}`);
+          console.warn(`Không thể tìm nạp câu trả lời cho câu hỏi ${question.id}: ${errorData.detail || answersResponse.statusText}`);
           return { ...question, content: question.question_text, answers: [] };
         }
 
         const answersData = await answersResponse.json();
         const fetchedAnswers = answersData.data || [];
-        console.log(`Fetched answers for question ${question.id}:`, fetchedAnswers);
+        console.log(`Câu trả lời đã tìm nạp cho câu hỏi ${question.id}:`, fetchedAnswers);
 
         const formattedAnswers = fetchedAnswers.map(answer => ({
           id: answer.id,
@@ -79,8 +79,8 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       setQuestions(questionsWithAnswers);
     } catch (err) {
-      console.error('Error fetching questions and answers:', err);
-      setError(err.message || "An error occurred while loading quiz data.");
+      console.error('Lỗi khi tìm nạp câu hỏi và câu trả lời:', err);
+      setError(err.message || "Đã xảy ra lỗi khi tải dữ liệu câu hỏi.");
       setQuestions([]);
     } finally {
       setIsLoading(false);
@@ -107,7 +107,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
   const handleAddQuestion = async () => {
     if (!newQuestionText.trim() || !exercise || !exercise.id) {
-      setError("Question text and exercise information are required.");
+      setError("Văn bản câu hỏi và thông tin bài tập là bắt buộc.");
       return;
     }
     setError(null);
@@ -129,14 +129,14 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to add question: ${response.statusText}`);
+        throw new Error(errorData.detail || `Không thể thêm câu hỏi: ${response.statusText}`);
       }
 
       setNewQuestionText('');
       fetchQuestionsAndAnswers();
     } catch (err) {
-      console.error('Error adding question:', err);
-      setError(err.message || "An error occurred while adding the question.");
+      console.error('Lỗi khi thêm câu hỏi:', err);
+      setError(err.message || "Đã xảy ra lỗi khi thêm câu hỏi.");
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +149,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
   const handleUpdateQuestion = async (questionId) => {
     if (!editingQuestionText.trim()) {
-      setError("Question text is required.");
+      setError("Văn bản câu hỏi là bắt buộc.");
       return;
     }
     setError(null);
@@ -171,15 +171,15 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to update question: ${response.statusText}`);
+        throw new Error(errorData.detail || `Không thể cập nhật câu hỏi: ${response.statusText}`);
       }
 
       setEditingQuestion(null);
       setEditingQuestionText('');
       fetchQuestionsAndAnswers();
     } catch (err) {
-      console.error('Error updating question:', err);
-      setError(err.message || "An error occurred while updating the question.");
+      console.error('Lỗi khi cập nhật câu hỏi:', err);
+      setError(err.message || "Đã xảy ra lỗi khi cập nhật câu hỏi.");
     } finally {
       setIsLoading(false);
     }
@@ -200,13 +200,13 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to delete question: ${response.statusText}`);
+        throw new Error(errorData.detail || `Không thể xóa câu hỏi: ${response.statusText}`);
       }
 
       fetchQuestionsAndAnswers();
     } catch (err) {
-      console.error('Error deleting question:', err);
-      setError(err.message || "An error occurred while deleting the question.");
+      console.error('Lỗi khi xóa câu hỏi:', err);
+      setError(err.message || "Đã xảy ra lỗi khi xóa câu hỏi.");
     } finally {
       setIsLoading(false);
     }
@@ -231,7 +231,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
     const isCorrect = newAnswerIsCorrect[questionId] || false;
 
     if (!answerText || !questionId || !exercise || !exercise.id) {
-      setError("Answer text and question information are required.");
+      setError("Văn bản câu trả lời và thông tin câu hỏi là bắt buộc.");
       return;
     }
     setError(null);
@@ -254,7 +254,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to add answer: ${response.statusText}`);
+        throw new Error(errorData.detail || `Không thể thêm câu trả lời: ${response.statusText}`);
       }
 
       setNewAnswerTexts(prev => {
@@ -270,8 +270,8 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       fetchQuestionsAndAnswers();
     } catch (err) {
-      console.error('Error adding answer:', err);
-      setError(err.message || "An error occurred while adding the answer.");
+      console.error('Lỗi khi thêm câu trả lời:', err);
+      setError(err.message || "Đã xảy ra lỗi khi thêm câu trả lời.");
     } finally {
       setIsLoading(false);
     }
@@ -285,7 +285,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
   const handleUpdateAnswer = async (answerId) => {
     if (!editingAnswerText.trim()) {
-      setError("Answer text is required.");
+      setError("Văn bản câu trả lời là bắt buộc.");
       return;
     }
     setError(null);
@@ -308,7 +308,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to update answer: ${response.statusText}`);
+        throw new Error(errorData.detail || `Không thể cập nhật câu trả lời: ${response.statusText}`);
       }
 
       setEditingAnswer(null);
@@ -316,8 +316,8 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       setEditingAnswerIsCorrect(false);
       fetchQuestionsAndAnswers();
     } catch (err) {
-      console.error('Error updating answer:', err);
-      setError(err.message || "An error occurred while updating the answer.");
+      console.error('Lỗi khi cập nhật câu trả lời:', err);
+      setError(err.message || "Đã xảy ra lỗi khi cập nhật câu trả lời.");
     } finally {
       setIsLoading(false);
     }
@@ -338,13 +338,13 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to delete answer: ${response.statusText}`);
+        throw new Error(errorData.detail || `Không thể xóa câu trả lời: ${response.statusText}`);
       }
 
       fetchQuestionsAndAnswers();
     } catch (err) {
-      console.error('Error deleting answer:', err);
-      setError(err.message || "An error occurred while deleting the answer.");
+      console.error('Lỗi khi xóa câu trả lời:', err);
+      setError(err.message || "Đã xảy ra lỗi khi xóa câu trả lời.");
     } finally {
       setIsLoading(false);
     }
@@ -356,13 +356,13 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Manage Quiz for: {exercise?.title || 'Loading...'}</h2>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
+          <h2>Quản lý câu hỏi cho: {exercise?.title || 'Đang tải...'}</h2>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Đóng modal">
             <FontAwesomeIcon icon="times" />
           </button>
         </div>
         <div className="modal-body">
-          {isLoading && <p className="loading-message">Loading quiz data...</p>}
+          {isLoading && <p className="loading-message">Đang tải dữ liệu câu hỏi...</p>}
           {error && <p className="error-message">{error}</p>}
 
           <div className="add-question-section">
@@ -370,7 +370,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
               type="text"
               value={newQuestionText}
               onChange={(e) => setNewQuestionText(e.target.value)}
-              placeholder="Enter new question text"
+              placeholder="Nhập nội dung câu hỏi mới"
               disabled={isLoading}
             />
             <button
@@ -378,12 +378,12 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
               onClick={handleAddQuestion}
               disabled={isLoading || !newQuestionText.trim()}
             >
-              Add Question
+              Thêm câu hỏi
             </button>
           </div>
 
           {questions.length === 0 && !isLoading && !error ? (
-            <p className="no-questions-message">No questions available. Add questions to start managing quizzes.</p>
+            <p className="no-questions-message">Không có câu hỏi nào. Thêm câu hỏi để bắt đầu quản lý câu hỏi.</p>
           ) : (
             questions.length > 0 && (
               <div className="questions-list">
@@ -395,7 +395,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           type="text"
                           value={editingQuestionText}
                           onChange={(e) => setEditingQuestionText(e.target.value)}
-                          placeholder="Enter question text"
+                          placeholder="Nhập nội dung câu hỏi"
                           disabled={isLoading}
                         />
                         <button
@@ -403,14 +403,14 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           onClick={() => handleUpdateQuestion(question.id)}
                           disabled={isLoading || !editingQuestionText.trim()}
                         >
-                          Save
+                          Lưu
                         </button>
                         <button
                           className="cancel-btn"
                           onClick={() => setEditingQuestion(null)}
                           disabled={isLoading}
                         >
-                          Cancel
+                          Hủy
                         </button>
                       </div>
                     ) : (
@@ -444,7 +444,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                                   type="text"
                                   value={editingAnswerText}
                                   onChange={(e) => setEditingAnswerText(e.target.value)}
-                                  placeholder="Enter answer text"
+                                  placeholder="Nhập nội dung câu trả lời"
                                   disabled={isLoading}
                                 />
                                 <label>
@@ -453,26 +453,26 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                                     checked={editingAnswerIsCorrect}
                                     onChange={(e) => setEditingAnswerIsCorrect(e.target.checked)}
                                     disabled={isLoading}
-                                  /> Correct?
+                                  /> Đúng?
                                 </label>
                                 <button
                                   className="save-btn"
                                   onClick={() => handleUpdateAnswer(answer.id)}
                                   disabled={isLoading || !editingAnswerText.trim()}
                                 >
-                                  Save
+                                  Lưu
                                 </button>
                                 <button
                                   className="cancel-btn"
                                   onClick={() => setEditingAnswer(null)}
                                   disabled={isLoading}
                                 >
-                                  Cancel
+                                  Hủy
                                 </button>
                               </div>
                             ) : (
                               <>
-                                {answer.content} {answer.is_correct && <span className="correct-label">(Correct)</span>}
+                                {answer.content} {answer.is_correct && <span className="correct-label">(Đúng)</span>}
                                 <div className="answer-actions">
                                   <button
                                     className="edit-btn"
@@ -494,7 +494,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           </li>
                         ))
                       ) : (
-                        <li className="no-answers-message">No answers yet for this question.</li>
+                        <li className="no-answers-message">Chưa có câu trả lời nào cho câu hỏi này.</li>
                       )}
                     </ul>
                     <div className="add-answer-section">
@@ -502,7 +502,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                         type="text"
                         value={newAnswerTexts[question.id] || ''}
                         onChange={(e) => handleNewAnswerInputChange(question.id, e.target.value)}
-                        placeholder="Enter new answer option"
+                        placeholder="Nhập lựa chọn trả lời mới"
                         disabled={isLoading}
                       />
                       <label>
@@ -511,14 +511,14 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           checked={newAnswerIsCorrect[question.id] || false}
                           onChange={(e) => handleNewAnswerIsCorrectChange(question.id, e.target.checked)}
                           disabled={isLoading}
-                        /> Correct?
+                        /> Đúng?
                       </label>
                       <button
                         className="add-answer-btn"
                         onClick={() => handleAddAnswer(question.id)}
                         disabled={isLoading || !(newAnswerTexts[question.id]?.trim())}
                       >
-                        Add Answer
+                        Thêm câu trả lời
                       </button>
                     </div>
                   </div>
@@ -526,11 +526,6 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
               </div>
             )
           )}
-        </div>
-        <div className="modal-footer">
-          <button className="modal-save-btn" onClick={onClose}>
-            Close
-          </button>
         </div>
       </div>
     </div>

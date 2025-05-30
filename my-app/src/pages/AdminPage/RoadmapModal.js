@@ -31,7 +31,7 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
       const roadmaps = data.data || [];
       return roadmaps.some(roadmap => roadmap.title === title);
     } catch (err) {
-      console.error('Error checking title:', err);
+      console.error('Lỗi khi kiểm tra tiêu đề:', err);
       return false;
     }
   };
@@ -40,25 +40,25 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
     event.preventDefault();
 
     if (!title.trim()) {
-      setError("Roadmap Title is required.");
+      setError("Tiêu đề lộ trình là bắt buộc.");
       return;
     }
 
     if (description.length > descriptionCharLimit) {
-      setError(`Description must not exceed ${descriptionCharLimit} characters.`);
+      setError(`Mô tả không được vượt quá ${descriptionCharLimit} ký tự.`);
       return;
     }
 
     const token = Cookies.get('access_token');
     if (!token) {
-      setError("Authentication token not found. Please login.");
+      setError("Không tìm thấy mã thông báo xác thực. Vui lòng đăng nhập.");
       return;
     }
 
     // Kiểm tra xem title đã tồn tại chưa
     const titleExists = await checkTitleExists(title.trim());
     if (titleExists) {
-      setError("A roadmap with this title already exists. Please use a different title.");
+      setError("Một lộ trình với tiêu đề này đã tồn tại. Vui lòng sử dụng tiêu đề khác.");
       return;
     }
 
@@ -69,7 +69,7 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
       title: title.trim(),
       description: description.trim(),
     };
-    console.log('Sending payload to create roadmap:', payload);
+    console.log('Đang gửi dữ liệu để tạo lộ trình:', payload);
 
     try {
       const response = await fetch('http://localhost:8000/api/roadmaps/', {
@@ -83,17 +83,17 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.log('API error response:', errorData);
+        console.log('Phản hồi lỗi API:', errorData);
         const errorDetails = errorData.errors
           ? Object.entries(errorData.errors).map(([key, value]) => `${key}: ${value}`).join(', ')
-          : errorData.message || errorData.detail || `Failed to create roadmap: ${response.statusText}`;
+          : errorData.message || errorData.detail || `Không thể tạo lộ trình: ${response.statusText}`;
         throw new Error(errorDetails);
       }
 
       const data = await response.json();
-      console.log('Created roadmap data:', data);
+      console.log('Dữ liệu lộ trình đã tạo:', data);
       const newRoadmap = data.data;
-      setSuccessMessage(data.message || "Roadmap created successfully.");
+      setSuccessMessage(data.message || "Lộ trình đã được tạo thành công.");
 
       // Gọi callback để làm mới danh sách roadmaps ở RoadmapsPage
       if (onRoadmapCreated) {
@@ -108,7 +108,7 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
         onClose();
       }, 3000);
     } catch (err) {
-      console.error('Create roadmap error:', err);
+      console.error('Lỗi khi tạo lộ trình:', err);
       setError(err.message);
     }
   };
@@ -125,7 +125,7 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
     <div className="modal-overlay visible">
       <div className="modal-content">
         <div className="modal-header">
-          <h3>Create Roadmap</h3>
+          <h3>Tạo Lộ trình</h3>
           <button className="modal-close-btn" onClick={handleCancelOrClose}>×</button>
         </div>
         <div className="modal-body">
@@ -133,23 +133,23 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
           {successMessage && <p style={{color: 'green', textAlign: 'center'}}>{successMessage}</p>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="roadmap-name">ROADMAP TITLE</label>
+              <label htmlFor="roadmap-name">TIÊU ĐỀ LỘ TRÌNH</label>
               <input
                 type="text"
                 className="form-control-us"
                 id="roadmap-name"
-                placeholder="Enter Title"
+                placeholder="Nhập Tiêu đề"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="roadmap-desc">DESCRIPTION</label>
+              <label htmlFor="roadmap-desc">MÔ TẢ</label>
               <textarea
                 className="form-control-us"
                 id="roadmap-desc"
-                placeholder="Enter Description"
+                placeholder="Nhập Mô tả"
                 rows="4"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -158,8 +158,8 @@ function RoadmapModal({ isVisible, onClose, onRoadmapCreated }) {
               <div className="character-count text-end mt-1 text-muted">{description.length}/{descriptionCharLimit}</div>
             </div>
             <div className="modal-actions">
-              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>Cancel</button>
-              <button type="submit" className="create-btn">Create</button>
+              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>Hủy</button>
+              <button type="submit" className="create-btn">Tạo</button>
             </div>
           </form>
         </div>

@@ -25,7 +25,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
     useEffect(() => {
         const fetchUserData = async () => {
             if (!token || !userId) {
-                setError("Authentication token not found. Please login.");
+                setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
                 return;
             }
 
@@ -41,7 +41,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to fetch user data');
+                    throw new Error(errorData.detail || 'Không thể tải dữ liệu người dùng');
                 }
 
                 const data = await response.json();
@@ -84,11 +84,11 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
         const file = e.target.files[0];
         if (file) {
             if (!file.type.startsWith('image/')) {
-                setError("Please select an image file.");
+                setError("Vui lòng chọn một tệp hình ảnh.");
                 return;
             }
             if (file.size > 5 * 1024 * 1024) {
-                setError("Image file size must be less than 5MB.");
+                setError("Kích thước tệp hình ảnh phải nhỏ hơn 5MB.");
                 return;
             }
             setAvatarFile(file);
@@ -107,17 +107,17 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
     };
 
     const validateForm = () => {
-        if (!formData.username) return "Username is required.";
-        if (!formData.email) return "Email is required.";
+        if (!formData.username) return "Tên người dùng là bắt buộc.";
+        if (!formData.email) return "Email là bắt buộc.";
         const emailPattern = /^[\w.-]+@[\w.-]+\.\w+$/;
-        if (!emailPattern.test(formData.email)) return "Invalid email format.";
+        if (!emailPattern.test(formData.email)) return "Định dạng email không hợp lệ.";
         if (formData.github) {
             const githubPattern = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/?$/;
-            if (!githubPattern.test(formData.github)) return "Invalid Github URL.";
+            if (!githubPattern.test(formData.github)) return "URL Github không hợp lệ.";
         }
         if (formData.linkedin) {
             const linkedinPattern = /^https?:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/;
-            if (!linkedinPattern.test(formData.linkedin)) return "Invalid LinkedIn URL.";
+            if (!linkedinPattern.test(formData.linkedin)) return "URL LinkedIn không hợp lệ.";
         }
         return null;
     };
@@ -125,7 +125,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
     const handleSaveChangesProfile = async (event) => {
         event.preventDefault();
         if (!token || !userId) {
-            setError("Authentication token not found. Please login.");
+            setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
             return;
         }
 
@@ -156,7 +156,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || 'Internal Server Error');
+                throw new Error(errorData.detail || 'Lỗi máy chủ nội bộ');
             }
 
             const data = await response.json();
@@ -170,10 +170,10 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
             setShowEmailOnProfile(data.data.show_email_on_profile);
             setAvatarPreviewUrl(data.data.avatar);
             setAvatarFile(null);
-            setSuccessMessage(data.message || "Profile updated successfully.");
+            setSuccessMessage(data.message || "Hồ sơ đã được cập nhật thành công.");
             if (data.warning) setError(data.warning);
         } catch (err) {
-            setError(`Error saving profile: ${err.message}`);
+            setError(`Lỗi khi lưu hồ sơ: ${err.message}`);
         } finally {
             setIsLoading(false);
         }
@@ -189,23 +189,23 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
         <div className="page-content profile-page-container">
             {error && <p className="error-message" style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
             {successMessage && <p style={{ color: 'green', textAlign: 'center' }}>{successMessage}</p>}
-            {isLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
+            {isLoading && <p style={{ textAlign: 'center' }}>Đang tải...</p>}
 
             <div className="profile-header">
-                <h2>Skill Profile</h2>
+                <h2>Hồ sơ kỹ năng</h2>
             </div>
-            <p className="profile-description">Create your skill profile to showcase your skills.</p>
+            <p className="profile-description">Tạo hồ sơ kỹ năng của bạn để giới thiệu các kỹ năng của bạn.</p>
 
             <div className="profile-section">
-                <h3>Profile picture</h3>
+                <h3>Ảnh đại diện</h3>
                 <div className="profile-picture-container">
                     <img
                         src={avatarPreviewUrl || '/creator-ava.png'}
-                        alt="Profile"
+                        alt="Hồ sơ"
                         id="profile-image"
                         className="profile-picture"
                     />
-                    <button className="edit-btn" onClick={() => document.getElementById('profile-pic-upload').click()}>Edit</button>
+                    <button className="edit-btn" onClick={() => document.getElementById('profile-pic-upload').click()}>Chỉnh sửa</button>
                     <input
                         type="file"
                         id="profile-pic-upload"
@@ -217,7 +217,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
             </div>
 
             <div className="profile-section">
-                <h3>Name<span className="required">*</span></h3>
+                <h3>Tên người dùng<span className="required">*</span></h3>
                 <input
                     type="text"
                     className="form-control-us"
@@ -240,7 +240,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                     />
                     <p>
                         <a href="#" onClick={handleVisitSettings} style={{ color: 'purple' }}>
-                            Visit settings page to change email
+                            Truy cập trang cài đặt để thay đổi email
                         </a>
                     </p>
                     <label>
@@ -248,7 +248,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                             type="checkbox"
                             checked={showEmailOnProfile}
                             onChange={(e) => setShowEmailOnProfile(e.target.checked)}
-                        /> Show my email on profile
+                        /> Hiển thị email của tôi trên hồ sơ
                     </label>
                 </div>
             </div>
@@ -261,7 +261,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                     name="github"
                     value={formData.github}
                     onChange={handleInputChange}
-                    placeholder="https://github.com/username"
+                    placeholder="https://github.com/tên-người-dùng"
                 />
             </div>
 
@@ -273,7 +273,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                     name="linkedin"
                     value={formData.linkedin}
                     onChange={handleInputChange}
-                    placeholder="https://www.linkedin.com/in/username/"
+                    placeholder="https://www.linkedin.com/in/tên-người-dùng/"
                 />
             </div>
 
@@ -283,7 +283,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                     onClick={handleSaveChangesProfile}
                     disabled={isLoading}
                 >
-                    Save Profile
+                    Lưu hồ sơ
                 </button>
             </div>
         </div>

@@ -24,7 +24,7 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
     // Hàm fetch dữ liệu user ban đầu (chỉ cần email hiện tại)
     const fetchUserData = useCallback(async () => {
         if (!token || !id) {
-            setError("Authentication token or user ID not found. Please login.");
+            setError("Không tìm thấy mã thông báo xác thực hoặc ID người dùng. Vui lòng đăng nhập.");
             // Tùy chọn: Chuyển hướng về trang login sau vài giây
             // setTimeout(() => { window.location.href = '/login'; }, 2000);
             return;
@@ -47,10 +47,10 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
             // Kiểm tra response status
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                 console.error('SettingsPage fetch: API response not OK:', response.status, errorData); // Log lỗi API
+                   console.error('SettingsPage fetch: API response not OK:', response.status, errorData); // Log lỗi API
                 // Xử lý lỗi 401 Unauthorized (token hết hạn/không hợp lệ)
                 if (response.status === 401) {
-                    setError("Session expired. Please login again.");
+                    setError("Phiên đã hết hạn. Vui lòng đăng nhập lại.");
                     // Xóa cookie và chuyển hướng
                     Cookies.remove('access_token');
                     Cookies.remove('user_id');
@@ -60,11 +60,11 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                     return;
                 }
                 // Ném lỗi cho các status khác
-                throw new Error(errorData.detail || `Failed to fetch user data: ${response.statusText}`);
+                throw new Error(errorData.detail || `Không thể tìm nạp dữ liệu người dùng: ${response.statusText}`);
             }
 
             const data = await response.json();
-            console.log('SettingsPage fetch: Successfully fetched user data:', data); // Log dữ liệu user nhận được
+            console.log('SettingsPage fetch: Đã tìm nạp thành công dữ liệu người dùng:', data); // Log dữ liệu user nhận được
 
             // Cập nhật state email hiện tại
             // Dữ liệu user detail trả về trực tiếp object user (không bọc trong data.data)
@@ -73,8 +73,8 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
             // setHasPasswordSet(Boolean(data.has_password_set));
 
         } catch (err) {
-            console.error('SettingsPage fetch: Error fetching user data:', err); // Log lỗi fetch
-            setError(err.message || "An error occurred while loading settings data.");
+            console.error('SettingsPage fetch: Lỗi khi tìm nạp dữ liệu người dùng:', err); // Log lỗi fetch
+            setError(err.message || "Đã xảy ra lỗi khi tải dữ liệu cài đặt.");
             // Reset các trường nếu fetch lỗi
             setCurrentUserEmail('');
             // setHasPasswordSet(false); // XÓA DÒNG NÀY
@@ -92,12 +92,12 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
     // Hàm validate định dạng email
     const validateEmail = (email) => {
         if (!email) {
-            return "New email is required.";
+            return "Email mới là bắt buộc.";
         }
         // Regex kiểm tra định dạng email cơ bản
         const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailPattern.test(email)) {
-            return "Invalid email format.";
+            return "Định dạng email không hợp lệ.";
         }
         return null; // Trả về null nếu hợp lệ
     };
@@ -105,16 +105,16 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
     // Hàm xử lý cập nhật Email
     const handleUpdateEmail = async () => {
         // Kiểm tra lại token/userId (đảm bảo không gọi API khi chưa sẵn sàng)
-         if (!token || !id) {
-            setError("Authentication token or user ID not found. Cannot update email.");
+           if (!token || !id) {
+            setError("Không tìm thấy mã thông báo xác thực hoặc ID người dùng. Không thể cập nhật email.");
             // setTimeout(() => { window.location.href = '/login'; }, 2000);
             return;
         }
 
         // XÓA KIỂM TRA hasPasswordSet - không cần nữa
         // if (!hasPasswordSet) {
-        //     setError("Please set your password first before updating email.");
-        //     return;
+        //  setError("Please set your password first before updating email.");
+        //  return;
         // }
 
         // Validate email mới
@@ -133,7 +133,7 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
         const payload = {
             email: newEmail
         };
-        console.log('Attempting to update email with payload:', payload); // Log payload gửi đi
+        console.log('Đang cố gắng cập nhật email với dữ liệu:', payload); // Log payload gửi đi
 
         try {
             // Gửi request PUT để cập nhật email
@@ -146,14 +146,14 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                 body: JSON.stringify(payload), // Chuyển payload thành JSON string
             });
 
-             console.log('SettingsPage update email: API Response Status:', response.status); // Log status
+               console.log('SettingsPage update email: Trạng thái phản hồi API:', response.status); // Log status
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                 console.error('SettingsPage update email: API response not OK:', response.status, errorData); // Log lỗi API
-                 // Xử lý lỗi 401 Unauthorized
-                 if (response.status === 401) {
-                    setError("Session expired. Please login again.");
+                   console.error('SettingsPage update email: Phản hồi API không OK:', response.status, errorData); // Log lỗi API
+                   // Xử lý lỗi 401 Unauthorized
+                   if (response.status === 401) {
+                    setError("Phiên đã hết hạn. Vui lòng đăng nhập lại.");
                     Cookies.remove('access_token');
                     Cookies.remove('user_id');
                     Cookies.remove('user_username');
@@ -164,32 +164,32 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                 // Xử lý các lỗi validation khác từ backend (ví dụ: email đã tồn tại)
                 const errorDetails = errorData.errors
                     ? Object.entries(errorData.errors).map(([key, value]) => `${key}: ${value}`).join(', ')
-                    : errorData.message || errorData.detail || `Failed to update email: ${response.statusText}`;
+                    : errorData.message || errorData.detail || `Không thể cập nhật email: ${response.statusText}`;
                 throw new Error(errorDetails);
             }
 
             // Xử lý response thành công
             const updatedData = await response.json();
-            console.log('SettingsPage update email: Successfully updated email. Response data:', updatedData); // Log response data
+            console.log('SettingsPage update email: Đã cập nhật email thành công. Dữ liệu phản hồi:', updatedData); // Log response data
             // Cập nhật email hiển thị hiện tại
             // Dữ liệu user update trả về user object bọc trong data.data
             setCurrentUserEmail(updatedData.data.email);
             setNewEmail(''); // Xóa nội dung input email mới
 
             // Hiển thị thông báo thành công
-            setSuccessMessage(updatedData.message || "Email updated successfully.");
+            setSuccessMessage(updatedData.message || "Email đã được cập nhật thành công.");
             // Gọi callback nếu có để thông báo cho component cha (ví dụ AdminPage/UserPage)
             if (onSettingsUpdated) {
-                 // Truyền thông tin user đã cập nhật (có thể bao gồm email, username nếu backend trả về)
+                   // Truyền thông tin user đã cập nhật (có thể bao gồm email, username nếu backend trả về)
                 onSettingsUpdated(updatedData.data); // Truyền data.data object
             }
-             // Tự động ẩn thông báo thành công sau vài giây
+               // Tự động ẩn thông báo thành công sau vài giây
             setTimeout(() => setSuccessMessage(null), 5000);
 
 
         } catch (err) {
-            console.error('SettingsPage update email: Error updating email:', err); // Log lỗi fetch/xử lý response
-            setError(err.message || "An unexpected error occurred while updating email."); // Hiển thị lỗi
+            console.error('SettingsPage update email: Lỗi khi cập nhật email:', err); // Log lỗi fetch/xử lý response
+            setError(err.message || "Đã xảy ra lỗi không mong muốn khi cập nhật email."); // Hiển thị lỗi
             // Tự động ẩn thông báo lỗi sau vài giây
             setTimeout(() => setError(null), 10000);
         } finally {
@@ -200,20 +200,20 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
     // Hàm validate mật khẩu mới
     const validatePassword = () => {
         if (!newPassword) {
-            return "New password is required.";
+            return "Mật khẩu mới là bắt buộc.";
         }
         if (newPassword.length < 8) { // Kiểm tra độ dài
-            return "Password must be at least 8 characters long.";
+            return "Mật khẩu phải dài ít nhất 8 ký tự.";
         }
         // Thêm các kiểm tra khác nếu cần (chữ hoa, số, ký tự đặc biệt) dựa trên validate backend
-         if (!/[A-Z]/.test(newPassword)) {
-             return "Password must contain at least one uppercase letter.";
-         }
-         if (!/[0-9]/.test(newPassword)) {
-             return "Password must contain at least one digit.";
-         }
+           if (!/[A-Z]/.test(newPassword)) {
+               return "Mật khẩu phải chứa ít nhất một chữ cái viết hoa.";
+           }
+           if (!/[0-9]/.test(newPassword)) {
+               return "Mật khẩu phải chứa ít nhất một chữ số.";
+           }
         if (newPassword !== confirmPassword) { // Kiểm tra khớp mật khẩu xác nhận
-            return "Passwords do not match.";
+            return "Mật khẩu không khớp.";
         }
         return null; // Trả về null nếu hợp lệ
     };
@@ -227,9 +227,9 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
             return;
         }
 
-         // Kiểm tra lại token/userId
-         if (!token || !id) {
-            setError("Authentication token or user ID not found. Cannot update password.");
+           // Kiểm tra lại token/userId
+           if (!token || !id) {
+            setError("Không tìm thấy mã thông báo xác thực hoặc ID người dùng. Không thể cập nhật mật khẩu.");
             // setTimeout(() => { window.location.href = '/login'; }, 2000);
             return;
         }
@@ -243,7 +243,7 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
         const payload = {
             password: newPassword
         };
-        console.log('Attempting to update password.'); // Log hành động
+        console.log('Đang cố gắng cập nhật mật khẩu.'); // Log hành động
 
         try {
             // Gửi request PUT để cập nhật mật khẩu
@@ -256,34 +256,34 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                 body: JSON.stringify(payload), // Chuyển payload thành JSON string
             });
 
-             console.log('SettingsPage update password: API Response Status:', response.status); // Log status
+               console.log('SettingsPage update password: Trạng thái phản hồi API:', response.status); // Log status
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error('SettingsPage update password: API response not OK:', response.status, errorData); // Log lỗi API
-                 // Xử lý lỗi 401 Unauthorized
-                 if (response.status === 401) {
-                    setError("Session expired. Please login again.");
-                     Cookies.remove('access_token');
+                console.error('SettingsPage update password: Phản hồi API không OK:', response.status, errorData); // Log lỗi API
+                   // Xử lý lỗi 401 Unauthorized
+                   if (response.status === 401) {
+                    setError("Phiên đã hết hạn. Vui lòng đăng nhập lại.");
+                       Cookies.remove('access_token');
                     Cookies.remove('user_id');
                     Cookies.remove('user_username');
                     Cookies.remove('user_role');
                     // setTimeout(() => { window.location.href = '/login'; }, 2000);
                     return;
                 }
-                 // Xử lý các lỗi validation khác từ backend
-                 const errorDetails = errorData.errors
-                    ? Object.entries(errorData.errors).map(([key, value]) => `${key}: ${value}`).join(', ')
-                    : errorData.message || errorData.detail || `Failed to update password: ${response.statusText}`;
+                   // Xử lý các lỗi validation khác từ backend
+                   const errorDetails = errorData.errors
+                       ? Object.entries(errorData.errors).map(([key, value]) => `${key}: ${value}`).join(', ')
+                       : errorData.message || errorData.detail || `Không thể cập nhật mật khẩu: ${response.statusText}`;
                 throw new Error(errorDetails);
             }
 
             // Xử lý response thành công (không cần đọc body nếu backend trả về 204 No Content)
             // Nếu backend trả về JSON, có thể đọc:
-             const data = await response.json(); // Đọc response data nếu có
+               const data = await response.json(); // Đọc response data nếu có
 
             // Hiển thị thông báo thành công
-            setSuccessMessage(data.message || "Password updated successfully.");
+            setSuccessMessage(data.message || "Mật khẩu đã được cập nhật thành công.");
             // Reset các trường input mật khẩu
             setNewPassword('');
             setConfirmPassword('');
@@ -293,12 +293,12 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
             // console.log('Password updated successfully. hasPasswordSet set to true.'); // Log
 
 
-             // Tự động ẩn thông báo thành công sau vài giây
+               // Tự động ẩn thông báo thành công sau vài giây
             setTimeout(() => setSuccessMessage(null), 5000);
 
         } catch (err) {
-            console.error('SettingsPage update password: Error updating password:', err); // Log lỗi fetch/xử lý response
-            setError(err.message || "An unexpected error occurred while updating password."); // Hiển thị lỗi
+            console.error('SettingsPage update password: Lỗi khi cập nhật mật khẩu:', err); // Log lỗi fetch/xử lý response
+            setError(err.message || "Đã xảy ra lỗi không mong muốn khi cập nhật mật khẩu."); // Hiển thị lỗi
             // Tự động ẩn thông báo lỗi sau vài giây
             setTimeout(() => setError(null), 10000);
         } finally {
@@ -316,21 +316,21 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                 {/* Hiển thị thông báo lỗi và thành công */}
                 {error && <div className="error-message">{error}</div>}
                 {successMessage && <div className="success-message">{successMessage}</div>}
-                {isLoading && <p style={{ textAlign: 'center', color: '#007bff' }}>Loading...</p>} {/* Thêm màu cho loading */}
+                {isLoading && <p style={{ textAlign: 'center', color: '#007bff' }}>Đang tải...</p>} {/* Thêm màu cho loading */}
 
                 {/* Phần cài đặt mật khẩu */}
                 <div className="settings-section">
-                    <h2>Password</h2>
-                    <p className="settings-description">Use the form below to update your password.</p>
+                    <h2>Mật khẩu</h2>
+                    <p className="settings-description">Sử dụng biểu mẫu dưới đây để cập nhật mật khẩu của bạn.</p>
 
                     <div className="password-fields">
                         <div className="field-group">
-                            <label htmlFor="new-password">New Password</label>
+                            <label htmlFor="new-password">Mật khẩu mới</label>
                             <input
                                 type="password"
                                 className="form-control us password-input"
                                 id="new-password"
-                                placeholder="New password"
+                                placeholder="Mật khẩu mới"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 disabled={isLoading} // Disable khi đang loading
@@ -338,12 +338,12 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                         </div>
 
                         <div className="field-group">
-                            <label htmlFor="confirm-password">Confirm New Password</label>
+                            <label htmlFor="confirm-password">Xác nhận mật khẩu mới</label>
                             <input
                                 type="password"
                                 className="form-control us password-input"
                                 id="confirm-password"
-                                placeholder="Confirm New Password"
+                                placeholder="Xác nhận mật khẩu mới"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 disabled={isLoading} // Disable khi đang loading
@@ -356,7 +356,7 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                             onClick={handleUpdatePassword}
                             disabled={isLoading || !newPassword || !confirmPassword} // Disable khi loading hoặc input rỗng
                         >
-                            Update Password
+                            Cập nhật mật khẩu
                         </button>
                     </div>
                 </div>
@@ -365,16 +365,16 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
 
                 {/* Phần cập nhật Email - LUÔN HIỂN THỊ VÀ KHẢ DỤNG */}
                 <div className="settings-section">
-                    <h2>Update Email</h2>
+                    <h2>Cập nhật Email</h2>
                     {/* Mô tả đơn giản */}
                     <p className="settings-description">
-                        Use the form below to update your email address.
+                        Sử dụng biểu mẫu dưới đây để cập nhật địa chỉ email của bạn.
                     </p>
 
                     <div className="email-fields">
                         {/* Hiển thị email hiện tại */}
                         <div className="field-group">
-                            <label>Current Email</label>
+                            <label>Email hiện tại</label>
                             <input
                                 type="email"
                                 className="form-control us"
@@ -386,12 +386,12 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                         {/* Input email mới và nút update - LUÔN HIỂN THỊ */}
                         <>
                             <div className="field-group">
-                                <label htmlFor="new-email">New Email</label>
+                                <label htmlFor="new-email">Email mới</label>
                                 <input
                                     type="email"
                                     className="form-control us"
                                     id="new-email"
-                                    placeholder="Enter new email"
+                                    placeholder="Nhập email mới"
                                     value={newEmail}
                                     onChange={(e) => setNewEmail(e.target.value)}
                                     disabled={isLoading} // Disable khi đang loading
@@ -402,12 +402,11 @@ function SettingsPage({ userId, authToken, onSettingsUpdated }) {
                                 onClick={handleUpdateEmail}
                                 disabled={isLoading || !newEmail} // Disable khi loading hoặc input rỗng
                             >
-                                Update Email
+                                Cập nhật Email
                             </button>
                         </>
                     </div>
                 </div>
-
             </div>
         </div>
     );

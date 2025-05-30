@@ -18,7 +18,7 @@ function UserManagementPage() {
         const token = Cookies.get('access_token');
         console.log('Token:', token);
         if (!token) {
-            setError("Authentication token not found. Please login.");
+            setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
             setIsLoading(false);
             setUsers([]);
             setTotalUsers(0);
@@ -43,20 +43,20 @@ function UserManagementPage() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(`Failed to fetch users: ${errorData.detail || response.statusText}`);
+                throw new Error(`Không thể lấy danh sách người dùng: ${errorData.detail || response.statusText}`);
             }
 
             const data = await response.json();
-            console.log('API response:', data);
+            console.log('Phản hồi API:', data);
 
             const results = Array.isArray(data) ? data : (data.results || []);
             if (!Array.isArray(results)) {
-                throw new Error('Invalid data format: Expected array of users');
+                throw new Error('Định dạng dữ liệu không hợp lệ: Cần một mảng người dùng');
             }
 
             const mappedUsers = results.map(user => ({
                 id: user.id || '',
-                name: user.username || 'Unknown',
+                name: user.username || 'Không rõ',
                 avatar_url: user.avatar || '/creator-ava.png',
                 date_created: user.created_at || null,
                 last_login: user.last_login || null,
@@ -67,7 +67,7 @@ function UserManagementPage() {
             setTotalUsers(data.count !== undefined ? data.count : results.length);
 
         } catch (err) {
-            console.error('Fetch users error:', err.message);
+            console.error('Lỗi khi tải người dùng:', err.message);
             setError(err.message);
             setUsers([]);
             setTotalUsers(0);
@@ -95,11 +95,11 @@ function UserManagementPage() {
         const token = Cookies.get('access_token');
         console.log('Delete token:', token);
         if (!token) {
-            setError("Authentication token not found. Cannot delete user.");
+            setError("Không tìm thấy mã xác thực. Không thể xóa người dùng.");
             return;
         }
 
-        if (!window.confirm(`Are you sure you want to delete user with ID ${userId}?`)) return;
+        if (!window.confirm(`Bạn có chắc chắn muốn xóa người dùng có ID ${userId} không?`)) return;
 
         setIsLoading(true);
         setError(null);
@@ -116,10 +116,10 @@ function UserManagementPage() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || `Failed to delete user: ${response.statusText}`);
+                throw new Error(errorData.detail || `Không thể xóa người dùng: ${response.statusText}`);
             }
 
-            setSuccessMessage(`User ${userId} deleted successfully.`);
+            setSuccessMessage(`Người dùng ${userId} đã được xóa thành công.`);
             setTimeout(() => setSuccessMessage(null), 5000);
 
             const newTotalUsers = totalUsers - 1;
@@ -140,7 +140,7 @@ function UserManagementPage() {
             }
 
         } catch (err) {
-            console.error('Delete user error:', err.message);
+            console.error('Lỗi khi xóa người dùng:', err.message);
             setError(err.message);
             setTimeout(() => setError(null), 10000);
         } finally {
@@ -155,7 +155,7 @@ function UserManagementPage() {
             return (
                 <tbody>
                     <tr>
-                        <td colSpan={columnCount} className="text-center">Loading users...</td>
+                        <td colSpan={columnCount} className="text-center">Đang tải người dùng...</td>
                     </tr>
                 </tbody>
             );
@@ -175,7 +175,7 @@ function UserManagementPage() {
             return (
                 <tbody>
                     <tr>
-                        <td colSpan={columnCount} className="text-center">No users found.</td>
+                        <td colSpan={columnCount} className="text-center">Không tìm thấy người dùng nào.</td>
                     </tr>
                 </tbody>
             );
@@ -187,10 +187,10 @@ function UserManagementPage() {
                     <tr key={user.id || index}>
                         {[
                             <td key="index">{(currentPage - 1) * itemsPerPage + index + 1}</td>,
-                            <td key="avatar" className="avatar-cell"><img src={user.avatar_url} alt="User Avatar" className="user-avatar-sm" /></td>,
+                            <td key="avatar" className="avatar-cell"><img src={user.avatar_url} alt="Ảnh đại diện người dùng" className="user-avatar-sm" /></td>,
                             <td key="name" className="user-info-cell"><span>{user.name}</span></td>,
-                            <td key="date-created">{user.date_created ? new Date(user.date_created).toLocaleDateString() : 'N/A'}</td>,
-                            <td key="last-login">{user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</td>,
+                            <td key="date-created">{user.date_created ? new Date(user.date_created).toLocaleDateString('vi-VN') : 'N/A'}</td>,
+                            <td key="last-login">{user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : 'Chưa bao giờ'}</td>,
                             <td key="role" className="text-center">{user.role}</td>,
                             <td key="action" className="action-buttons">
                                 <button
@@ -212,7 +212,7 @@ function UserManagementPage() {
         <div className="page-content" id="Users">
             <div className="users-container">
                 <div className="page-header">
-                    <h2>User Management</h2>
+                    <h2>Quản lý người dùng</h2>
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
@@ -221,20 +221,20 @@ function UserManagementPage() {
                 <div className="users-table">
                     {totalUsers > 0 && (
                         <p className="total-users-info">
-                            Showing {(currentPage - 1) * itemsPerPage + 1} -{' '}
-                            {Math.min(currentPage * itemsPerPage, totalUsers)} of {totalUsers} entries
+                            Hiển thị {(currentPage - 1) * itemsPerPage + 1} -{' '}
+                            {Math.min(currentPage * itemsPerPage, totalUsers)} trên tổng số {totalUsers} mục
                         </p>
                     )}
                     <table className="table">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>No</th>
                                 <th>Avatar</th>
-                                <th>Name</th>
-                                <th>Date Created</th>
-                                <th>Last Login</th>
-                                <th>Role</th>
-                                <th>Action</th>
+                                <th>Username</th>
+                                <th>Ngày tạo</th>
+                                <th>Đăng nhập cuối</th>
+                                <th>Vai trò</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         {renderTableContent()}
