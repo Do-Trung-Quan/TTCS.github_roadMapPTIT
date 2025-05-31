@@ -18,7 +18,7 @@ function RoadmapsPage({ onEditRoadmap, onRoadmapDeleted }) {
     setError(null);
     const token = Cookies.get('access_token');
     if (!token) {
-      setError("Authentication token not found. Please login.");
+      setError("Không tìm thấy mã thông báo xác thực. Vui lòng đăng nhập.");
       setIsLoading(false);
       return;
     }
@@ -37,18 +37,18 @@ function RoadmapsPage({ onEditRoadmap, onRoadmapDeleted }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to fetch roadmaps: ${response.statusText}`);
+        throw new Error(errorData.detail || `Không thể tìm nạp lộ trình: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('API response:', data);
+      console.log('Phản hồi API:', data);
 
       // Truy cập đúng vào data.results.data để lấy danh sách roadmaps
       const roadmapData = data.results && data.results.data ? data.results.data : [];
       setRoadmaps(roadmapData);
       setTotalRoadmaps(data.count || 0);
     } catch (err) {
-      console.error('Error fetching roadmaps:', err);
+      console.error('Lỗi khi tìm nạp lộ trình:', err);
       setError(err.message);
       setRoadmaps([]);
       setTotalRoadmaps(0);
@@ -102,7 +102,7 @@ function RoadmapsPage({ onEditRoadmap, onRoadmapDeleted }) {
 
   const renderContent = () => {
     if (isLoading) {
-      return <div style={{ textAlign: 'center' }}>Loading roadmaps...</div>;
+      return <div style={{ textAlign: 'center' }}>Đang tải lộ trình...</div>;
     }
 
     if (error) {
@@ -115,8 +115,8 @@ function RoadmapsPage({ onEditRoadmap, onRoadmapDeleted }) {
           <div className="roadmap-icon">
             <i className="fa-solid fa-signs-post"></i>
           </div>
-          <h2>No roadmaps</h2>
-          <p>Create a roadmap to get started</p>
+          <h2>Chưa có lộ trình nào</h2>
+          <p>Tạo một lộ trình để bắt đầu</p>
         </div>
       );
     }
@@ -127,7 +127,7 @@ function RoadmapsPage({ onEditRoadmap, onRoadmapDeleted }) {
           <div key={roadmap.id} className="roadmap-list-item">
             <div className="item-details">
               <span className="item-title">{roadmap.title}</span>
-              <span className="item-stats">{roadmap.description || 'No description'}</span>
+              <span className="item-stats">{roadmap.description || 'Không có mô tả'}</span>
             </div>
             <div className="item-actions">
               {onEditRoadmap && (
@@ -135,14 +135,14 @@ function RoadmapsPage({ onEditRoadmap, onRoadmapDeleted }) {
                   className="action-btn edit-btn"
                   onClick={() => handleEditClick(roadmap.id)}
                 >
-                  Edit
+                  Sửa
                 </button>
               )}
               <button
                 className="action-btn delete-btn"
                 onClick={() => handleDeleteRoadmap(roadmap.id)}
               >
-                Delete
+                Xóa
               </button>
             </div>
           </div>
@@ -163,12 +163,12 @@ function RoadmapsPage({ onEditRoadmap, onRoadmapDeleted }) {
     <div className="page-content" id="roadmaps">
       <div className="roadmap-container">
         <div className="roadmap-tabs">
-          <h2>Roadmaps management</h2>
+          <h2>Quản lý lộ trình</h2>
           <button
             className="create-roadmap-btn"
             onClick={handleCreateButtonClick}
           >
-            + Create Roadmap
+            + Tạo Lộ trình
           </button>
         </div>
 

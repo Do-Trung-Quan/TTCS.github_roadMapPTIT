@@ -20,7 +20,7 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
 
   const fetchResources = useCallback(async () => {
     if (!token || !topic?.TopicID) {
-      console.warn("Token or TopicID not available, skipping resource fetch.");
+      console.warn("Mã thông báo hoặc TopicID không có sẵn, bỏ qua việc thêm tài nguyên.");
       return;
     }
     try {
@@ -31,22 +31,22 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
           'Content-Type': 'application/json',
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch resources');
+      if (!response.ok) throw new Error('Không thể thêm tài nguyên');
       const data = await response.json();
-      console.log('Fetched all resources:', data);
-      console.log('Current topic.TopicID for filtering resources:', topic.TopicID);
+      console.log('Đã thêm tất cả tài nguyên:', data);
+      console.log('topic.TopicID hiện tại để lọc tài nguyên:', topic.TopicID);
       const filteredResources = (data.data || []).filter(r => r.topic === topic.TopicID);
-      console.log(`Filtered resources for TopicID ${topic.TopicID}:`, filteredResources);
+      console.log(`Tài nguyên đã lọc cho TopicID ${topic.TopicID}:`, filteredResources);
       setResources(filteredResources);
     } catch (err) {
-      console.error('Error fetching resources:', err);
+      console.error('Lỗi khi thêm tài nguyên:', err);
     }
   }, [token, topic?.TopicID]);
 
   const fetchExercises = useCallback(async () => {
     if (!token || !topic?.TopicID) {
-       console.warn("Token or TopicID not available, skipping exercise fetch.");
-       return;
+      console.warn("Mã thông báo hoặc TopicID không có sẵn, bỏ qua việc thêm bài tập.");
+      return;
     }
     try {
       const response = await fetch('http://localhost:8000/api/exercises/', {
@@ -56,15 +56,15 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
           'Content-Type': 'application/json',
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch exercises');
+      if (!response.ok) throw new Error('Không thể thêm bài tập');
       const data = await response.json();
-      console.log('Fetched all exercises:', data);
-      console.log('Current topic.TopicID for filtering exercises:', topic.TopicID);
+      console.log('Đã thêm tất cả bài tập:', data);
+      console.log('topic.TopicID hiện tại để lọc bài tập:', topic.TopicID);
       const filteredExercises = (data.data || []).filter(e => e.topic === topic.TopicID);
-       console.log(`Filtered exercises for TopicID ${topic.TopicID}:`, filteredExercises);
+      console.log(`Bài tập đã lọc cho TopicID ${topic.TopicID}:`, filteredExercises);
       setExercises(filteredExercises);
     } catch (err) {
-      console.error('Error fetching exercises:', err);
+      console.error('Lỗi khi thêm bài tập:', err);
     }
   }, [token, topic?.TopicID]);
 
@@ -80,7 +80,7 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
   };
 
   const handleAddResourceClick = () => {
-    setEditingResource(null); // Ensure we're adding a new resource
+    setEditingResource(null); // Đảm bảo chúng ta đang thêm tài nguyên mới
     setIsResourceModalOpen(true);
   };
 
@@ -95,7 +95,7 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
   };
 
   const handleSaveResource = async (resourceData) => {
-    console.log("Submit resource data:", resourceData, "for topic:", topic?.TopicID);
+    console.log("Gửi dữ liệu tài nguyên:", resourceData, "cho chủ đề:", topic?.TopicID);
     if (!token || !topic?.TopicID) return;
     const method = editingResource ? 'PUT' : 'POST';
     const url = editingResource
@@ -111,15 +111,15 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
         body: JSON.stringify({ ...resourceData, topic: topic.TopicID, resource_type: resourceData.resource_type }),
       });
       if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('API error response:', errorData);
-          throw new Error(errorData.detail || `Failed to save resource: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Phản hồi lỗi API:', errorData);
+        throw new Error(errorData.detail || `Không thể lưu tài nguyên: ${response.statusText}`);
       }
       const data = await response.json();
-      console.log('Saved resource data:', data);
+      console.log('Đã lưu dữ liệu tài nguyên:', data);
       fetchResources();
     } catch (err) {
-      console.error('Error saving resource:', err);
+      console.error('Lỗi khi lưu tài nguyên:', err);
     }
     handleCloseResourceModal();
   };
@@ -140,7 +140,7 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
   };
 
   const handleSaveExercise = async (exerciseData) => {
-    console.log("Submit exercise data:", exerciseData, "for topic:", topic?.TopicID);
+    console.log("Gửi dữ liệu bài tập:", exerciseData, "cho chủ đề:", topic?.TopicID);
     if (!token || !topic?.TopicID) return;
     const method = editingExercise ? 'PUT' : 'POST';
     const url = editingExercise
@@ -155,16 +155,16 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
         },
         body: JSON.stringify({ ...exerciseData, topic: topic.TopicID }),
       });
-       if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('API error response:', errorData);
-          throw new Error(errorData.detail || `Failed to save exercise: ${response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Phản hồi lỗi API:', errorData);
+        throw new Error(errorData.detail || `Không thể lưu bài tập: ${response.statusText}`);
       }
       const data = await response.json();
-      console.log('Saved exercise data:', data);
+      console.log('Đã lưu dữ liệu bài tập:', data);
       fetchExercises();
     } catch (err) {
-      console.error('Error saving exercise:', err);
+      console.error('Lỗi khi lưu bài tập:', err);
     }
     handleCloseExerciseModal();
   };
@@ -180,14 +180,14 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
         },
       });
       if (!response.ok) {
-           const errorData = await response.json().catch(() => ({}));
-           console.error('API error response:', errorData);
-           throw new Error(errorData.detail || `Failed to delete resource: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Phản hồi lỗi API:', errorData);
+        throw new Error(errorData.detail || `Không thể xóa tài nguyên: ${response.statusText}`);
       }
-      console.log('Deleted resource:', resourceId);
+      console.log('Đã xóa tài nguyên:', resourceId);
       fetchResources();
     } catch (err) {
-      console.error('Error deleting resource:', err);
+      console.error('Lỗi khi xóa tài nguyên:', err);
     }
   };
 
@@ -202,14 +202,14 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
         },
       });
       if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('API error response:', errorData);
-          throw new Error(errorData.detail || `Failed to delete exercise: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Phản hồi lỗi API:', errorData);
+        throw new Error(errorData.detail || `Không thể xóa bài tập: ${response.statusText}`);
       }
-      console.log('Deleted exercise:', exerciseId);
+      console.log('Đã xóa bài tập:', exerciseId);
       fetchExercises();
     } catch (err) {
-      console.error('Error deleting exercise:', err);
+      console.error('Lỗi khi xóa bài tập:', err);
     }
   };
 
@@ -241,74 +241,74 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children })
           <FontAwesomeIcon icon={isDetailsOpen ? 'chevron-up' : 'chevron-down'} />
         </span>
         <div className="topic-actions-within-item">
-             <button className="edit-btn" onClick={(e) => { e.stopPropagation(); onEditTopic(topic); }}>
-                <FontAwesomeIcon icon="pencil" title="Edit Topic" />
-             </button>
-             <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDeleteTopicClick(topic); }}>
-                <FontAwesomeIcon icon="trash" title="Delete Topic" />
-             </button>
+          <button className="edit-btn" onClick={(e) => { e.stopPropagation(); onEditTopic(topic); }}>
+            <FontAwesomeIcon icon="pencil" title="Chỉnh sửa Chủ đề" />
+          </button>
+          <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDeleteTopicClick(topic); }}>
+            <FontAwesomeIcon icon="trash" title="Xóa Chủ đề" />
+          </button>
         </div>
       </div>
 
       {isDetailsOpen && (
         <div className="topic-details">
           <div className="topic-resources-section">
-            <h4>Resources</h4>
-            <button className="add-item-btn" onClick={handleAddResourceClick}>+ Add Resource</button>
+            <h4>Tài nguyên</h4>
+            <button className="add-item-btn" onClick={handleAddResourceClick}>+ Thêm Tài nguyên</button>
             {resources.length > 0 ? (
               <ul>
                 {resources.map(resource => (
                   <li key={resource.id}>
                     <span className="resource-item-content">
-                      <FontAwesomeIcon icon={getResourceTypeIcon(resource.resource_type_name)} title={resource.resource_type_name || 'Resource'} />
+                      <FontAwesomeIcon icon={getResourceTypeIcon(resource.resource_type_name)} title={resource.resource_type_name || 'Tài nguyên'} />
                       <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">
                         {resource.title}
                       </a>
                     </span>
                     <span className="item-actions">
                       <button className="action-btn edit-btn" onClick={() => handleEditResourceClick(resource)}>
-                        <FontAwesomeIcon icon="pencil" title="Edit Resource" />
+                        <FontAwesomeIcon icon="pencil" title="Chỉnh sửa Tài nguyên" />
                       </button>
                       <button className="action-btn delete-btn" onClick={() => handleDeleteResourceClick(resource.id)}>
-                        <FontAwesomeIcon icon="times" title="Delete Resource" />
+                        <FontAwesomeIcon icon="times" title="Xóa Tài nguyên" />
                       </button>
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="no-items-message">No resources added yet.</p>
+              <p className="no-items-message">Chưa có tài nguyên nào được thêm.</p>
             )}
           </div>
 
           <div className="topic-exercises-section">
-            <h4>Exercises</h4>
-            <button className="add-item-btn" onClick={handleAddExerciseClick}>+ Add Exercise</button>
+            <h4>Bài tập</h4>
+            <button className="add-item-btn" onClick={handleAddExerciseClick}>+ Thêm Bài tập</button>
             {exercises.length > 0 ? (
               <ul>
                 {exercises.map(exercise => (
                   <li key={exercise.id}>
                     <span className="exercise-item-content">
-                      <FontAwesomeIcon icon="laptop-code" title="Exercise" />
+                      <FontAwesomeIcon icon="laptop-code" title="Bài tập" />
                       {exercise.title}
                       <span className={`exercise-difficulty difficulty-${exercise.difficulty}`}>({exercise.difficulty})</span>
                     </span>
                     <span className="item-actions">
                       <button className="action-btn manage-quiz-btn" onClick={() => handleManageQuizClick(exercise)}>
-                        <FontAwesomeIcon icon="question-circle" title="Manage Quiz" /> Manage Quiz
+                        <FontAwesomeIcon icon="question-circle" title="Quản lý Bài kiểm tra" /> Quản lý Bài kiểm tra
                       </button>
                       <button className="action-btn edit-btn" onClick={() => handleEditExerciseClick(exercise)}>
-                        <FontAwesomeIcon icon="pencil" title="Edit Exercise" />
+                        <FontAwesomeIcon icon="pencil" title="Chỉnh sửa Bài tập" />
                       </button>
                       <button className="action-btn delete-btn" onClick={() => handleDeleteExerciseClick(exercise.id)}>
-                        <FontAwesomeIcon icon="times" title="Delete Exercise" />
+                        <FontAwesomeIcon icon="times" title="Xóa Bài tập" />
                       </button>
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="no-items-message">No exercises added yet.</p>
+              <p className="no-items-message">Chưa có bài tập nào được thêm.</p>
             )}
           </div>
         </div>

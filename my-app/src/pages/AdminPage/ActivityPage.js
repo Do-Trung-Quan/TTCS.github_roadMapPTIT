@@ -20,7 +20,7 @@ function ActivityPage() {
 
       const token = getToken();
       if (!token) {
-        setError('Please log in to view your progress.');
+        setError('Vui lòng đăng nhập để xem tiến độ của bạn.');
         setIsLoading(false);
         return;
       }
@@ -40,7 +40,7 @@ function ActivityPage() {
           setStatsData(statsResult.data || { done_count: 0, pending_or_skip_count: 0 });
         } else {
           const statsErrorData = await statsResponse.json();
-          setError(`Failed to fetch stats: ${statsErrorData.message || 'Unknown error'}`);
+          setError(`Không thể tải số liệu thống kê: ${statsErrorData.message || 'Lỗi không xác định'}`);
           return;
         }
 
@@ -58,10 +58,10 @@ function ActivityPage() {
           setProgressData(progressResult.data || []);
         } else {
           const progressErrorData = await progressResponse.json();
-          setError(`Failed to fetch progress: ${progressErrorData.message || 'Unknown error'}`);
+          setError(`Không thể tải tiến độ: ${progressErrorData.message || 'Lỗi không xác định'}`);
         }
       } catch (err) {
-        setError('Network error. Please try again later.');
+        setError('Lỗi mạng. Vui lòng thử lại sau.');
       } finally {
         setIsLoading(false);
       }
@@ -75,7 +75,7 @@ function ActivityPage() {
   };
 
   if (isLoading) {
-    return <div className="page-content" id="activity">Loading...</div>;
+    return <div className="page-content" id="activity">Đang tải...</div>;
   }
 
   if (error) {
@@ -83,7 +83,7 @@ function ActivityPage() {
       <div className="page-content" id="activity">
         <div className="activity-container">
           <div className="activity-empty">
-            <h2>Error</h2>
+            <h2>Lỗi</h2>
             <p>{error}</p>
           </div>
         </div>
@@ -96,9 +96,9 @@ function ActivityPage() {
       <div className="page-content" id="activity">
         <div className="activity-container">
           <div className="activity-empty">
-            <h2>Please Log In</h2>
+            <h2>Vui lòng đăng nhập</h2>
             <p>
-              <a href="/login" className="link-text">Log in</a> to view your progress.
+              <a href="/login" className="link-text">Đăng nhập</a> để xem tiến độ của bạn.
             </p>
           </div>
         </div>
@@ -112,24 +112,24 @@ function ActivityPage() {
         <div className="activity-stats">
           <div className="stats-item">
             <span className="stats-value">{statsData.done_count}</span>
-            <span className="stats-label">Topics Completed</span>
+            <span className="stats-label">Chủ đề đã hoàn thành</span>
           </div>
           <div className="stats-item">
             <span className="stats-value">{statsData.pending_or_skip_count}</span>
-            <span className="stats-label">Currently Learning</span>
+            <span className="stats-label">Đang học</span>
           </div>
         </div>
 
         {progressData.length === 0 ? (
           <div className="activity-empty">
-            <h2>Start your progress now</h2>
+            <h2>Bắt đầu hành trình của bạn ngay bây giờ</h2>
             <p>
-              <a href="/" className="link-text">Go to Home</a> to start exploring roadmaps.
+              <a href="/" className="link-text">Về trang chủ</a> để bắt đầu khám phá các lộ trình.
             </p>
           </div>
         ) : (
           <>
-            <h3 className="continue-following">CONTINUE FOLLOWING</h3>
+            <h3 className="continue-following">TIẾP TỤC THEO DÕI</h3>
             <div className="progress-list">
               {progressData.map((item) => (
                 <div

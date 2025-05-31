@@ -20,19 +20,19 @@ function AdminPage() {
     const userId = token ? JSON.parse(atob(token.split('.')[1])).user_id : null;
 
     const [adminUserInfo, setAdminUserInfo] = useState({
-        username: Cookies.get('user_username') || 'Admin User',
+        username: Cookies.get('user_username') || 'Người dùng quản trị',
         avatar: Cookies.get('user_avatar') || '/default-admin-avatar.png',
         userId: userId,
         role: Cookies.get('user_role') || 'user',
     });
 
     const fetchUserData = useCallback(async () => {
-        console.log("AdminPage fetch: Token:", token ? "Exists" : "Missing", "UserId:", userId ? "Exists" : "Missing");
+        console.log("AdminPage fetch: Token:", token ? "Đã tồn tại" : "Thiếu", "UserId:", userId ? "Đã tồn tại" : "Thiếu");
 
         if (!token || !userId) {
-            console.log("AdminPage fetch: Token or UserId missing, cannot fetch user data.");
+            console.log("AdminPage fetch: Thiếu Token hoặc UserId, không thể tải dữ liệu người dùng.");
             setAdminUserInfo({
-                username: 'Unknown User',
+                username: 'Người dùng không xác định',
                 avatar: '/default-admin-avatar.png',
                 userId: null,
                 role: 'user',
@@ -49,29 +49,29 @@ function AdminPage() {
                 },
             });
 
-            console.log("AdminPage fetch: API Response Status:", response.status);
+            console.log("AdminPage fetch: Trạng thái phản hồi API:", response.status);
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error("AdminPage fetch: Failed to fetch user data:", response.status, errorData);
+                console.error("AdminPage fetch: Lỗi khi tải dữ liệu người dùng:", response.status, errorData);
                 if (response.status === 401) {
-                    console.log("AdminPage fetch: Received 401, token likely expired. Logging out.");
+                    console.log("AdminPage fetch: Nhận được 401, token có thể đã hết hạn. Đang đăng xuất.");
                     // handleLogout(); // Uncomment để tự động logout khi token hết hạn
                 }
                 setAdminUserInfo({
-                    username: 'Unknown User',
-                    avatar: '/default-admin-avatar.png',
+                    username: 'Người dùng không xác định',
+                    avatar: '/default-admin-admin-avatar.png',
                     userId: null,
                     role: 'user',
                 });
-                throw new Error(errorData.detail || `Failed to fetch user data: ${response.statusText}`);
+                throw new Error(errorData.detail || `Không thể tải dữ liệu người dùng: ${response.statusText}`);
             }
 
             const data = await response.json();
-            console.log("AdminPage fetch: Successfully fetched user data:", data);
+            console.log("AdminPage fetch: Tải dữ liệu người dùng thành công:", data);
 
             setAdminUserInfo({
-                username: data.username || 'Admin User',
+                username: data.username || 'Người dùng quản trị',
                 avatar: data.avatar || '/default-admin-avatar.png',
                 userId: userId,
                 role: data.role || 'user',
@@ -80,16 +80,16 @@ function AdminPage() {
             Cookies.set('user_avatar', data.avatar, { expires: 7, secure: true, sameSite: 'Strict' });
             Cookies.set('user_role', data.role, { expires: 7, secure: true, sameSite: 'Strict' });
 
-            console.log("AdminPage: Admin user info updated from fetch:", {
+            console.log("AdminPage: Thông tin người dùng quản trị được cập nhật từ fetch:", {
                 username: data.username,
                 avatar: data.avatar,
                 role: data.role
             });
 
         } catch (err) {
-            console.error('AdminPage fetch: Error fetching user data:', err.message);
+            console.error('AdminPage fetch: Lỗi khi tải dữ liệu người dùng:', err.message);
             setAdminUserInfo({
-                username: Cookies.get('user_username') || 'Unknown User',
+                username: Cookies.get('user_username') || 'Người dùng không xác định',
                 avatar: Cookies.get('user_avatar') || '/default-admin-avatar.png',
                 userId: Cookies.get('user_id') || null,
                 role: Cookies.get('user_role') || 'user',
@@ -102,7 +102,7 @@ function AdminPage() {
     }, [fetchUserData]);
 
     const handleSidebarMenuItemClick = (viewName) => {
-        console.log("AdminPage: Navigating to view:", viewName);
+        console.log("AdminPage: Chuyển đến chế độ xem:", viewName);
         setCurrentAdminView(viewName);
         if (viewName !== 'edit-roadmap') {
             setEditingRoadmapId(null);
@@ -110,37 +110,37 @@ function AdminPage() {
     };
 
     const handleEditRoadmapClick = (roadmapId) => {
-        console.log("AdminPage: Editing roadmap with ID:", roadmapId);
+        console.log("AdminPage: Đang chỉnh sửa lộ trình với ID:", roadmapId);
         setEditingRoadmapId(roadmapId);
         setCurrentAdminView('edit-roadmap');
     };
 
     const handleSaveChangesRoadmap = (roadmapId, updatedData) => {
-        console.log("AdminPage: Received data to save roadmap:", roadmapId, updatedData);
+        console.log("AdminPage: Đã nhận dữ liệu để lưu lộ trình:", roadmapId, updatedData);
     };
 
     const handleTopicAdded = () => {
-        console.log("AdminPage: A topic was added/unlinked in EditRoadmapPage. Need to potentially refresh roadmap topics.");
+        console.log("AdminPage: Một chủ đề đã được thêm/hủy liên kết trong EditRoadmapPage. Cần làm mới các chủ đề lộ trình.");
     };
 
     const handleSaveResource = (resourceData) => {
-        console.log("AdminPage: Received resource data to save:", resourceData);
+        console.log("AdminPage: Đã nhận dữ liệu tài nguyên để lưu:", resourceData);
     };
 
     const handleDeleteResource = (resourceId) => {
-        console.log("AdminPage: Received resource ID to delete:", resourceId);
+        console.log("AdminPage: Đã nhận ID tài nguyên để xóa:", resourceId);
     };
 
     const handleSaveExercise = (exerciseData) => {
-        console.log("AdminPage: Received exercise data to save:", exerciseData);
+        console.log("AdminPage: Đã nhận dữ liệu bài tập để lưu:", exerciseData);
     };
 
     const handleDeleteExercise = (exerciseId) => {
-        console.log("AdminPage: Received exercise ID to delete:", exerciseId);
+        console.log("AdminPage: Đã nhận ID bài tập để xóa:", exerciseId);
     };
 
     const handleLogout = () => {
-        console.log("Admin Logout initiated.");
+        console.log("Đăng xuất quản trị viên đã bắt đầu.");
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
         Cookies.remove('user_username');
@@ -151,7 +151,7 @@ function AdminPage() {
     };
 
     const handleAdminProfileUpdated = (updatedUserData, navigateToSettings = false) => {
-        console.log("AdminPage: Received updated user data from ProfilePage:", updatedUserData);
+        console.log("AdminPage: Đã nhận dữ liệu người dùng được cập nhật từ ProfilePage:", updatedUserData);
         setAdminUserInfo(prev => ({
             ...prev,
             username: updatedUserData.username || prev.username,
@@ -165,7 +165,7 @@ function AdminPage() {
     };
 
     const handleSettingsUpdated = (updatedUserData) => {
-        console.log("AdminPage: Received updated user data from SettingsPage:", updatedUserData);
+        console.log("AdminPage: Đã nhận dữ liệu người dùng được cập nhật từ SettingsPage:", updatedUserData);
         setAdminUserInfo(prev => ({
             ...prev,
             username: updatedUserData.username || prev.username,
@@ -184,7 +184,7 @@ function AdminPage() {
 
     const renderPageContent = () => {
         if (!token || !userId) {
-            return <div>Loading user data or authentication failed...</div>;
+            return <div>Đang tải dữ liệu người dùng hoặc xác thực thất bại...</div>;
         }
 
         switch (currentAdminView) {
@@ -210,7 +210,7 @@ function AdminPage() {
                         />
                     );
                 } else {
-                    return <div>Error: No roadmap selected for editing.</div>;
+                    return <div>Lỗi: Không có lộ trình nào được chọn để chỉnh sửa.</div>;
                 }
             case 'users':
                 return <UserManagementPage authToken={token} />;
@@ -218,9 +218,9 @@ function AdminPage() {
                 if (adminUserInfo.role === 'user') {
                     return <ActivityPage />;
                 }
-                return <div>Access Denied: Activity is only for Users</div>;
+                return <div>Truy cập bị từ chối: Hoạt động chỉ dành cho Người dùng.</div>;
             default:
-                return <div>Admin Page: Select an option from Sidebar.</div>;
+                return <div>Trang quản trị: Vui lòng chọn một tùy chọn từ thanh bên.</div>;
         }
     };
 

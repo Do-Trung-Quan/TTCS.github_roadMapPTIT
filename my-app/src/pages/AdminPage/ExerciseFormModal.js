@@ -43,7 +43,7 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData }) {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      alert("Please fill in the required field (Title).");
+      alert("Vui lòng điền vào trường bắt buộc (Tiêu đề).");
       return;
     }
 
@@ -64,19 +64,19 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData }) {
     <div className="modal-overlay visible">
       <div className="modal-content">
         <div className="modal-header">
-          <h3>{initialData ? 'Edit Exercise' : 'Add Exercise'}</h3>
+          <h3>{initialData ? 'Chỉnh sửa bài tập' : 'Thêm bài tập'}</h3>
           <button className="modal-close-btn" onClick={handleCancelOrClose}>×</button>
         </div>
         <div className="modal-body">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="exercise-title">Title:</label>
+              <label htmlFor="exercise-title">Tiêu đề:</label>
               <input
                 type="text"
                 className="form-control-us"
                 id="exercise-title"
                 name="title"
-                placeholder="Enter exercise title"
+                placeholder="Nhập tiêu đề bài tập"
                 required
                 value={formData.title}
                 onChange={handleInputChange}
@@ -84,12 +84,12 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData }) {
             </div>
 
             <div className="form-group">
-              <label htmlFor="exercise-description">Description:</label>
+              <label htmlFor="exercise-description">Mô tả:</label>
               <textarea
                 className="form-control-us"
                 id="exercise-description"
                 name="description"
-                placeholder="Enter exercise description"
+                placeholder="Nhập mô tả bài tập"
                 rows="4"
                 value={formData.description}
                 onChange={handleInputChange}
@@ -97,7 +97,7 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData }) {
             </div>
 
             <div className="form-group">
-              <label htmlFor="exercise-difficulty">Difficulty:</label>
+              <label htmlFor="exercise-difficulty">Độ khó:</label>
               <select
                 className="form-control-us"
                 id="exercise-difficulty"
@@ -106,16 +106,16 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData }) {
                 value={formData.difficulty}
                 onChange={handleInputChange}
               >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
+                <option value="easy">Dễ</option>
+                <option value="medium">Trung bình</option>
+                <option value="hard">Khó</option>
               </select>
             </div>
 
             <div className="modal-actions">
-              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>Cancel</button>
+              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>Hủy</button>
               <button type="submit" className="create-btn">
-                {initialData ? 'Save Changes' : 'Add Exercise'}
+                {initialData ? 'Lưu thay đổi' : 'Thêm bài tập'}
               </button>
             </div>
           </form>

@@ -10,7 +10,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
 
   useEffect(() => {
     if (!isVisible) {
-      // Reset form data when the modal is closed
+      // Đặt lại dữ liệu biểu mẫu khi modal đóng
       setFormData({
         title: '',
         url: '',
@@ -20,14 +20,14 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
     }
 
     if (initialData) {
-      // Populate form with initial data for editing
+      // Điền dữ liệu ban đầu vào biểu mẫu để chỉnh sửa
       setFormData({
         title: initialData.title || '',
         url: initialData.url || '',
         resource_type: initialData.resource_type || 'RT001',
       });
     } else {
-      // Ensure form is reset when opening for a new resource
+      // Đảm bảo biểu mẫu được đặt lại khi mở cho một tài nguyên mới
       setFormData({
         title: '',
         url: '',
@@ -47,7 +47,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
-    // Reset form data after submission
+    // Đặt lại dữ liệu biểu mẫu sau khi gửi
     setFormData({
       title: '',
       url: '',
@@ -61,7 +61,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{initialData ? 'Edit Resource' : 'Add Resource'}</h2>
+          <h2>{initialData ? 'Chỉnh sửa Tài nguyên' : 'Thêm Tài nguyên'}</h2>
           <button className="modal-close-btn" onClick={onClose}>
             <i className="fa-solid fa-xmark"></i>
           </button>
@@ -69,7 +69,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
         <div className="modal-body">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Resource Title:</label>
+              <label>Tiêu đề Tài nguyên:</label>
               <input
                 type="text"
                 name="title"
@@ -79,7 +79,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
               />
             </div>
             <div className="form-group">
-              <label>Resource URL:</label>
+              <label>URL Tài nguyên:</label>
               <input
                 type="url"
                 name="url"
@@ -89,20 +89,20 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData 
               />
             </div>
             <div className="form-group">
-              <label>Resource Type:</label>
+              <label>Loại Tài nguyên:</label>
               <select
                 name="resource_type"
                 value={formData.resource_type}
                 onChange={handleChange}
               >
                 <option value="RT001">Video</option>
-                <option value="RT002">Article</option>
-                <option value="RT003">Tutorial</option>
-                <option value="RT004">Book</option>
+                <option value="RT002">Bài viết</option>
+                <option value="RT003">Hướng dẫn</option>
+                <option value="RT004">Sách</option>
               </select>
             </div>
             <button type="submit" className="modal-save-btn">
-              {initialData ? 'Update' : 'Save'}
+              {initialData ? 'Cập nhật' : 'Lưu'}
             </button>
           </form>
         </div>
