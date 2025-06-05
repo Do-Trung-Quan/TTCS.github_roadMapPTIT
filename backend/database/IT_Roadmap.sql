@@ -157,9 +157,6 @@ ADD COLUMN github VARCHAR(255) NULL;
 ALTER TABLE User
 ADD COLUMN linkedin VARCHAR(255) NULL;
 
--- Thêm cột email (EmailField đã tồn tại, nhưng đảm bảo không trùng với email hiện tại)
--- Lưu ý: Nếu email đã là khóa chính hoặc unique, bạn không cần thêm cột mới mà chỉ cần cập nhật logic.
--- Nếu cần thêm cột email mới (khác với email hiện tại), sử dụng:
 ALTER TABLE User
 ADD COLUMN email_display VARCHAR(255) NULL; -- Tạm thời dùng tên này, sau đó đổi thành email nếu cần
 
@@ -167,16 +164,18 @@ ADD COLUMN email_display VARCHAR(255) NULL; -- Tạm thời dùng tên này, sau
 ALTER TABLE User
 ADD COLUMN show_email_on_profile BOOLEAN; -- 0 = FALSE, 1 = TRUE
 
-update User
-set show_email_on_profile = False
-where id = 'US001';
+SELECT * FROM topic_roadmap WHERE RoadmapID ='RM001';
 
-delete from User
-where id = 'US004';
+CREATE TABLE UserVisitLog (
+    id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+    visit_date DATE NOT NULL,
+    login_streak INT UNSIGNED NOT NULL DEFAULT 1,
+    last_visit DATETIME NOT NULL,
+    is_consecutive TINYINT(1) NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_date (user_id, visit_date),
+    INDEX user_visit_date_idx (user_id, visit_date)
+)  
 
-delete from Enroll
-where id = 'ER001';
-delete from User_Topic_Progress
-where id = 'PRG002';
-
-SELECT * FROM topic_roadmap WHERE RoadmapID='RM001';
+select * from UserVisitLog;

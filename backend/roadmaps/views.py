@@ -30,7 +30,7 @@ class RoadmapListCreate(APIView):
     def get(self, request):
         # Lấy từ khóa tìm kiếm từ query parameters
         paginator = self.pagination_class()
-        queryset = Roadmap.objects.all()
+        queryset = Roadmap.objects.all().order_by('id')  # Thêm order_by để sắp xếp
 
         # Áp dụng phân trang
         page = paginator.paginate_queryset(queryset, request)
@@ -122,11 +122,11 @@ class RoadmapSearch(APIView):
                 "data": []
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Tìm kiếm các roadmap theo tiêu đề hoặc mô tả
+        # Tìm kiếm các roadmap theo tiêu đề hoặc mô tả và sắp xếp
         queryset = Roadmap.objects.filter(
             Q(title__icontains=search_term) | Q(description__icontains=search_term)
-        )
-        
+        ).order_by('id')  # Thêm order_by để sắp xếp
+
         serializer = RoadmapSerializer(queryset, many=True)
         return Response({
             "message": f"Tìm kiếm Roadmap với '{search_term}' thành công.",

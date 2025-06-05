@@ -1,8 +1,3 @@
-/* src/components/Header/header.css */
-
-/* Style toàn cục cần thiết cho header */
-/* Các style này có thể đã có trong index.css hoặc global CSS */
-/* Nếu chúng chỉ dùng cho header, nên giữ ở đây */
 * {
   margin: 0;
   padding: 0;
@@ -30,14 +25,10 @@ body, html {
 }
 
 .navigation {
-  /* overflow-y: hidden; */ /* Có thể gây vấn đề nếu search results container tràn ra ngoài */
-  position: relative; /* Đảm bảo position: relative cho nav hoặc một div bọc nav nếu cần */
-  z-index: 20001; /* Đảm bảo header nằm trên các nội dung khác */
-  /* height: auto; */ /* Đảm bảo chiều cao tự động theo nội dung */
+  position: relative;
+  z-index: 20001;
 }
 
-/* Các style cho nav-item, btn-outline-danger, nav-home, ri-menu-fill, nav-overlay, nav-mobile... */
-/* Giữ nguyên các style này từ file gốc của bạn */
 .nav-item button {
   margin-left: 10px;
 }
@@ -46,7 +37,7 @@ body, html {
   background-color: red;
   border-radius: 40px;
   color: white;
-  padding: 10px auto; /* Kiểm tra lại padding này */
+  padding: 10px auto;
 }
 
 .nav-home {
@@ -117,143 +108,153 @@ body, html {
   transform: translateX(0%);
 }
 
-
 /* Search bar styles */
-/* Div bọc search form và results - Đảm bảo có position: relative */
 .search-section {
-  position: relative; /* <-- QUAN TRỌNG: Đặt relative */
-  /* Điều chỉnh chiều rộng và margin nếu cần */
-  width: 300px; /* Ví dụ: chiều rộng cố định */
-  /* flex-grow: 1; */ /* Hoặc cho phép nó co giãn trong flex container */
-  margin-left: 1rem; /* Khoảng cách trái (tương tự ms-3 của Bootstrap) */
-  /* margin-right: 1rem; */ /* Có thể bỏ margin-right nếu dùng flexbox */
-  z-index: 20001; /* Đảm bảo search bar và kết quả nằm trên nội dung khác */
+  position: relative;
+  width: 300px;
+  margin-left: 1rem;
+  z-index: 20001;
 }
 
-/* Styles cho hộp chứa kết quả tìm kiếm */
 .search-results-container {
-  position: absolute; /* <-- QUAN TRỌNG: Đặt absolute */
-  /* --- CHỈNH SỬA VỊ TRÍ TOP --- */
-  /* Đặt top để nó nằm ngay sát dưới div.search-section */
-  /* Giá trị 100% có thể bị ảnh hưởng bởi border/margin của input group */
-  /* Thử điều chỉnh giá trị top hoặc sử dụng calc() với giá trị âm */
-  top: calc(100% - 1px); /* Ví dụ: lùi lên 1px để sát hơn */
-  /* Hoặc thử một giá trị pixel cố định nếu chiều cao search bar cố định */
-  /* top: 40px; */ /* Ví dụ: nếu chiều cao search bar là 40px */
-  /* --------------------------- */
-
-  /* Căn chỉnh mép trái với div.search-section */
-  left: 0; /* <-- QUAN TRỌNG: Đặt 0 */
-  /* Đặt chiều rộng bằng với div.search-section */
-  width: 100%; /* <-- QUAN TRỌNG: Đặt 100% */
-
-  /* Các style hiển thị */
-  background-color: #ffffff; /* Màu nền trắng sáng */
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
   border: 1px solid #ccc;
-  /* Loại bỏ border-top để nối liền với thanh search */
-  border-top: none; /* <-- Loại bỏ viền trên */
-  border-radius: 0 0 4px 4px; /* Bo góc chỉ ở dưới */
-  overflow: hidden; /* Quan trọng để border-radius hoạt động với nội dung tràn */
-
-  max-height: 200px; /* <--- ĐẶT CHIỀU CAO TỐI ĐA */
-  overflow-y: auto; /* <--- BẬT THANH CUỘN DỌC */
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: 0; /* Bỏ padding mặc định */
-
-  /* Đảm bảo z-index cao hơn nội dung trang nhưng thấp hơn modal/overlay khác */
+  padding: 0;
   z-index: 25000;
 }
 
-/* Styles cho danh sách kết quả (nếu dùng div bọc các item) */
 .search-results {
   padding: 0;
   margin: 0;
-  list-style: none; /* Loại bỏ dấu đầu dòng nếu bạn map ra thẻ li */
+  list-style: none;
 }
 
-/* Styles cho từng mục kết quả */
 .search-result-item {
-  padding: 10px 15px; /* Khoảng cách bên trong (trên/dưới 10px, trái/phải 15px) */
-  border-bottom: 1px solid #eee; /* Đường kẻ phân cách mờ */
-  cursor: pointer; /* Biến con trỏ thành dạng tay khi rê chuột */
-  color: #333; /* Màu chữ rõ ràng hơn */
-  font-size: 0.95rem; /* Kích thước chữ vừa phải */
-  text-decoration: none; /* Bỏ gạch chân nếu là link */
-  display: block; /* Đảm bảo cả vùng click được */
-
-  /* --- CHỈNH SỬA ĐỂ VĂN BẢN XUỐNG DÒNG --- */
-  overflow: visible; /* Hoặc auto */
-  text-overflow: clip; /* Hoặc bỏ thuộc tính này */
-  white-space: normal; /* <--- QUAN TRỌNG: Cho phép xuống dòng */
-  word-wrap: break-word; /* Đảm bảo từ dài cũng xuống dòng */
-  /* --------------------------------------- */
-
-  /* Tùy chọn: thêm khoảng cách dưới nếu văn bản xuống dòng nhiều */
-  /* margin-bottom: 5px; */
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  color: #333;
+  font-size: 0.95rem;
+  text-decoration: none;
+  display: block;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .search-result-item:last-child {
-  border-bottom: none; /* Không có đường kẻ dưới cùng */
+  border-bottom: none;
 }
 
 .search-result-item:hover {
-  background-color: #f8f9fa; /* Màu nền nhạt khi rê chuột */
-  color: #000; /* Màu chữ đậm hơn khi rê chuột */
+  background-color: #f8f9fa;
+  color: #000;
 }
 
-/* Style cho thông báo không có kết quả */
 .search-result-item.no-results {
   font-style: italic;
   color: #666;
   text-align: center;
   padding: 15px;
-  /* Đảm bảo không bị cắt ngắn */
   overflow: visible;
   text-overflow: clip;
   white-space: normal;
 }
 
-
-/* Tùy chỉnh style cho thanh cuộn bên trong hộp kết quả (tùy chọn, chỉ hoạt động trên Webkit browsers) */
 .search-results-container::-webkit-scrollbar {
-  width: 8px; /* Chiều rộng thanh cuộn */
+  width: 8px;
 }
 
 .search-results-container::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Màu nền của rãnh cuộn */
+  background: #f1f1f1;
 }
 
 .search-results-container::-webkit-scrollbar-thumb {
-  background: #888; /* Màu của thanh cuộn */
-  border-radius: 4px; /* Bo góc thanh cuộn */
+  background: #888;
+  border-radius: 4px;
 }
 
 .search-results-container::-webkit-scrollbar-thumb:hover {
-  background: #555; /* Màu thanh cuộn khi hover */
+  background: #555;
 }
 
-/* Style cho thanh cuộn trên Firefox */
 .search-results-container {
   scrollbar-width: thin;
   scrollbar-color: #aaa #f1f1f1;
 }
 
-
-/* Tùy chỉnh thêm nếu cần */
-/* Ví dụ: căn chỉnh vị trí kết quả tìm kiếm cho mobile */
-@media (max-width: 768px) {
-    .search-section {
-        /* Điều chỉnh lề cho mobile */
-        margin-left: 10px;
-        margin-right: 10px;
-        width: auto; /* Cho phép chiều rộng tự động trên mobile */
-        flex-grow: 1; /* Cho phép co giãn */
-    }
-    .search-results-container {
-        left: 0; /* Căn chỉnh với mép trái của search-section */
-        right: 0; /* Căn chỉnh với mép phải của search-section */
-        /* width: 100%; */ /* Chiều rộng bằng search-section */
-    }
+.user-avatar-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 50px;
+  cursor: pointer;
 }
 
-/* ... Các style media query khác của bạn ... */
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* Tạo hình tròn */
+  object-fit: cover; /* Đảm bảo ảnh không bị méo */
+  border: 2px solid #fff; /* Viền trắng quanh avatar */
+  transition: transform 0.2s ease; /* Hiệu ứng phóng to khi hover */
+}
+
+.user-avatar:hover {
+  transform: scale(1.1); /* Phóng to nhẹ khi hover */
+}
+
+/* Media query cho mobile */
+@media (max-width: 768px) {
+  .search-section {
+    margin-left: 10px;
+    margin-right: 10px;
+    width: auto;
+    flex-grow: 1;
+  }
+
+  .search-results-container {
+    left: 0;
+    right: 0;
+  }
+
+  .nav-home {
+    display: block; /* Hiển thị nút menu trên mobile */
+  }
+
+  .navbar-nav {
+    display: none; /* Ẩn các mục nav trên mobile */
+  }
+
+  .user-avatar-btn {
+    margin-left: 0; /* Bỏ margin-left trên mobile */
+    padding: 8px; /* Thêm padding để vùng click lớn hơn */
+  }
+
+  .user-avatar {
+    width: 36px; /* Giảm kích thước avatar trên mobile */
+    height: 36px;
+    border-width: 1px; /* Giảm độ dày viền trên mobile */
+  }
+}
+
+@media (min-width: 769px) {
+  .nav-home {
+    display: none; /* Ẩn nút menu trên desktop */
+  }
+
+  .nav-mobile {
+    display: none; /* Ẩn menu mobile trên desktop */
+  }
+}

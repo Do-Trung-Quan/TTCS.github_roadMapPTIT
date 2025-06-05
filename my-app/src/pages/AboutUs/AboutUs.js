@@ -1,57 +1,136 @@
-import React from 'react';
-import './AboutUs.css'; // Import file CSS cho component này
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import "./AboutUs.css"; // Sử dụng file CSS của bạn
+import { useAuth } from "../../context/AuthContext"; // Giữ nguyên import này nếu useAuth vẫn được dùng ở nơi khác hoặc cho user object
 
-function AboutUs() {
+function AboutUs({ currentLang = "vi" }) {
+  const { user } = useAuth(); // Chỉ giữ lại user nếu nó còn cần thiết cho việc hiển thị gì đó
+  // Đã loại bỏ: const [isLoggingOut, setIsLoggingOut] = useState(false);
+  // Đã loại bỏ: const [logoutMessage, setLogoutMessage] = useState(null);
+
+  const initialContent = useMemo(
+    () => ({
+      pageTitle: "Về chúng tôi",
+      section1Title: "Câu chuyện khởi đầu",
+      section1Para1:
+        "Chúng tôi vốn là những sinh viên năm 3, với những trăn trở và khát khao được cống hiến. Từ những buổi thảo luận say mê trong góc thư viện, từ những đêm thức trắng code cùng nhau, dự án đầu tay mang tên RoadMapPTIT đã ra đời.",
+      section1Para2:
+        "RoadMapPTIT không chỉ là một dự án học tập, mà còn là tâm huyết và niềm đam mê của chúng tôi. Chúng tôi muốn tạo ra một nền tảng hỗ trợ toàn diện cho sinh viên PTIT - nơi mà các bạn có thể tìm thấy lộ trình học tập rõ ràng, nguồn tài liệu chất lượng và cộng đồng kết nối.",
+      section2Title: "Sứ mệnh của chúng tôi",
+      section2Para1:
+        "Chúng tôi muốn xóa bỏ rào cản thông tin mà bao thế hệ sinh viên PTIT đã từng gặp phải. Chúng tôi muốn mỗi sinh viên đều có cơ hội tiếp cận với những kiến thức quý giá, những lời khuyên hữu ích và những trải nghiệm thực tế từ các anh chị đi trước.",
+      section2Para2:
+        "Chúng tôi muốn tạo ra một cộng đồng nơi tinh thần học hỏi, chia sẻ và hỗ trợ lẫn nhau được đề cao. Nơi mà không ai phải bỡ ngỡ khi bước vào giảng đường đại học, không ai phải lạc lối giữa ma trận kiến thức chuyên ngành.",
+      section3Title: "Giá trị cốt lõi",
+      section3Value1: "Chia sẻ: Chúng tôi tin rằng kiến thức chỉ thực sự có giá trị khi được chia sẻ.",
+      section3Value2:
+        "Cộng đồng: Chúng tôi xây dựng một môi trường học thuật lành mạnh, nơi mỗi thành viên đều là một mắt xích quan trọng.",
+      section3Value3:
+        "Sáng tạo: Chúng tôi không ngừng đổi mới, tìm kiếm những phương pháp tốt nhất để truyền tải kiến thức.",
+      section3Value4:
+        "Chất lượng: Mọi nội dung trên RoadMapPTIT đều được chọn lọc kỹ lưỡng và cập nhật thường xuyên.",
+      section4Title: "Hành trình phía trước",
+      section4Para1:
+        "RoadMapPTIT chỉ mới là bước khởi đầu. Chúng tôi mơ về một tương lai nơi mỗi trường đại học đều có một 'roadmap' riêng, nơi mà không một sinh viên nào phải mò mẫm tìm đường. Với sự đồng hành của các bạn, chúng tôi tin rằng giấc mơ đó sẽ sớm trở thành hiện thực.",
+      section4Para2:
+        "Hãy cùng chúng tôi viết tiếp câu chuyện RoadMapPTIT - câu chuyện của những người trẻ dám mơ ước và dám hành động vì một cộng đồng sinh viên PTIT tốt đẹp hơn.",
+      // Đã loại bỏ: logoutButton: "Đăng xuất",
+      // Đã loại bỏ: logoutSuccess: "Bạn đã đăng xuất thành công!",
+      // Đã loại bỏ: logoutError: "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.",
+      // Đã loại bỏ: tokenExpired: "Phiên đăng nhập đã hết hạn. Bạn đã được đăng xuất.",
+    }),
+    []
+  );
+
+  const [content, setContent] = useState(initialContent);
+
+  const decodeHtmlEntities = useCallback((str) => {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = str;
+    return textarea.value;
+  }, []);
+
+  const translateText = useCallback(async (texts, targetLang) => {
+    try {
+      const response = await fetch("http://localhost:8000/api/translate/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: texts, target_lang: targetLang }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      const data = await response.json();
+      return data.translated || texts;
+    } catch (error) {
+      console.error("Lỗi dịch:", error);
+      return texts;
+    }
+  }, []);
+
+  useEffect(() => {
+    const translateContent = async () => {
+      if (currentLang === "vi") {
+        setContent(initialContent);
+        return;
+      }
+
+      const textsToTranslate = Object.values(initialContent);
+      const translatedTexts = await translateText(textsToTranslate, currentLang);
+      const updatedContent = {};
+      Object.keys(initialContent).forEach((key, index) => {
+        updatedContent[key] = decodeHtmlEntities(translatedTexts[index] || initialContent[key]);
+      });
+      setContent(updatedContent);
+    };
+    translateContent();
+  }, [currentLang, initialContent, translateText, decodeHtmlEntities]);
+
+  // Đã loại bỏ toàn bộ hàm checkTokenExpiration và useEffect liên quan đến nó
+
+  // Đã loại bỏ toàn bộ hàm handleLogout
+
   return (
     <div className="about-us-container">
-      <h1 className="about-us-title">Về chúng tôi</h1>
+      {/* Đã loại bỏ: {logoutMessage && (
+        <div className="logout-message">
+          {logoutMessage}
+        </div>
+      )} */}
+
+      <h1 className="about-us-title">{content.pageTitle}</h1>
+
+      {/* Đã loại bỏ: {user && (
+        <div className="logout-section">
+          <button onClick={handleLogout} disabled={isLoggingOut} className="logout-button">
+            {isLoggingOut ? "Đang đăng xuất..." : content.logoutButton}
+          </button>
+        </div>
+      )} */}
 
       <section className="about-us-section">
-        <h2 className="section-title">Câu chuyện khởi đầu</h2>
-        <p>
-          Chúng tôi vốn là những sinh viên năm 3, với những trăn trở và khát khao được cống hiến. Từ những buổi thảo luận say mê trong góc thư viện, từ những đêm thức trắng code cùng nhau, dự án đầu tay mang tên RoadMapPTIT đã ra đời.
-        </p>
-        <p>
-          RoadMapPTIT không chỉ là một dự án học tập, mà còn là tâm huyết và niềm đam mê của chúng tôi. Chúng tôi muốn tạo ra một nền tảng hỗ trợ toàn diện cho sinh viên PTIT - nơi mà các bạn có thể tìm thấy lộ trình học tập rõ ràng, nguồn tài liệu chất lượng và cộng đồng kết nối.
-        </p>
+        <h2 className="section-title">{content.section1Title}</h2>
+        <p>{content.section1Para1}</p>
+        <p>{content.section1Para2}</p>
       </section>
 
       <section className="about-us-section">
-        <h2 className="section-title">Sứ mệnh của chúng tôi</h2>
-        <p>
-          Chúng tôi muốn xóa bỏ rào cản thông tin mà bao thế hệ sinh viên PTIT đã từng gặp phải. Chúng tôi muốn mỗi sinh viên đều có cơ hội tiếp cận với những kiến thức quý giá, những lời khuyên hữu ích và những trải nghiệm thực tế từ các anh chị đi trước.
-        </p>
-        <p>
-          Chúng tôi muốn tạo ra một cộng đồng nơi tinh thần học hỏi, chia sẻ và hỗ trợ lẫn nhau được đề cao. Nơi mà không ai phải bỡ ngỡ khi bước vào giảng đường đại học, không ai phải lạc lối giữa ma trận kiến thức chuyên ngành.
-        </p>
+        <h2 className="section-title">{content.section2Title}</h2>
+        <p>{content.section2Para1}</p>
+        <p>{content.section2Para2}</p>
       </section>
 
       <section className="about-us-section">
-        <h2 className="section-title">Giá trị cốt lõi</h2>
+        <h2 className="section-title">{content.section3Title}</h2>
         <ul className="core-values-list">
-          <li>
-            <strong>Chia sẻ:</strong> Chúng tôi tin rằng kiến thức chỉ thực sự có giá trị khi được chia sẻ.
-          </li>
-          <li>
-            <strong>Cộng đồng:</strong> Chúng tôi xây dựng một môi trường học thuật lành mạnh, nơi mỗi thành viên đều là một mắt xích quan trọng.
-          </li>
-          <li>
-            <strong>Sáng tạo:</strong> Chúng tôi không ngừng đổi mới, tìm kiếm những phương pháp tốt nhất để truyền tải kiến thức.
-          </li>
-          <li>
-            <strong>Chất lượng:</strong> Mọi nội dung trên RoadMapPTIT đều được chọn lọc kỹ lưỡng và cập nhật thường xuyên.
-          </li>
+          <li dangerouslySetInnerHTML={{ __html: content.section3Value1 }} />
+          <li dangerouslySetInnerHTML={{ __html: content.section3Value2 }} />
+          <li dangerouslySetInnerHTML={{ __html: content.section3Value3 }} />
+          <li dangerouslySetInnerHTML={{ __html: content.section3Value4 }} />
         </ul>
       </section>
 
       <section className="about-us-section">
-        <h2 className="section-title">Hành trình phía trước</h2>
-        <p>
-          RoadMapPTIT chỉ mới là bước khởi đầu. Chúng tôi mơ về một tương lai nơi mỗi trường đại học đều có một "roadmap" riêng, nơi mà không một sinh viên nào phải mò mẫm tìm đường. Với sự đồng hành của các bạn, chúng tôi tin rằng giấc mơ đó sẽ sớm trở thành hiện thực.
-        </p>
-        <p>
-          Hãy cùng chúng tôi viết tiếp câu chuyện RoadMapPTIT - câu chuyện của những người trẻ dám mơ ước và dám hành động vì một cộng đồng sinh viên PTIT tốt đẹp hơn.
-        </p>
+        <h2 className="section-title">{content.section4Title}</h2>
+        <p>{content.section4Para1}</p>
+        <p>{content.section4Para2}</p>
       </section>
     </div>
   );

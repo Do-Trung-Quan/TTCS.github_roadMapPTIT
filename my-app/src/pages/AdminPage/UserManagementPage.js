@@ -1,11 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Cookies from 'js-cookie';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Pagination from '../../components/Pagination/Pagination';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import './UserManagementPage.css';
+import { useAuth } from '../../context/AuthContext';
 
-function UserManagementPage() {
+// Function to decode HTML entities
+const decodeHtmlEntities = (str) => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+};
+
+function UserManagementPage({ currentLang = 'vi' }) {
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,16 +22,108 @@ function UserManagementPage() {
     const [itemsPerPage] = useState(5);
     const [totalUsers, setTotalUsers] = useState(0);
 
+    const { getToken, logout } = useAuth();
+    const navigate = useNavigate();
+    const token = getToken();
+
+    // Initial translations memoized
+    const initialTranslations = useMemo(() => ({
+        noAuthToken: "Không tìm thấy mã xác thực. Vui lòng đăng nhập.",
+        fetchUsersError: "Không thể lấy danh sách người dùng",
+        invalidDataFormat: "Định dạng dữ liệu không hợp lệ: Cần một mảng người dùng",
+        loadingUsers: "Đang tải người dùng...",
+        noUsersFound: "Không tìm thấy người dùng nào.",
+        confirmDelete: "Bạn có chắc chắn muốn xóa người dùng có ID {userId} không?",
+        deleteUserError: "Không thể xóa người dùng",
+        deleteSuccess: "Người dùng {userId} đã được xóa thành công.",
+        pageHeader: "Quản lý người dùng",
+        showingEntries: "Hiển thị {start} - {end} trên tổng số {total} mục",
+        tableNo: "No",
+        tableAvatar: "Avatar",
+        tableUsername: "Username",
+        tableDateCreated: "Ngày tạo",
+        tableLastLogin: "Đăng nhập cuối",
+        tableRole: "Vai trò",
+        tableActions: "Thao tác",
+        notAvailable: "N/A",
+        never: "Chưa bao giờ",
+    }), []);
+
+    const [translations, setTranslations] = useState(initialTranslations);
+
+    // Translation function
+    const translateText = useCallback(async (texts, targetLang) => {
+        try {
+            const response = await fetch('http://localhost:8000/api/translate/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: texts, target_lang: targetLang }),
+            });
+            if (!response.ok) throw new Error(await response.text());
+            const data = await response.json();
+            return data.translated || texts;
+        } catch (error) {
+            console.error('Lỗi dịch:', error);
+            return texts;
+        }
+    }, []);
+
+    // Effect for handling translations
+    useEffect(() => {
+        const translateContent = async () => {
+            if (currentLang === 'vi') {
+                setTranslations(initialTranslations);
+                return;
+            }
+            const textsToTranslate = Object.values(initialTranslations);
+            const translatedTexts = await translateText(textsToTranslate, currentLang);
+            const updatedTranslations = {};
+            Object.keys(initialTranslations).forEach((key, index) => {
+                updatedTranslations[key] = decodeHtmlEntities(translatedTexts[index] || initialTranslations[key]);
+            });
+            setTranslations(updatedTranslations);
+        };
+        translateContent();
+    }, [currentLang, initialTranslations, translateText]);
+
+    const checkTokenExpiration = useCallback(() => {
+        if (!token) return false;
+        try {
+            const decoded = JSON.parse(atob(token.split('.')[1]));
+            const exp = decoded.exp;
+            const now = Date.now() / 1000;
+            if (exp && exp < now) {
+                setError(translations.noAuthToken); 
+                setTimeout(() => {
+                    logout();
+                    navigate('/'); 
+                }, 2000);
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra token:', error);
+            setError(translations.noAuthToken);
+            setTimeout(() => {
+                logout();
+                navigate('/');
+            }, 2000);
+            return false;
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token, logout, translations.noAuthToken]);
+
+
     const fetchUsers = useCallback(async () => {
-        const token = Cookies.get('access_token');
-        console.log('Token:', token);
         if (!token) {
-            setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+            setError(translations.noAuthToken);
             setIsLoading(false);
             setUsers([]);
             setTotalUsers(0);
             return;
         }
+
+        if (!checkTokenExpiration()) return;
 
         setIsLoading(true);
         setError(null);
@@ -43,7 +143,7 @@ function UserManagementPage() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(`Không thể lấy danh sách người dùng: ${errorData.detail || response.statusText}`);
+                throw new Error(`${translations.fetchUsersError}: ${errorData.detail || response.statusText}`);
             }
 
             const data = await response.json();
@@ -51,16 +151,16 @@ function UserManagementPage() {
 
             const results = Array.isArray(data) ? data : (data.results || []);
             if (!Array.isArray(results)) {
-                throw new Error('Định dạng dữ liệu không hợp lệ: Cần một mảng người dùng');
+                throw new Error(translations.invalidDataFormat);
             }
 
             const mappedUsers = results.map(user => ({
                 id: user.id || '',
-                name: user.username || 'Không rõ',
+                name: user.username || translations.notAvailable,
                 avatar_url: user.avatar || '/creator-ava.png',
                 date_created: user.created_at || null,
                 last_login: user.last_login || null,
-                role: user.role || 'N/A',
+                role: user.role || translations.notAvailable,
             }));
 
             setUsers(mappedUsers);
@@ -74,7 +174,7 @@ function UserManagementPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentPage, itemsPerPage]);
+    }, [currentPage, itemsPerPage, token, checkTokenExpiration, translations]);
 
     useEffect(() => {
         fetchUsers();
@@ -92,14 +192,14 @@ function UserManagementPage() {
     };
 
     const handleDeleteUser = async (userId) => {
-        const token = Cookies.get('access_token');
-        console.log('Delete token:', token);
         if (!token) {
-            setError("Không tìm thấy mã xác thực. Không thể xóa người dùng.");
+            setError(translations.noAuthToken);
             return;
         }
 
-        if (!window.confirm(`Bạn có chắc chắn muốn xóa người dùng có ID ${userId} không?`)) return;
+        if (!checkTokenExpiration()) return;
+
+        if (!window.confirm(translations.confirmDelete.replace('{userId}', userId))) return;
 
         setIsLoading(true);
         setError(null);
@@ -116,10 +216,10 @@ function UserManagementPage() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || `Không thể xóa người dùng: ${response.statusText}`);
+                throw new Error(errorData.detail || `${translations.deleteUserError}: ${response.statusText}`);
             }
 
-            setSuccessMessage(`Người dùng ${userId} đã được xóa thành công.`);
+            setSuccessMessage(translations.deleteSuccess.replace('{userId}', userId));
             setTimeout(() => setSuccessMessage(null), 5000);
 
             const newTotalUsers = totalUsers - 1;
@@ -155,7 +255,7 @@ function UserManagementPage() {
             return (
                 <tbody>
                     <tr>
-                        <td colSpan={columnCount} className="text-center">Đang tải người dùng...</td>
+                        <td colSpan={columnCount} className="text-center">{translations.loadingUsers}</td>
                     </tr>
                 </tbody>
             );
@@ -175,7 +275,7 @@ function UserManagementPage() {
             return (
                 <tbody>
                     <tr>
-                        <td colSpan={columnCount} className="text-center">Không tìm thấy người dùng nào.</td>
+                        <td colSpan={columnCount} className="text-center">{translations.noUsersFound}</td>
                     </tr>
                 </tbody>
             );
@@ -189,8 +289,8 @@ function UserManagementPage() {
                             <td key="index">{(currentPage - 1) * itemsPerPage + index + 1}</td>,
                             <td key="avatar" className="avatar-cell"><img src={user.avatar_url} alt="Ảnh đại diện người dùng" className="user-avatar-sm" /></td>,
                             <td key="name" className="user-info-cell"><span>{user.name}</span></td>,
-                            <td key="date-created">{user.date_created ? new Date(user.date_created).toLocaleDateString('vi-VN') : 'N/A'}</td>,
-                            <td key="last-login">{user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : 'Chưa bao giờ'}</td>,
+                            <td key="date-created">{user.date_created ? new Date(user.date_created).toLocaleDateString('vi-VN') : translations.notAvailable}</td>,
+                            <td key="last-login">{user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : translations.never}</td>,
                             <td key="role" className="text-center">{user.role}</td>,
                             <td key="action" className="action-buttons">
                                 <button
@@ -212,7 +312,7 @@ function UserManagementPage() {
         <div className="page-content" id="Users">
             <div className="users-container">
                 <div className="page-header">
-                    <h2>Quản lý người dùng</h2>
+                    <h2>{translations.pageHeader}</h2>
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
@@ -221,20 +321,22 @@ function UserManagementPage() {
                 <div className="users-table">
                     {totalUsers > 0 && (
                         <p className="total-users-info">
-                            Hiển thị {(currentPage - 1) * itemsPerPage + 1} -{' '}
-                            {Math.min(currentPage * itemsPerPage, totalUsers)} trên tổng số {totalUsers} mục
+                            {translations.showingEntries
+                                .replace('{start}', (currentPage - 1) * itemsPerPage + 1)
+                                .replace('{end}', Math.min(currentPage * itemsPerPage, totalUsers))
+                                .replace('{total}', totalUsers)}
                         </p>
                     )}
                     <table className="table">
                         <thead>
                             <tr>
-                                <th>No</th>
-                                <th>Avatar</th>
-                                <th>Username</th>
-                                <th>Ngày tạo</th>
-                                <th>Đăng nhập cuối</th>
-                                <th>Vai trò</th>
-                                <th>Thao tác</th>
+                                <th>{translations.tableNo}</th>
+                                <th>{translations.tableAvatar}</th>
+                                <th>{translations.tableUsername}</th>
+                                <th>{translations.tableDateCreated}</th>
+                                <th>{translations.tableLastLogin}</th>
+                                <th>{translations.tableRole}</th>
+                                <th>{translations.tableActions}</th>
                             </tr>
                         </thead>
                         {renderTableContent()}

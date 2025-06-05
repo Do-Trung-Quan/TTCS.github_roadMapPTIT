@@ -1,67 +1,121 @@
-/* AboutUs.css */
-
 .about-us-container {
-    max-width: 800px; /* Giới hạn chiều rộng nội dung */
-    margin: 40px auto; /* Căn giữa và tạo khoảng cách trên dưới */
-    padding: 20px;
-    background-color: #ffffff; /* Màu nền trắng sáng */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ */
-    color: #333; /* Màu chữ đen xám */
-    font-family: 'Poppins', sans-serif; /* Sử dụng font quen thuộc */
-    line-height: 1.6;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    color: #333;
+    font-family: 'Noto Sans', sans-serif;
+    line-height: 1.8;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .about-us-title {
     text-align: center;
-    color: #007bff; /* Màu xanh dương tươi sáng cho tiêu đề chính */
-    margin-bottom: 40px;
-    font-size: 2.5rem;
+    color: #007bff;
+    margin-bottom: 50px;
+    font-size: 2.8rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #007bff, #00c4cc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 1px 1px 4px rgba(0, 123, 255, 0.3);
 }
 
 .about-us-section {
-    margin-bottom: 30px; /* Khoảng cách giữa các phần */
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee; /* Đường phân cách mờ */
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+    border-bottom: 2px dashed #ddd;
+    transition: transform 0.3s ease;
+}
+
+.about-us-section:hover {
+    transform: translateY(-5px);
 }
 
 .about-us-section:last-child {
-    border-bottom: none; /* Không có đường kẻ ở phần cuối */
+    border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .section-title {
-    color: #dc3545; /* Màu đỏ nhấn tương tự màu nút Đăng nhập */
+    color: #dc3545;
     margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.8rem;
+    margin-bottom: 20px;
+    font-size: 2rem;
     font-weight: 600;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: #dc3545;
+    transition: width 0.3s ease;
+}
+
+.section-title:hover::after {
+    width: 100px;
 }
 
 .about-us-section p {
     margin-bottom: 15px;
+    color: #555;
+    font-size: 1.1rem;
 }
 
 .core-values-list {
-    list-style: disc; /* Dùng dấu chấm cho danh sách */
-    margin-left: 20px;
+    list-style: none;
+    margin-left: 0;
     padding-left: 0;
 }
 
 .core-values-list li {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    padding-left: 25px;
+    position: relative;
+    color: #666;
+    font-size: 1.05rem;
+}
+
+.core-values-list li::before {
+    content: '✦';
+    color: #007bff;
+    position: absolute;
+    left: 0;
+    top: 2px;
+    font-size: 1.2rem;
 }
 
 .core-values-list li strong {
-    color: #007bff; /* Màu nhấn cho tiêu đề giá trị cốt lõi */
+    color: #007bff;
+    font-weight: 600;
+    transition: color 0.3s ease;
 }
 
-/* Responsive adjustments */
+.core-values-list li:hover strong {
+    color: #00c4cc;
+}
+
 @media (max-width: 768px) {
     .about-us-container {
-        margin: 20px; /* Khoảng cách nhỏ hơn trên mobile */
+        margin: 20px;
         padding: 15px;
     }
 
@@ -74,7 +128,26 @@
         font-size: 1.5rem;
     }
 
-    .core-values-list {
-        margin-left: 15px;
+    .about-us-section p {
+        font-size: 1rem;
+    }
+
+    .core-values-list li {
+        font-size: 1rem;
+        padding-left: 20px;
+    }
+
+    .core-values-list li::before {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-us-title {
+        font-size: 1.8rem;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
     }
 }
