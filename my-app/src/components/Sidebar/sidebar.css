@@ -1,184 +1,157 @@
-/* sidebar.css */
-
-/*----------------------------------------*/
-/* 1. General Sidebar Layout */
-/*----------------------------------------*/
 .sidebar {
-    width: 250px; /* Chiều rộng sidebar */
-    background-color: #f8f9fa; /* Nền sáng nhẹ nhàng */
-    padding: 15px 20px; /* Padding trên dưới và hai bên */
-    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.08); /* Đổ bóng mềm mại hơn */
-
-    /* --- CHỈNH SỬA ĐỂ KHÔNG CHE HEADER/FOOTER --- */
-    /* position: fixed; Giữ nguyên để sidebar cố định */
+    width: 250px;
+    background-color: #f8f9fa;
+    padding: 15px 20px;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.08);
     position: fixed;
-    /* Đặt top bằng chiều cao của Header */
-    /* THAY THẾ '60px' BẰNG CHIỀU CAO THỰC TẾ CỦA HEADER CỦA BẠN */
     top: 60px;
-    /* Đặt bottom bằng chiều cao của Footer */
-    /* THAY THẾ '100px' BẰNG CHIỀU CAO THỰC TẾ CỦA FOOTER CỦA BẠN */
     bottom: 100px;
-    /* Loại bỏ height: 100vh; vì top và bottom đã xác định chiều cao */
-    height: auto; /* Hoặc có thể bỏ dòng này */
-    /* --------------------------------------------- */
-
-
-    left: -250px; /* Ẩn Sidebar ra ngoài màn hình ban đầu */
-    overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
-    font-family: 'Roboto', sans-serif; /* Sử dụng font hiện đại */
-    color: #343a40; /* Màu chữ mặc định */
-    display: flex; /* Dùng flexbox cho toàn bộ sidebar */
-    flex-direction: column; /* Các mục xếp theo cột */
-    box-sizing: border-box; /* Padding và border không làm tăng kích thước */
-    z-index: 900; /* Đặt z-index thấp hơn Header (thường 999 trở lên) */
-    transition: left 0.3s ease; /* Hiệu ứng trượt khi hover hoặc toggle */
+    height: auto;
+    left: -250px;
+    overflow-y: auto;
+    font-family: 'Roboto', sans-serif;
+    color: #343a40;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    z-index: 900;
+    transition: left 0.3s ease;
 }
 
-/* Hiển thị Sidebar khi hover vào body (hoặc khu vực cụ thể) */
-/* LƯU Ý: Hover vào body để mở sidebar có thể không phải là UX tốt nhất.
-   Nên dùng nút toggle và quản lý trạng thái mở/đóng bằng state trong React.
-   Nếu vẫn dùng hover body, đảm bảo khu vực hover đủ lớn. */
 body:hover .sidebar {
-    left: 0; /* Di chuyển Sidebar vào màn hình */
+    left: 0;
 }
 
-/* Fix scrollbar hiển thị đúng và ẩn khi không cần thiết */
 .sidebar::-webkit-scrollbar {
-    width: 8px; /* Hiển thị thanh cuộn với chiều rộng nhỏ */
+    width: 8px;
 }
 
 .sidebar::-webkit-scrollbar-track {
-    background: #f8f9fa; /* Màu nền của thanh cuộn */
+    background: #f8f9fa;
     border-radius: 4px;
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background-color: #6c757d; /* Màu thanh cuộn */
+    background-color: #6c757d;
     border-radius: 4px;
-    transition: background-color 0.3s; /* Hiệu ứng mượt mà */
+    transition: background-color 0.3s;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background-color: #495057; /* Màu khi hover */
+    background-color: #495057;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox khi không cần cuộn */
 .sidebar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
-/* Đảm bảo nội dung không bị chèn khi cuộn */
 .sidebar-content {
-    flex-grow: 1; /* Cho phép nội dung co giãn */
-    /* overflow-y: auto; */ /* Đã áp dụng cho .sidebar chính */
+    flex-grow: 1;
 }
 
-/*----------------------------------------*/
-/* 2. User Display Section */
-/*----------------------------------------*/
 .user-display {
-    display: flex; /* Dùng flexbox */
-    align-items: center; /* Căn giữa theo chiều dọc */
-    padding: 12px 15px; /* Padding bên trong */
-    margin-bottom: 25px; /* Khoảng cách dưới */
-    background-color: #e9ecef; /* Nền xám nhạt hơn */
-    border-radius: 8px; /* Bo góc nhiều hơn */
-    cursor: pointer; /* Hiển thị con trỏ pointer */
-    user-select: none; /* Ngăn chọn văn bản */
-    font-weight: 600; /* Chữ semi-bold */
-    color: #495057; /* Màu chữ đậm hơn */
-    transition: background-color 0.2s ease; /* Hiệu ứng hover */
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 25px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    color: #495057;
+    transition: background-color 0.2s ease;
 }
 
 .user-display:hover {
-    background-color: #dee2e6; /* Nền xám đậm hơn khi hover */
+    background-color: #dee2e6;
 }
 
-.user-display .fa-user, /* Icon User FontAwesome */
-.user-display .dropdown-arrow /* Icon mũi tên FontAwesome */
- {
-    font-size: 1.1em; /* Kích thước icon lớn hơn */
-    color: #6c757d; /* Màu icon xám */
+.user-display .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+    border: 2px solid white;
+}
+
+.user-display .fa-user,
+.user-display .dropdown-arrow {
+    font-size: 1.1em;
+    color: #6c757d;
 }
 
 .user-display .fa-user {
-    margin-right: 12px; /* Khoảng cách giữa icon user và tên */
+    margin-right: 12px;
 }
 
 .user-display .user-name {
-    flex-grow: 1; /* Tên user chiếm hết không gian */
-    margin-right: 10px; /* Khoảng cách giữa tên và mũi tên */
-    white-space: nowrap; /* Ngăn xuống dòng */
-    overflow: hidden; /* Ẩn nội dung tràn */
-    text-overflow: ellipsis; /* Hiển thị ... */
+    flex-grow: 1;
+    margin-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 1em;
 }
 
 .user-display .dropdown-arrow {
-     margin-left: auto; /* Đẩy mũi tên sang phải */
+    margin-left: auto;
 }
 
-/*----------------------------------------*/
-/* 3. Menu Items */
-/*----------------------------------------*/
 .menu-item {
-    display: flex; /* Dùng flexbox */
-    align-items: center; /* Căn giữa theo chiều dọc */
-    padding: 12px 15px; /* Padding cho mỗi mục menu */
-    margin-bottom: 8px; /* Khoảng cách giữa các mục menu */
-    cursor: pointer; /* Con trỏ pointer */
-    border-radius: 8px; /* Bo góc nhiều hơn */
-    transition: background-color 0.2s ease, color 0.2s ease; /* Hiệu ứng chuyển màu */
-    color: #495057; /* Màu chữ mặc định */
-    text-decoration: none; /* Bỏ gạch chân */
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: #495057;
+    text-decoration: none;
     font-size: 1em;
-    font-weight: 500; /* Chữ trung bình */
+    font-weight: 500;
 }
 
 .menu-item:hover {
-    background-color: #e9ecef; /* Nền xám nhạt khi hover */
-    color: #343a40; /* Màu chữ đậm hơn khi hover */
+    background-color: #e9ecef;
+    color: #343a40;
 }
 
-/* Style cho mục menu đang active */
 .menu-item.active {
-    background-color: #007bff; /* Nền xanh dương */
-    color: #fff; /* Chữ trắng */
-    font-weight: 600; /* Chữ semi-bold */
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2); /* Bóng đổ nhẹ */
+    background-color: #007bff;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
 }
 
-/* Style cho SVG icons trong menu item */
 .menu-item svg {
-    margin-right: 12px; /* Khoảng cách giữa icon và chữ */
-    width: 18px; /* Kích thước icon lớn hơn */
-    height: 18px; /* Kích thước icon lớn hơn */
-    fill: currentColor; /* Icon lấy màu từ màu chữ của menu item */
-    flex-shrink: 0; /* Ngăn icon bị co lại */
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex-shrink: 0;
 }
 
-/* Nếu bạn dùng Font Awesome icons trong menu item */
 .menu-item .fas {
-     margin-right: 12px;
-     font-size: 1.1em; /* Kích thước icon lớn hơn */
-     color: inherit; /* Icon lấy màu từ màu chữ của menu item */
-     flex-shrink: 0; /* Ngăn icon bị co lại */
+    margin-right: 12px;
+    font-size: 1.1em;
+    color: inherit;
+    flex-shrink: 0;
 }
 
-/* Style riêng cho mục Log Out */
 .menu-item.logout-item {
-    margin-top: auto; /* Đẩy mục Log Out xuống dưới cùng */
-    color: #dc3545; /* Màu đỏ */
+    margin-top: auto;
+    color: #dc3545;
 }
 
 .menu-item.logout-item:hover {
-    background-color: #f8d7da; /* Nền đỏ nhạt khi hover */
-    color: #dc3545; /* Giữ màu đỏ chữ */
+    background-color: #f8d7da;
+    color: #dc3545;
 }
 
 .menu-item.logout-item.active {
-    /* Không nên có trạng thái active cho Log Out */
     background-color: transparent;
     color: #dc3545;
     box-shadow: none;

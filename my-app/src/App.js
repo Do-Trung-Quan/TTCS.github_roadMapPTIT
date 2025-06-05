@@ -1,13 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-// Import Layout Component (nếu bạn đang dùng)
-// import MainLayout from './layouts/MainLayout';
 
 // Import component Header và Footer
 import Header from './components/Header/header';
 import Footer from "./components/Footer/footer";
-import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Import các component trang
 import Home from './pages/Home/Home';
@@ -28,50 +25,51 @@ import RoadmapsPage from "./pages/AdminPage/RoadmapsPage";
 import ActivityPage from './pages/AdminPage/ActivityPage';
 
 // Import LanguageProvider và AuthProvider
-import { LanguageProvider } from './context/LanguageContext';
-import { AuthProvider } from './context/AuthContext'; // Import AuthProvider
+import { AuthProvider } from './context/AuthContext';
+
+// AdminLayout component
+const AdminLayout = ({ currentLang }) => {
+  return (
+    <AdminPage currentLang={currentLang} />
+  );
+};
 
 export default function App() {
+  const [currentLang, setCurrentLang] = useState(() => {
+    return localStorage.getItem('currentLang') || 'vi';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('currentLang', currentLang);
+  }, [currentLang]);
+
   return (
-    // Bọc toàn bộ ứng dụng bằng LanguageProvider và AuthProvider
-    <LanguageProvider>
-      <AuthProvider>
-        <Router>
-          {/*
-            Đặt Header và Footer ở đây (bên ngoài Routes)
-            để chúng hiển thị trên MỌI route.
-          */}
-          <Header />
+    <AuthProvider>
+      <Router>
+        <Header currentLang={currentLang} setCurrentLang={setCurrentLang} />
 
-          <Routes>
-            {/* Các Route của ứng dụng */}
-            <Route path="/" element={<Home />} />
-            <Route path="/about-us" element={<AboutUs />} />
-            <Route path="/roadmap/:id" element={<Roadmap />} />
+        <Routes>
+          <Route path="/" element={<Home currentLang={currentLang} />} />
+          <Route path="/about-us" element={<AboutUs currentLang={currentLang} />} />
+          <Route path="/roadmap/:id" element={<Roadmap currentLang={currentLang} />} />
+          <Route path="/login" element={<Login currentLang={currentLang} />} />
+          <Route path="/signup" element={<SignUp currentLang={currentLang} />} />
+          <Route path="/resetPassword" element={<ResetPassword currentLang={currentLang} />} />
+          <Route path="/resetPasswordEmail" element={<ResetPasswordEmail currentLang={currentLang} />} />
 
-            {/* Các route không cần Header/Footer nếu bạn dùng Layout Component */}
-            {/* Nếu không dùng Layout, Header/Footer vẫn hiển thị ở đây */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/resetPassword" element={<ResetPassword />} />
-            <Route path="/resetPasswordEmail" element={<ResetPasswordEmail />} />
+          <Route path="/admin" element={<AdminLayout currentLang={currentLang} />}>
+            <Route index element={<div><h2>Trang quản trị</h2><p>Vui lòng chọn một tùy chọn từ thanh bên.</p></div>} />
+            <Route path="profile" element={<ProfilePage currentLang={currentLang} />} />
+            <Route path="settings" element={<SettingsPage currentLang={currentLang} />} />
+            <Route path="roadmaps-list" element={<RoadmapsPage currentLang={currentLang} />} />
+            <Route path="edit-roadmap/:roadmapId" element={<EditRoadmapPage currentLang={currentLang} setCurrentLang={setCurrentLang} />} /> {/* Thêm :roadmapId */}
+            <Route path="users" element={<UserManagementPage currentLang={currentLang} />} />
+            <Route path="activity" element={<ActivityPage currentLang={currentLang} />} />
+          </Route>
+        </Routes>
 
-            {/* Admin routes */}
-            <Route path="/admin" element={<AdminPage />}>
-               <Route path="profile" element={<ProfilePage />} />
-               <Route path="settings" element={<SettingsPage />} />
-               <Route path="roadmaps-list" element={<RoadmapsPage />} />
-               <Route path="edit-roadmap" element={<EditRoadmapPage />} />
-               <Route path="users" element={<UserManagementPage />} />
-               <Route path="activity" element={<ActivityPage />} /> {/* Added ActivityPage under /admin */}
-            </Route>
-
-            {/* ... các route khác ... */}
-          </Routes>
-
-          <Footer />
-        </Router>
-      </AuthProvider>
-    </LanguageProvider>
+        <Footer currentLang={currentLang} />
+      </Router>
+    </AuthProvider>
   );
 }

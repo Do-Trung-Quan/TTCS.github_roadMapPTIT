@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './TopicModal.css';
 
-function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId }) {
+function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId, currentLang = 'vi' }) {
   const [newTopicData, setNewTopicData] = useState({
     name: '',
     description: '',
@@ -14,21 +15,122 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const navigate = useNavigate();
+  const { getToken, logout } = useAuth();
+
+  const initialTranslations = useMemo(() => ({
+    modalHeader: "Tạo Chủ đề",
+    createNewSection: "Tạo chủ đề mới",
+    createError: "Tên chủ đề là bắt buộc.",
+    noTokenError: "Không tìm thấy mã xác thực. Vui lòng đăng nhập.",
+    successMessage: "Chủ đề đã được tạo thành công.",
+    newTopicNameLabel: "Tên chủ đề:",
+    newTopicDescLabel: "Mô tả:",
+    cancelButton: "Hủy",
+    createButton: "Thêm chủ đề",
+    creatingButton: "Đang tạo...",
+    existingSection: "Thêm chủ đề hiện có",
+    instruction: "Chọn các chủ đề từ danh sách dưới đây:",
+    loadingMessage: "Đang tải các chủ đề hiện có...",
+    noTopicsAvailable: "Không có chủ đề nào có sẵn để thêm.",
+    selectError: "Vui lòng chọn ít nhất một chủ đề để thêm.",
+    addSelectedButton: "Thêm các chủ đề đã chọn",
+  }), []);
+
+  const [translations, setTranslations] = useState(initialTranslations);
+
+  // Sử dụng useCallback để ổn định hàm translateText
+  const translateText = useCallback(async (texts, targetLang) => {
+    console.log('TopicModal translateText input:', { texts, targetLang });
+    try {
+      const response = await fetch('http://localhost:8000/api/translate/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: texts, target_lang: targetLang }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Translate API error in TopicModal:', errorText);
+        throw new Error(errorText);
+      }
+      if (response.status === 401) {
+        logout();
+        navigate('/');
+      }
+      const data = await response.json();
+      console.log('TopicModal translateText response:', data);
+      return data.translated || texts;
+    } catch (error) {
+      console.error('Translation error in TopicModal:', error);
+      if (error.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      return texts;
+    }
+  }, [logout, navigate]); // Dependencies của translateText
+
+  useEffect(() => {
+    console.log('TopicModal useEffect triggered with currentLang:', currentLang);
+    const translateContent = async () => {
+      console.log('TopicModal initialTranslations:', initialTranslations);
+      if (currentLang === 'vi') {
+        setTranslations(initialTranslations);
+        console.log('TopicModal setTranslations to initial (vi):', initialTranslations);
+        return;
+      }
+
+      const textsToTranslate = Object.values(initialTranslations);
+      console.log('TopicModal textsToTranslate:', textsToTranslate);
+      const translatedTexts = await translateText(textsToTranslate, currentLang);
+      console.log('TopicModal translatedTexts:', translatedTexts);
+      const updatedTranslations = {};
+      Object.keys(initialTranslations).forEach((key, index) => {
+        updatedTranslations[key] = translatedTexts[index] || initialTranslations[key];
+      });
+      console.log('TopicModal updatedTranslations:', updatedTranslations);
+      setTranslations(updatedTranslations);
+    };
+
+    translateContent();
+  }, [currentLang, initialTranslations, translateText]); // Thêm translateText vào dependencies
+
+  useEffect(() => {
+    console.log('TopicModal translations state updated:', translations);
+  }, [translations]);
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        const exp = decoded.exp;
+        const now = Date.now() / 1000;
+        if (exp && exp < now) {
+          logout();
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Token validation error in TopicModal:', error);
+        logout();
+        navigate('/');
+      }
+    }
+  }, [getToken, logout, navigate]);
 
   useEffect(() => {
     if (isVisible) {
       const fetchExistingTopics = async () => {
         setIsLoadingExisting(true);
         setExistingError(null);
-        const token = Cookies.get('access_token');
+        const token = getToken();
         if (!token) {
-          setExistingError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+          setExistingError(translations.noTokenError);
           setIsLoadingExisting(false);
           return;
         }
 
         try {
-          // Lấy danh sách topic-roadmap để biết topic nào đã được gán
           const topicRoadmapResponse = await fetch('http://localhost:8000/api/topic-roadmap/', {
             method: 'GET',
             headers: {
@@ -38,7 +140,11 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
           });
 
           if (!topicRoadmapResponse.ok) {
-            throw new Error('Không thể tìm nạp ánh xạ topic-roadmap');
+            if (topicRoadmapResponse.status === 401) {
+              logout();
+              navigate('/');
+            }
+            throw new Error(translations.noTopicsAvailable);
           }
 
           const topicRoadmapData = await topicRoadmapResponse.json();
@@ -47,7 +153,6 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
             .filter(mapping => mapping.RoadmapID === roadmapId)
             .map(mapping => mapping.TopicID);
 
-          // Lấy danh sách tất cả topic
           const response = await fetch('http://localhost:8000/api/topics/', {
             method: 'GET',
             headers: {
@@ -57,14 +162,17 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
           });
 
           if (!response.ok) {
+            if (response.status === 401) {
+              logout();
+              navigate('/');
+            }
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || `Không thể tìm nạp chủ đề: ${response.statusText}`);
+            throw new Error(errorData.detail || `${translations.noTopicsAvailable}: ${response.statusText}`);
           }
 
           const responseData = await response.json();
           console.log('Đã tìm nạp các chủ đề:', responseData);
           const topics = responseData.data || [];
-          // Loại bỏ các topic đã được gán
           const availableTopics = topics.filter(topic => !assigned.includes(topic.id));
           setExistingTopicsList(availableTopics);
         } catch (err) {
@@ -80,11 +188,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
       setExistingTopicsList([]);
       setSelectedTopics([]);
     }
-  }, [isVisible, roadmapId]);
-
-  if (!isVisible) {
-    return null;
-  }
+  }, [isVisible, roadmapId, translations.noTokenError, translations.noTopicsAvailable, getToken, logout, navigate]);
 
   const handleNewInputChange = (e) => {
     const { name, value } = e.target;
@@ -98,13 +202,13 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
     event.preventDefault();
 
     if (!newTopicData.name.trim()) {
-      setCreateError("Tên chủ đề là bắt buộc.");
+      setCreateError(translations.createError);
       return;
     }
 
-    const token = Cookies.get('access_token');
+    const token = getToken();
     if (!token) {
-      setCreateError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+      setCreateError(translations.noTokenError);
       return;
     }
 
@@ -129,6 +233,10 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          logout();
+          navigate('/');
+        }
         const errorData = await response.json().catch(() => ({}));
         console.log('Phản hồi lỗi API:', errorData);
         throw new Error(errorData.detail || errorData.message || `Không thể tạo chủ đề: ${response.statusText}`);
@@ -137,7 +245,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
       const data = await response.json();
       console.log('Dữ liệu chủ đề đã tạo:', data);
       const createdTopic = data.data;
-      setSuccessMessage(data.message || "Chủ đề đã được tạo thành công.");
+      setSuccessMessage(data.message || translations.successMessage);
 
       setTimeout(() => {
         if (onCreateNew) {
@@ -166,7 +274,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
 
   const handleAddExistingSubmit = () => {
     if (selectedTopics.length === 0) {
-      setExistingError("Vui lòng chọn ít nhất một chủ đề để thêm.");
+      setExistingError(translations.selectError);
       return;
     }
 
@@ -191,13 +299,13 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
     const topicsToDisplay = existingTopicsList.length > 0 ? existingTopicsList : [];
 
     if (isLoadingExisting) {
-      return <p style={{textAlign: 'center'}}>Đang tải các chủ đề hiện có...</p>;
+      return <p style={{ textAlign: 'center' }}>{translations.loadingMessage}</p>;
     }
     if (existingError) {
-      return <p style={{textAlign: 'center', color: 'red'}}>{existingError}</p>;
+      return <p style={{ textAlign: 'center', color: 'red' }}>{existingError}</p>;
     }
     if (topicsToDisplay.length === 0) {
-      return <p style={{textAlign: 'center'}}>Không có chủ đề nào có sẵn để thêm.</p>;
+      return <p style={{ textAlign: 'center' }}>{translations.noTopicsAvailable}</p>;
     }
 
     return (
@@ -205,10 +313,10 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
         <table className="topic-table">
           <thead>
             <tr>
-              <th>Chọn</th>
+              <th>{translations.selectColumn}</th>
               <th>#</th>
-              <th>Tên</th>
-              <th>Mô tả</th>
+              <th>{translations.nameColumn}</th>
+              <th>{translations.descriptionColumn}</th>
             </tr>
           </thead>
           <tbody>
@@ -236,17 +344,17 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
     <div className="modal-overlay visible">
       <div className="modal-content">
         <div className="modal-header">
-          <h3>Tạo Chủ đề</h3>
+          <h3>{translations.modalHeader}</h3>
           <button className="modal-close-btn" onClick={handleCancelOrClose}>×</button>
         </div>
         <div className="modal-body">
           <div className="topic-creation-section">
-            <h4>Tạo chủ đề mới</h4>
-            {createError && <p style={{color: 'red', textAlign: 'center'}}>{createError}</p>}
-            {successMessage && <p style={{color: 'green', textAlign: 'center'}}>{successMessage}</p>}
+            <h4>{translations.createNewSection}</h4>
+            {createError && <p style={{ color: 'red', textAlign: 'center' }}>{createError}</p>}
+            {successMessage && <p style={{ color: 'green', textAlign: 'center' }}>{successMessage}</p>}
             <form onSubmit={handleCreateFormSubmit}>
               <div className="form-group">
-                <label htmlFor="new-topic-name">Tên chủ đề:</label>
+                <label htmlFor="new-topic-name">{translations.newTopicNameLabel}</label>
                 <input
                   type="text"
                   className="form-control-us"
@@ -260,7 +368,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="new-topic-desc">Mô tả:</label>
+                <label htmlFor="new-topic-desc">{translations.newTopicDescLabel}</label>
                 <textarea
                   className="form-control-us"
                   id="new-topic-desc"
@@ -273,21 +381,21 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId 
                 ></textarea>
               </div>
               <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={handleCancelOrClose} disabled={isCreating}>Hủy</button>
+                <button type="button" className="cancel-btn" onClick={handleCancelOrClose} disabled={isCreating}>{translations.cancelButton}</button>
                 <button type="submit" className="create-btn" disabled={isCreating}>
-                  {isCreating ? 'Đang tạo...' : 'Thêm chủ đề'}
+                  {isCreating ? translations.creatingButton : translations.createButton}
                 </button>
               </div>
             </form>
           </div>
           <div className="topic-divider"></div>
           <div className="topic-existing-section">
-            <h4>Thêm chủ đề hiện có</h4>
-            <p className="section-instruction">Chọn các chủ đề từ danh sách dưới đây:</p>
+            <h4>{translations.existingSection}</h4>
+            <p className="section-instruction">{translations.instruction}</p>
             {renderExistingTopicsTable()}
             <div className="modal-actions">
-              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>Hủy</button>
-              <button type="button" className="create-btn" onClick={handleAddExistingSubmit}>Thêm các chủ đề đã chọn</button>
+              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>{translations.cancelButton}</button>
+              <button type="button" className="create-btn" onClick={handleAddExistingSubmit}>{translations.addSelectedButton}</button>
             </div>
           </div>
         </div>

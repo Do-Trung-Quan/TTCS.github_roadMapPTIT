@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
+import React, { useState, useEffect, useMemo, useCallback } from 'react'; // Import useCallback
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './EditRoadmapPage.css';
 import TopicModal from './TopicModal';
 import TopicItemEditable from './TopicItemEditable';
 import { FontAwesomeIcon } from '../../fontawesome';
 
-function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
+function EditRoadmapPage({ currentLang = 'vi', setCurrentLang }) {
+  const { roadmapId } = useParams();
+  const navigate = useNavigate();
+  const { getToken, logout } = useAuth();
   const [roadmapData, setRoadmapData] = useState({
     name: '',
     description: '',
@@ -18,20 +22,132 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
   const [editingTopic, setEditingTopic] = useState(null);
   const [isTopicEditModalOpen, setIsTopicEditModalOpen] = useState(false);
   const [deleteTopicModal, setDeleteTopicModal] = useState(null);
-  const token = Cookies.get('access_token');
+  const token = getToken();
+
+  const initialTranslations = useMemo(() => ({
+    editRoadmapTitle: 'Chỉnh sửa lộ trình',
+    saveChangesButton: 'Lưu thay đổi',
+    roadmapNameLabel: 'Tên lộ trình:',
+    descriptionLabel: 'Mô tả:',
+    topicsSectionTitle: 'Chủ đề',
+    addTopicButton: 'Thêm chủ đề',
+    noTopicsTitle: 'Chưa có chủ đề nào',
+    noTopicsDescription: 'Thêm chủ đề để xây dựng lộ trình của bạn',
+    unnamedTopic: 'Chủ đề không tên',
+    loadingMessage: 'Đang tải dữ liệu lộ trình...',
+    noRoadmapIdError: 'Không cung cấp ID lộ trình để chỉnh sửa.',
+    noTokenError: 'Không tìm thấy mã xác thực. Vui lòng đăng nhập.',
+    successUpdateRoadmap: 'Đã cập nhật lộ trình thành công.',
+    successAddTopic: 'Đã thêm chủ đề thành công.',
+    successUpdateTopic: 'Đã cập nhật chủ đề thành công.',
+    successUnlinkTopic: 'Đã hủy liên kết chủ đề thành công.',
+    successDeleteTopic: 'Đã xóa chủ đề vĩnh viễn.',
+    noTokenOrTopicError: 'Không tìm thấy mã xác thực hoặc không có chủ đề nào được chọn để chỉnh sửa.',
+    editTopicModalTitle: 'Chỉnh sửa chủ đề',
+    deleteTopicModalTitle: 'Xóa chủ đề: {topic_name}',
+    deleteModalActionPrompt: 'Chọn một hành động:',
+    unlinkTopicButton: 'Hủy liên kết chủ đề khỏi lộ trình',
+    deleteTopicPermanentlyButton: 'Xóa vĩnh viễn chủ đề',
+    topicTitleLabel: 'Tiêu đề:',
+    topicDescriptionLabel: 'Mô tả:',
+    saveButton: 'Lưu',
+    tokenExpired: 'Phiên đăng nhập đã hết hạn. Đang chuyển hướng về trang đăng nhập...',
+  }), []);
+
+  const [translations, setTranslations] = useState(initialTranslations);
+
+  const decodeHtmlEntities = (str) => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+  };
+
+  const translateText = async (texts, targetLang) => {
+    console.log('EditRoadmapPage translateText input:', { texts, targetLang });
+    try {
+      const response = await fetch('http://localhost:8000/api/translate/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: texts, target_lang: targetLang }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      const data = await response.json();
+      console.log('EditRoadmapPage translateText response:', data);
+      return data.translated || texts;
+    } catch (error) {
+      console.error('Lỗi dịch in EditRoadmapPage:', error);
+      return texts;
+    }
+  };
+
+  useEffect(() => {
+    console.log('EditRoadmapPage useEffect triggered with currentLang:', currentLang);
+    const translateContent = async () => {
+      console.log('EditRoadmapPage initialTranslations:', initialTranslations);
+      if (currentLang === 'vi') {
+        setTranslations(initialTranslations);
+        console.log('EditRoadmapPage setTranslations to initial (vi):', initialTranslations);
+        return;
+      }
+      const textsToTranslate = Object.values(initialTranslations);
+      console.log('EditRoadmapPage textsToTranslate:', textsToTranslate);
+      const translatedTexts = await translateText(textsToTranslate, currentLang);
+      console.log('EditRoadmapPage translatedTexts:', translatedTexts);
+      const updatedTranslations = {};
+      Object.keys(initialTranslations).forEach((key, index) => {
+        updatedTranslations[key] = decodeHtmlEntities(translatedTexts[index] || initialTranslations[key]);
+      });
+      console.log('EditRoadmapPage updatedTranslations:', updatedTranslations);
+      setTranslations(updatedTranslations);
+    };
+    translateContent();
+  }, [currentLang, initialTranslations]);
+
+  useEffect(() => {
+    console.log('EditRoadmapPage translations state updated:', translations);
+  }, [translations]);
+
+  // Wrap checkTokenExpiration in useCallback
+  const checkTokenExpiration = useCallback((token) => {
+    if (!token) return false;
+    try {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      const exp = decoded.exp;
+      const now = Date.now() / 1000;
+      if (exp && exp < now) {
+        setError(translations.tokenExpired);
+        setTimeout(() => {
+          logout();
+          navigate('/');
+        }, 2000);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Lỗi khi kiểm tra token:', error);
+      setError(translations.noTokenError);
+      setTimeout(() => {
+        logout();
+        navigate('/');
+      }, 2000);
+      return false;
+    }
+  }, [logout, navigate, translations.tokenExpired, translations.noTokenError, setError]); // Add all external dependencies here
 
   useEffect(() => {
     const fetchRoadmapData = async () => {
       setIsLoading(true);
       setError(null);
       if (!token) {
-        setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+        setError(translations.noTokenError);
         setIsLoading(false);
         return;
       }
 
+      // Now checkTokenExpiration is stable
+      if (!checkTokenExpiration(token)) return; 
+
       try {
-        // Fetch roadmap details
         const roadmapResponse = await fetch(`http://localhost:8000/api/roadmaps/${roadmapId}/`, {
           method: 'GET',
           headers: {
@@ -53,7 +169,6 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
           description: roadmap.description || '',
         });
 
-        // Fetch topic-roadmap mappings
         const topicRoadmapResponse = await fetch('http://localhost:8000/api/topic-roadmap/', {
           method: 'GET',
           headers: {
@@ -70,11 +185,8 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         const topicRoadmapData = await topicRoadmapResponse.json();
         console.log('Fetched topic-roadmap data:', topicRoadmapData);
         const topicMappings = topicRoadmapData.data || [];
-
-        // Lọc các topic liên quan đến roadmap hiện tại
         const relatedTopicMappings = topicMappings.filter(mapping => mapping.RoadmapID === roadmapId);
 
-        // Fetch chi tiết các topic liên quan và gộp với mapping
         const topicDetailsPromises = relatedTopicMappings.map(async (mapping) => {
           const topicResponse = await fetch(`http://localhost:8000/api/topics/${mapping.TopicID}/`, {
             method: 'GET',
@@ -93,11 +205,10 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
           console.log(`Đã tải dữ liệu chủ đề ${mapping.TopicID}:`, topicData);
           const topicDetail = topicData.data || null;
           if (topicDetail) {
-            // Ensure the 'id' property stores the topic-roadmap mapping ID
-            topicDetail.id = mapping.id; // Use the mapping ID for unlinking
-            topicDetail.TopicID = mapping.TopicID; // Keep TopicID for fetching resources/exercises
+            topicDetail.id = mapping.id;
+            topicDetail.TopicID = mapping.TopicID;
             topicDetail.topic_order = mapping.topic_order;
-            topicDetail.topic_name = mapping.topic_name || topicDetail.title; // Sử dụng topic_name từ mapping hoặc title từ topic
+            topicDetail.topic_name = mapping.topic_name || topicDetail.title;
           }
           return topicDetail;
         });
@@ -118,9 +229,9 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
       fetchRoadmapData();
     } else {
       setIsLoading(false);
-      setError("Không cung cấp ID lộ trình để chỉnh sửa.");
+      setError(translations.noRoadmapIdError);
     }
-  }, [roadmapId, token]); // Added token to dependency array
+  }, [roadmapId, token, translations.noTokenError, translations.noRoadmapIdError, checkTokenExpiration]); // checkTokenExpiration is now a stable dependency
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -132,9 +243,11 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
 
   const handleSaveChanges = async () => {
     if (!token) {
-      setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+      setError(translations.noTokenError);
       return;
     }
+
+    if (!checkTokenExpiration(token)) return;
 
     const payload = {
       title: roadmapData.name,
@@ -163,16 +276,11 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
 
       const data = await response.json();
       console.log('Dữ liệu lộ trình đã cập nhật:', data);
-      setSuccessMessage(data.message || "Đã cập nhật lộ trình thành công.");
+      setSuccessMessage(data.message || translations.successUpdateRoadmap);
 
       setTimeout(() => {
         setSuccessMessage(null);
-        if (onSave) {
-          onSave(roadmapId, roadmapData);
-        }
-        if (onCancelEdit) {
-          onCancelEdit();
-        }
+        navigate('/admin/roadmaps-list');
       }, 3000);
     } catch (err) {
       console.error('Lỗi cập nhật lộ trình:', err);
@@ -181,6 +289,7 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
   };
 
   const handleAddTopicClick = () => {
+    if (!token || !checkTokenExpiration(token)) return;
     setIsTopicModalOpen(true);
   };
 
@@ -190,20 +299,19 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
 
   const handleCreateNewTopic = (newTopicData) => {
     console.log("Đã tạo chủ đề mới trong EditRoadmapPage:", newTopicData);
-    // Assuming newTopicData contains the created topic's details including its ID
-    // We then treat this as adding an existing topic to the roadmap
     handleAddExistingTopic([newTopicData]);
   };
 
   const handleAddExistingTopic = async (selectedTopics) => {
     console.log("Đang cố gắng thêm các chủ đề hiện có:", selectedTopics, "vào lộ trình:", roadmapId);
     if (!token) {
-      setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+      setError(translations.noTokenError);
       return;
     }
 
+    if (!checkTokenExpiration(token)) return;
+
     try {
-      // Fetch current topics to determine the correct order
       const topicRoadmapResponse = await fetch('http://localhost:8000/api/topic-roadmap/', {
         method: 'GET',
         headers: {
@@ -222,13 +330,12 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
       const relatedTopicMappings = topicMappings.filter(mapping => mapping.RoadmapID === roadmapId);
       const maxOrder = relatedTopicMappings.length > 0 ? Math.max(...relatedTopicMappings.map(t => t.topic_order || 0)) : 0;
 
-
       const newlyAddedTopics = [];
       for (const topic of selectedTopics) {
         const payload = {
-          TopicID: topic.id, // Use the ID of the selected topic
+          TopicID: topic.id,
           RoadmapID: roadmapId,
-          topic_order: maxOrder + 1 + selectedTopics.indexOf(topic), // Assign sequential order
+          topic_order: maxOrder + 1 + selectedTopics.indexOf(topic),
         };
 
         console.log('Đang gửi dữ liệu để liên kết chủ đề-lộ trình:', payload);
@@ -251,7 +358,6 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         const data = await response.json();
         console.log('Dữ liệu chủ đề-lộ trình đã liên kết:', data);
 
-        // Fetch the full topic details to add to the state
         const topicResponse = await fetch(`http://localhost:8000/api/topics/${payload.TopicID}/`, {
           method: 'GET',
           headers: {
@@ -262,31 +368,25 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
 
         if (!topicResponse.ok) {
           console.error(`Không thể tải chi tiết chủ đề sau khi liên kết ${payload.TopicID}: ${topicResponse.statusText}`);
-          continue; // Skip this topic if details can't be fetched
+          continue;
         }
 
         const topicData = await topicResponse.json();
         const topicDetail = topicData.data || null;
         if (topicDetail) {
-           // Ensure the 'id' property stores the topic-roadmap mapping ID from the POST response
-           topicDetail.id = data.data.id;
-           topicDetail.TopicID = payload.TopicID; // Keep TopicID
-           topicDetail.topic_order = payload.topic_order;
-           topicDetail.topic_name = data.data.topic_name || topicDetail.title;
-           newlyAddedTopics.push(topicDetail);
+          topicDetail.id = data.data.id;
+          topicDetail.TopicID = payload.TopicID;
+          topicDetail.topic_order = payload.topic_order;
+          topicDetail.topic_name = data.data.topic_name || topicDetail.title;
+          newlyAddedTopics.push(topicDetail);
         }
       }
 
-       // Update state with all newly added topics
-       setTopics(prevTopics => [...prevTopics, ...newlyAddedTopics]);
-
-      setSuccessMessage("Đã thêm chủ đề thành công.");
+      setTopics(prevTopics => [...prevTopics, ...newlyAddedTopics]);
+      setSuccessMessage(translations.successAddTopic);
 
       setTimeout(() => {
         setSuccessMessage(null);
-        if (onTopicAdded) {
-          onTopicAdded(); // Notify parent component if needed
-        }
       }, 3000);
     } catch (err) {
       console.error('Lỗi khi thêm chủ đề hiện có:', err);
@@ -296,8 +396,8 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
     handleCloseTopicModal();
   };
 
-
   const handleEditTopicClick = (topic) => {
+    if (!token || !checkTokenExpiration(token)) return;
     setEditingTopic(topic);
     setIsTopicEditModalOpen(true);
   };
@@ -308,12 +408,14 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
   };
 
   const handleSaveTopic = async (topicData) => {
-     if (!token || !editingTopic) {
-        setError("Không tìm thấy mã xác thực hoặc không có chủ đề nào được chọn để chỉnh sửa.");
-        return;
-     }
+    if (!token || !editingTopic) {
+      setError(translations.noTokenOrTopicError);
+      return;
+    }
+
+    if (!checkTokenExpiration(token)) return;
+
     try {
-      // Use editingTopic.TopicID to update the actual topic details
       const response = await fetch(`http://localhost:8000/api/topics/${editingTopic.TopicID}/`, {
         method: 'PUT',
         headers: {
@@ -331,17 +433,15 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
       const data = await response.json();
       console.log('Dữ liệu chủ đề đã cập nhật:', data);
 
-      // Cập nhật danh sách topics trong state
       setTopics(prevTopics =>
         prevTopics.map(t =>
-          // Find the topic by its TopicID
           t.TopicID === editingTopic.TopicID
             ? { ...t, title: topicData.title, description: topicData.description, topic_name: topicData.title }
             : t
         )
       );
 
-      setSuccessMessage("Đã cập nhật chủ đề thành công.");
+      setSuccessMessage(translations.successUpdateTopic);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Lỗi khi cập nhật chủ đề:', err);
@@ -351,16 +451,19 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
   };
 
   const handleDeleteTopicClick = (topic) => {
+    if (!token || !checkTokenExpiration(token)) return;
     setDeleteTopicModal(topic);
   };
 
   const handleUnlinkTopic = async (topicRoadmapId) => {
-     if (!token) {
-        setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
-        return;
-     }
+    if (!token) {
+      setError(translations.noTokenError);
+      return;
+    }
+
+    if (!checkTokenExpiration(token)) return;
+
     try {
-      // Use the topicRoadmapId to delete the specific link
       const response = await fetch(`http://localhost:8000/api/topic-roadmap/${topicRoadmapId}/`, {
         method: 'DELETE',
         headers: {
@@ -374,11 +477,9 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         throw new Error(errorData.detail || `Không thể hủy liên kết chủ đề: ${response.statusText}`);
       }
 
-      // Remove the topic with the matching topicRoadmapId from the state
       setTopics(prevTopics => prevTopics.filter(topic => topic.id !== topicRoadmapId));
-      setSuccessMessage("Đã hủy liên kết chủ đề thành công.");
+      setSuccessMessage(translations.successUnlinkTopic);
       setTimeout(() => setSuccessMessage(null), 3000);
-      if (onTopicAdded) onTopicAdded();
     } catch (err) {
       console.error('Lỗi khi hủy liên kết chủ đề:', err);
       setError(err.message);
@@ -387,12 +488,14 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
   };
 
   const handleDeleteTopicPermanently = async (topicId) => {
-     if (!token) {
-        setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
-        return;
-     }
+    if (!token) {
+      setError(translations.noTokenError);
+      return;
+    }
+
+    if (!checkTokenExpiration(token)) return;
+
     try {
-      // Use the TopicId to delete the topic permanently
       const response = await fetch(`http://localhost:8000/api/topics/${topicId}/`, {
         method: 'DELETE',
         headers: {
@@ -406,18 +509,15 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         throw new Error(errorData.detail || `Không thể xóa chủ đề: ${response.statusText}`);
       }
 
-      // Remove all instances of this TopicID from the state (in case it was linked multiple times)
       setTopics(prevTopics => prevTopics.filter(topic => topic.TopicID !== topicId));
-      setSuccessMessage("Đã xóa chủ đề vĩnh viễn.");
+      setSuccessMessage(translations.successDeleteTopic);
       setTimeout(() => setSuccessMessage(null), 3000);
-      if (onTopicAdded) onTopicAdded();
     } catch (err) {
       console.error('Lỗi khi xóa chủ đề vĩnh viễn:', err);
       setError(err.message);
     }
     setDeleteTopicModal(null);
   };
-
 
   const renderTopicList = () => {
     if (topics.length === 0) {
@@ -426,8 +526,8 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
           <div className="topic-icon">
             <FontAwesomeIcon icon="folder-open" />
           </div>
-          <h3>Chưa có chủ đề nào</h3>
-          <p>Thêm chủ đề để xây dựng lộ trình của bạn</p>
+          <h3>{translations.noTopicsTitle}</h3>
+          <p>{translations.noTopicsDescription}</p>
         </div>
       );
     }
@@ -435,17 +535,14 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
     return (
       <div className="topic-list">
         {topics.map((topic, index) => (
-          // Use topic.id (the topic-roadmap ID) as the key for list rendering
-          // Removed the outer topic-header div and buttons
           <TopicItemEditable
             key={topic.id || `${topic.TopicID}-${index}`}
             topic={topic}
-            // Pass the handler functions down to TopicItemEditable
             onEditTopic={() => handleEditTopicClick(topic)}
-            onDeleteTopicClick={() => handleDeleteTopicClick(topic)} // Use a different prop name
+            onDeleteTopicClick={() => handleDeleteTopicClick(topic)}
+            currentLang={currentLang}
           >
-            {/* Pass the topic name as children to TopicItemEditable */}
-            {topic.topic_name || 'Chủ đề không tên'}
+            {topic.topic_name || translations.unnamedTopic}
           </TopicItemEditable>
         ))}
       </div>
@@ -453,28 +550,28 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
   };
 
   if (isLoading) {
-    return <div>Đang tải dữ liệu lộ trình...</div>;
+    return <div>{translations.loadingMessage}</div>;
   }
 
   if (error) {
-    return <div className="error-message" style={{textAlign: 'center', color: 'red'}}>{error}</div>;
+    return <div className="error-message" style={{ textAlign: 'center', color: 'red' }}>{error}</div>;
   }
 
   return (
     <div className="page-content" id="edit-roadmap">
       <div className="edit-roadmap-container">
         <div className="edit-roadmap-header">
-          <h1>Chỉnh sửa lộ trình</h1>
+          <h1>{translations.editRoadmapTitle}</h1>
           <button
             className="save-changes-btn"
             onClick={handleSaveChanges}
           >
-            Lưu thay đổi
+            {translations.saveChangesButton}
           </button>
         </div>
 
         <div className="form-group">
-          <label htmlFor="roadmap-name-edit">Tên lộ trình:</label>
+          <label htmlFor="roadmap-name-edit">{translations.roadmapNameLabel}</label>
           <input
             type="text"
             id="roadmap-name-edit"
@@ -486,7 +583,7 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="roadmap-description-edit">Mô tả:</label>
+          <label htmlFor="roadmap-description-edit">{translations.descriptionLabel}</label>
           <textarea
             id="roadmap-description-edit"
             name="description"
@@ -499,12 +596,12 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
 
         <div className="topics-section">
           <div className="topics-header">
-            <h2>Chủ đề</h2>
+            <h2>{translations.topicsSectionTitle}</h2>
             <button
               className="add-topic-btn"
               onClick={handleAddTopicClick}
             >
-              Thêm chủ đề
+              {translations.addTopicButton}
             </button>
           </div>
 
@@ -512,7 +609,7 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         </div>
       </div>
 
-      {successMessage && <p style={{textAlign: 'center', color: 'green'}}>{successMessage}</p>}
+      {successMessage && <p style={{ textAlign: 'center', color: 'green' }}>{successMessage}</p>}
 
       <TopicModal
         isVisible={isTopicModalOpen}
@@ -520,13 +617,14 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         onCreateNew={handleCreateNewTopic}
         onAddExisting={handleAddExistingTopic}
         roadmapId={roadmapId}
+        currentLang={currentLang}
       />
 
       {isTopicEditModalOpen && (
         <div className="modal-overlay" onClick={handleCloseTopicEditModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Chỉnh sửa chủ đề</h2>
+              <h2>{translations.editTopicModalTitle}</h2>
               <button className="modal-close-btn" onClick={handleCloseTopicEditModal}>
                 <FontAwesomeIcon icon="times" />
               </button>
@@ -540,22 +638,22 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
                 });
               }}>
                 <div className="form-group">
-                  <label>Tiêu đề:</label>
+                  <label>{translations.topicTitleLabel}</label>
                   <input
                     type="text"
                     name="title"
-                    defaultValue={editingTopic?.title || ''} // Use optional chaining
+                    defaultValue={editingTopic?.title || ''}
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label>Mô tả:</label>
+                  <label>{translations.topicDescriptionLabel}</label>
                   <textarea
                     name="description"
-                    defaultValue={editingTopic?.description || ''} // Use optional chaining
+                    defaultValue={editingTopic?.description || ''}
                   />
                 </div>
-                <button type="submit" className="modal-save-btn">Lưu</button>
+                <button type="submit" className="modal-save-btn">{translations.saveButton}</button>
               </form>
             </div>
           </div>
@@ -566,26 +664,24 @@ function EditRoadmapPage({ roadmapId, onSave, onCancelEdit, onTopicAdded }) {
         <div className="modal-overlay" onClick={() => setDeleteTopicModal(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Xóa chủ đề: {deleteTopicModal.topic_name}</h2>
+              <h2>{translations.deleteTopicModalTitle.replace('{topic_name}', deleteTopicModal.topic_name)}</h2>
               <button className="modal-close-btn" onClick={() => setDeleteTopicModal(null)}>
                 <FontAwesomeIcon icon="times" />
               </button>
             </div>
             <div className="modal-body">
-              <p>Chọn một hành động:</p>
+              <p>{translations.deleteModalActionPrompt}</p>
               <button
                 className="modal-btn unlink-btn"
-                // Pass the topic-roadmap ID (topic.id) to handleUnlinkTopic
                 onClick={() => handleUnlinkTopic(deleteTopicModal.id)}
               >
-                Hủy liên kết chủ đề khỏi lộ trình
+                {translations.unlinkTopicButton}
               </button>
               <button
                 className="modal-btn delete-btn"
-                   // Pass the TopicID to handleDeleteTopicPermanently
                 onClick={() => handleDeleteTopicPermanently(deleteTopicModal.TopicID)}
               >
-                Xóa vĩnh viễn chủ đề
+                {translations.deleteTopicPermanentlyButton}
               </button>
             </div>
           </div>

@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Thay Link bằng useNavigate
-import Cookies from 'js-cookie';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './ProfilePage.css';
 
-function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
+// Hàm giải mã HTML entity
+const decodeHtmlEntities = (str) => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+};
+
+function ProfilePage({ currentLang = 'vi' }) {
+    const { isLoggedIn, getToken, logout } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -17,15 +25,102 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-
-    const token = Cookies.get('access_token');
-    const userId = token ? JSON.parse(atob(token.split('.')[1])).user_id : null;
     const navigate = useNavigate();
 
+    const token = getToken();
+    const userId = token ? JSON.parse(atob(token.split('.')[1])).user_id : null;
+
+    const initialTranslations = useMemo(() => ({
+        profileTitle: "Hồ sơ kỹ năng",
+        profileDescription: "Tạo hồ sơ kỹ năng của bạn để giới thiệu các kỹ năng của bạn.",
+        avatarSection: "Ảnh đại diện",
+        editButton: "Chỉnh sửa",
+        usernameSection: "Tên người dùng",
+        required: "*",
+        emailSection: "Email",
+        visitSettings: "Truy cập trang cài đặt để thay đổi email",
+        showEmailLabel: "Hiển thị email của tôi trên hồ sơ",
+        githubSection: "Github",
+        linkedinSection: "LinkedIn",
+        saveButton: "Lưu hồ sơ",
+        errorLoading: "Không tìm thấy mã xác thực. Vui lòng đăng nhập.",
+        errorValidationUsername: "Tên người dùng là bắt buộc.",
+        errorValidationEmail: "Email là bắt buộc.",
+        errorValidationEmailFormat: "Định dạng email không hợp lệ.",
+        errorValidationGithub: "URL Github không hợp lệ.",
+        errorValidationLinkedin: "URL LinkedIn không hợp lệ.",
+        errorServer: "Lỗi máy chủ nội bộ",
+        successMessage: "Hồ sơ đã được cập nhật thành công.",
+        loading: "Đang tải...",
+        errorAvatarType: "Vui lòng chọn một tệp hình ảnh.",
+        errorAvatarSize: "Kích thước tệp hình ảnh phải nhỏ hơn 5MB.",
+    }), []);
+
+    const [translations, setTranslations] = useState(initialTranslations);
+
+    const translateText = async (texts, targetLang) => {
+        try {
+            const response = await fetch('http://localhost:8000/api/translate/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: texts, target_lang: targetLang }),
+            });
+            if (!response.ok) throw new Error(await response.text());
+            const data = await response.json();
+            return data.translated || texts;
+        } catch (error) {
+            console.error('Lỗi dịch:', error);
+            return texts;
+        }
+    };
+
     useEffect(() => {
+        const translateContent = async () => {
+            if (currentLang === 'vi') {
+                setTranslations(initialTranslations);
+                return;
+            }
+            const textsToTranslate = Object.values(initialTranslations);
+            const translatedTexts = await translateText(textsToTranslate, currentLang);
+            const updatedTranslations = {};
+            Object.keys(initialTranslations).forEach((key, index) => {
+                updatedTranslations[key] = decodeHtmlEntities(translatedTexts[index] || initialTranslations[key]);
+            });
+            setTranslations(updatedTranslations);
+        };
+        translateContent();
+    }, [currentLang, initialTranslations]);
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            navigate('/');
+            return;
+        }
+
+        const tokenCheck = () => {
+            const token = getToken();
+            if (token) {
+                try {
+                    const decoded = JSON.parse(atob(token.split('.')[1]));
+                    const exp = decoded.exp;
+                    const now = Date.now() / 1000;
+                    if (exp && exp < now) {
+                        logout();
+                        navigate('/');
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi kiểm tra token:', error);
+                    logout();
+                    navigate('/');
+                }
+            }
+        };
+
+        tokenCheck();
+
         const fetchUserData = async () => {
             if (!token || !userId) {
-                setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+                setError(translations.errorLoading);
                 return;
             }
 
@@ -41,7 +136,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Không thể tải dữ liệu người dùng');
+                    throw new Error(errorData.detail || translations.errorServer);
                 }
 
                 const data = await response.json();
@@ -62,7 +157,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
         };
 
         fetchUserData();
-    }, [token, userId]);
+    }, [token, userId, translations, isLoggedIn, getToken, logout, navigate]);
 
     useEffect(() => {
         return () => {
@@ -84,11 +179,11 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
         const file = e.target.files[0];
         if (file) {
             if (!file.type.startsWith('image/')) {
-                setError("Vui lòng chọn một tệp hình ảnh.");
+                setError(translations.errorAvatarType);
                 return;
             }
             if (file.size > 5 * 1024 * 1024) {
-                setError("Kích thước tệp hình ảnh phải nhỏ hơn 5MB.");
+                setError(translations.errorAvatarSize);
                 return;
             }
             setAvatarFile(file);
@@ -107,17 +202,17 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
     };
 
     const validateForm = () => {
-        if (!formData.username) return "Tên người dùng là bắt buộc.";
-        if (!formData.email) return "Email là bắt buộc.";
+        if (!formData.username) return translations.errorValidationUsername;
+        if (!formData.email) return translations.errorValidationEmail;
         const emailPattern = /^[\w.-]+@[\w.-]+\.\w+$/;
-        if (!emailPattern.test(formData.email)) return "Định dạng email không hợp lệ.";
+        if (!emailPattern.test(formData.email)) return translations.errorValidationEmailFormat;
         if (formData.github) {
             const githubPattern = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/?$/;
-            if (!githubPattern.test(formData.github)) return "URL Github không hợp lệ.";
+            if (!githubPattern.test(formData.github)) return translations.errorValidationGithub;
         }
         if (formData.linkedin) {
             const linkedinPattern = /^https?:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/;
-            if (!linkedinPattern.test(formData.linkedin)) return "URL LinkedIn không hợp lệ.";
+            if (!linkedinPattern.test(formData.linkedin)) return translations.errorValidationLinkedin;
         }
         return null;
     };
@@ -125,7 +220,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
     const handleSaveChangesProfile = async (event) => {
         event.preventDefault();
         if (!token || !userId) {
-            setError("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
+            setError(translations.errorLoading);
             return;
         }
 
@@ -156,7 +251,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || 'Lỗi máy chủ nội bộ');
+                throw new Error(errorData.detail || translations.errorServer);
             }
 
             const data = await response.json();
@@ -170,7 +265,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
             setShowEmailOnProfile(data.data.show_email_on_profile);
             setAvatarPreviewUrl(data.data.avatar);
             setAvatarFile(null);
-            setSuccessMessage(data.message || "Hồ sơ đã được cập nhật thành công.");
+            setSuccessMessage(data.message || translations.successMessage);
             if (data.warning) setError(data.warning);
         } catch (err) {
             setError(`Lỗi khi lưu hồ sơ: ${err.message}`);
@@ -179,25 +274,24 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
         }
     };
 
-    const handleVisitSettings = () => {
-        if (onProfileUpdated) {
-            onProfileUpdated({}, true); // Gọi với navigateToSettings = true
-        }
+    const handleVisitSettings = (e) => {
+        e.preventDefault();
+        navigate('/admin/settings');
     };
 
     return (
         <div className="page-content profile-page-container">
             {error && <p className="error-message" style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
             {successMessage && <p style={{ color: 'green', textAlign: 'center' }}>{successMessage}</p>}
-            {isLoading && <p style={{ textAlign: 'center' }}>Đang tải...</p>}
+            {isLoading && <p style={{ textAlign: 'center' }}>{translations.loading}</p>}
 
             <div className="profile-header">
-                <h2>Hồ sơ kỹ năng</h2>
+                <h2>{translations.profileTitle}</h2>
             </div>
-            <p className="profile-description">Tạo hồ sơ kỹ năng của bạn để giới thiệu các kỹ năng của bạn.</p>
+            <p className="profile-description">{translations.profileDescription}</p>
 
             <div className="profile-section">
-                <h3>Ảnh đại diện</h3>
+                <h3>{translations.avatarSection}</h3>
                 <div className="profile-picture-container">
                     <img
                         src={avatarPreviewUrl || '/creator-ava.png'}
@@ -205,7 +299,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                         id="profile-image"
                         className="profile-picture"
                     />
-                    <button className="edit-btn" onClick={() => document.getElementById('profile-pic-upload').click()}>Chỉnh sửa</button>
+                    <button className="edit-btn" onClick={() => document.getElementById('profile-pic-upload').click()}>{translations.editButton}</button>
                     <input
                         type="file"
                         id="profile-pic-upload"
@@ -217,7 +311,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
             </div>
 
             <div className="profile-section">
-                <h3>Tên người dùng<span className="required">*</span></h3>
+                <h3>{translations.usernameSection}<span className="required">{translations.required}</span></h3>
                 <input
                     type="text"
                     className="form-control-us"
@@ -228,7 +322,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
             </div>
 
             <div className="profile-section">
-                <h3>Email<span className="required">*</span></h3>
+                <h3>{translations.emailSection}<span className="required">{translations.required}</span></h3>
                 <div className="email-section">
                     <input
                         type="email"
@@ -239,22 +333,25 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                         disabled
                     />
                     <p>
-                        <a href="#" onClick={handleVisitSettings} style={{ color: 'purple' }}>
-                            Truy cập trang cài đặt để thay đổi email
-                        </a>
+                        <button
+                            onClick={handleVisitSettings}
+                            style={{ color: 'purple', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                            {translations.visitSettings}
+                        </button>
                     </p>
                     <label>
                         <input
                             type="checkbox"
                             checked={showEmailOnProfile}
                             onChange={(e) => setShowEmailOnProfile(e.target.checked)}
-                        /> Hiển thị email của tôi trên hồ sơ
+                        /> {translations.showEmailLabel}
                     </label>
                 </div>
             </div>
 
             <div className="profile-section">
-                <h3>Github</h3>
+                <h3>{translations.githubSection}</h3>
                 <input
                     type="url"
                     className="form-control-us"
@@ -266,7 +363,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
             </div>
 
             <div className="profile-section">
-                <h3>LinkedIn</h3>
+                <h3>{translations.linkedinSection}</h3>
                 <input
                     type="url"
                     className="form-control-us"
@@ -283,7 +380,7 @@ function ProfilePage({ onProfileUpdated }) { // Thêm prop onProfileUpdated
                     onClick={handleSaveChangesProfile}
                     disabled={isLoading}
                 >
-                    Lưu hồ sơ
+                    {translations.saveButton}
                 </button>
             </div>
         </div>

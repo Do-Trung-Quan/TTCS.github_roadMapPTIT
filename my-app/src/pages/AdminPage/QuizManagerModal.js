@@ -1,26 +1,117 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Cookies from 'js-cookie';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './QuizManagerModal.css';
 import { FontAwesomeIcon } from '../../fontawesome';
 
-function QuizManagerModal({ isVisible, onClose, exercise }) {
+function QuizManagerModal({ isVisible, onClose, exercise, currentLang = 'vi' }) {
+  const navigate = useNavigate();
+  const { getToken, logout } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [newQuestionText, setNewQuestionText] = useState('');
-  const [newAnswerTexts, setNewAnswerTexts] = useState({}); // Map: { questionId: 'input text' }
-  const [newAnswerIsCorrect, setNewAnswerIsCorrect] = useState({}); // Map: { questionId: boolean }
-  const [editingQuestion, setEditingQuestion] = useState(null); // State để theo dõi câu hỏi đang chỉnh sửa
-  const [editingQuestionText, setEditingQuestionText] = useState(''); // Nội dung câu hỏi đang chỉnh sửa
-  const [editingAnswer, setEditingAnswer] = useState(null); // State để theo dõi câu trả lời đang chỉnh sửa
-  const [editingAnswerText, setEditingAnswerText] = useState(''); // Nội dung câu trả lời đang chỉnh sửa
-  const [editingAnswerIsCorrect, setEditingAnswerIsCorrect] = useState(false); // Trạng thái đúng/sai của câu trả lời đang chỉnh sửa
+  const [newAnswerTexts, setNewAnswerTexts] = useState({});
+  const [newAnswerIsCorrect, setNewAnswerIsCorrect] = useState({});
+  const [editingQuestion, setEditingQuestion] = useState(null);
+  const [editingQuestionText, setEditingQuestionText] = useState('');
+  const [editingAnswer, setEditingAnswer] = useState(null);
+  const [editingAnswerText, setEditingAnswerText] = useState('');
+  const [editingAnswerIsCorrect, setEditingAnswerIsCorrect] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const token = Cookies.get('access_token');
+  const initialTranslations = useMemo(() => ({
+    manageQuestionsHeader: 'Quản lý câu hỏi cho:',
+    loadingHeader: 'Đang tải...',
+    closeModalLabel: 'Đóng modal',
+    loadingMessage: 'Đang tải dữ liệu câu hỏi...',
+    errorMessagePrefix: 'Đã xảy ra lỗi khi',
+    fetchQuestionsError: 'tải dữ liệu câu hỏi.',
+    addQuestionError: 'thêm câu hỏi.',
+    updateQuestionError: 'cập nhật câu hỏi.',
+    deleteQuestionError: 'xóa câu hỏi.',
+    addAnswerError: 'thêm câu trả lời.',
+    updateAnswerError: 'cập nhật câu trả lời.',
+    deleteAnswerError: 'xóa câu trả lời.',
+    questionRequiredError: 'Văn bản câu hỏi và thông tin bài tập là bắt buộc.',
+    answerRequiredError: 'Văn bản câu trả lời và thông tin câu hỏi là bắt buộc.',
+    questionTextPlaceholder: 'Nhập nội dung câu hỏi mới',
+    addQuestionButton: 'Thêm câu hỏi',
+    noQuestionsMessage: 'Không có câu hỏi nào. Thêm câu hỏi để bắt đầu quản lý câu hỏi.',
+    saveButton: 'Lưu',
+    cancelButton: 'Hủy',
+    noAnswersMessage: 'Chưa có câu trả lời nào cho câu hỏi này.',
+    correctLabel: '(Đúng)',
+    answerTextPlaceholder: 'Nhập lựa chọn trả lời mới',
+    isCorrectLabel: 'Đúng?',
+    addAnswerButton: 'Thêm câu trả lời',
+  }), []);
+
+  const [translations, setTranslations] = useState(initialTranslations);
+
+  const translateText = useCallback(async (texts, targetLang) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/translate/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: texts, target_lang: targetLang }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      if (response.status === 401) {
+        logout();
+        navigate('/');
+      }
+      const data = await response.json();
+      return data.translated || texts;
+    } catch (error) {
+      console.error('Translation error in QuizManagerModal:', error);
+      if (error.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      return texts;
+    }
+  }, [logout, navigate]);
+
+  useEffect(() => {
+    const translateContent = async () => {
+      if (currentLang === 'vi') {
+        setTranslations(initialTranslations);
+        return;
+      }
+      const textsToTranslate = Object.values(initialTranslations);
+      const translatedTexts = await translateText(textsToTranslate, currentLang);
+      const updatedTranslations = {};
+      Object.keys(initialTranslations).forEach((key, index) => {
+        updatedTranslations[key] = translatedTexts[index] || initialTranslations[key];
+      });
+      setTranslations(updatedTranslations);
+    };
+    translateContent();
+  }, [currentLang, initialTranslations, translateText]);
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        const exp = decoded.exp;
+        const now = Date.now() / 1000;
+        if (exp && exp < now) {
+          logout();
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Token validation error in QuizManagerModal:', error);
+        logout();
+        navigate('/');
+      }
+    }
+  }, [getToken, logout, navigate]);
 
   const fetchQuestionsAndAnswers = useCallback(async () => {
-    if (!exercise || !exercise.id) {
-      console.warn("Bài tập hoặc ID bài tập không có sẵn, bỏ qua việc tìm nạp. Bài tập:", exercise);
+    const token = getToken();
+    if (!token || !exercise || !exercise.id) {
+      console.warn("Token hoặc bài tập hoặc ID bài tập không có sẵn, bỏ qua việc tìm nạp. Bài tập:", exercise);
       setQuestions([]);
       return;
     }
@@ -28,7 +119,6 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
     setError(null);
 
     try {
-      console.log('Đang tìm nạp câu hỏi cho exercise_id:', exercise.id);
       const questionsResponse = await fetch(`http://localhost:8000/api/quizquestions/?exercise_id=${exercise.id}`, {
         method: 'GET',
         headers: {
@@ -38,12 +128,14 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       });
 
       if (!questionsResponse.ok) {
-        const errorData = await questionsResponse.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Không thể tìm nạp câu hỏi: ${questionsResponse.statusText}`);
+        if (questionsResponse.status === 401) {
+          logout();
+          navigate('/');
+        }
+        throw new Error(`${translations.errorMessagePrefix} ${translations.fetchQuestionsError}`);
       }
       const questionsData = await questionsResponse.json();
       const fetchedQuestions = questionsData.data || [];
-      console.log('Phản hồi câu hỏi đã tìm nạp:', questionsData);
 
       const questionsWithAnswers = await Promise.all(fetchedQuestions.map(async (question) => {
         const answersResponse = await fetch(`http://localhost:8000/api/quizanswers/?quiz_question=${question.id}`, {
@@ -55,37 +147,40 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
         });
 
         if (!answersResponse.ok) {
-          const errorData = await answersResponse.json().catch(() => ({}));
-          console.warn(`Không thể tìm nạp câu trả lời cho câu hỏi ${question.id}: ${errorData.detail || answersResponse.statusText}`);
-          return { ...question, content: question.question_text, answers: [] };
+          if (answersResponse.status === 401) {
+            logout();
+            navigate('/');
+          }
+          throw new Error(`Không thể tìm nạp câu trả lời cho câu hỏi ${question.id}`);
         }
 
         const answersData = await answersResponse.json();
         const fetchedAnswers = answersData.data || [];
-        console.log(`Câu trả lời đã tìm nạp cho câu hỏi ${question.id}:`, fetchedAnswers);
-
-        const formattedAnswers = fetchedAnswers.map(answer => ({
-          id: answer.id,
-          content: answer.option_text,
-          is_correct: answer.is_correct,
-        }));
 
         return {
           ...question,
           content: question.question_text,
-          answers: formattedAnswers,
+          answers: fetchedAnswers.map(answer => ({
+            id: answer.id,
+            content: answer.option_text,
+            is_correct: answer.is_correct,
+          })),
         };
       }));
 
       setQuestions(questionsWithAnswers);
     } catch (err) {
       console.error('Lỗi khi tìm nạp câu hỏi và câu trả lời:', err);
-      setError(err.message || "Đã xảy ra lỗi khi tải dữ liệu câu hỏi.");
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      setError(err.message || `${translations.errorMessagePrefix} ${translations.fetchQuestionsError}`);
       setQuestions([]);
     } finally {
       setIsLoading(false);
     }
-  }, [exercise, token]);
+  }, [exercise, getToken, translations, logout, navigate]);
 
   useEffect(() => {
     if (isVisible && exercise) {
@@ -106,8 +201,9 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
   }, [isVisible, exercise, fetchQuestionsAndAnswers]);
 
   const handleAddQuestion = async () => {
-    if (!newQuestionText.trim() || !exercise || !exercise.id) {
-      setError("Văn bản câu hỏi và thông tin bài tập là bắt buộc.");
+    const token = getToken();
+    if (!token || !newQuestionText.trim() || !exercise || !exercise.id) {
+      setError(translations.questionRequiredError);
       return;
     }
     setError(null);
@@ -128,15 +224,22 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Không thể thêm câu hỏi: ${response.statusText}`);
+        if (response.status === 401) {
+          logout();
+          navigate('/');
+        }
+        throw new Error(`${translations.errorMessagePrefix} ${translations.addQuestionError}`);
       }
 
       setNewQuestionText('');
       fetchQuestionsAndAnswers();
     } catch (err) {
       console.error('Lỗi khi thêm câu hỏi:', err);
-      setError(err.message || "Đã xảy ra lỗi khi thêm câu hỏi.");
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      setError(err.message || `${translations.errorMessagePrefix} ${translations.addQuestionError}`);
     } finally {
       setIsLoading(false);
     }
@@ -148,8 +251,9 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
   };
 
   const handleUpdateQuestion = async (questionId) => {
-    if (!editingQuestionText.trim()) {
-      setError("Văn bản câu hỏi là bắt buộc.");
+    const token = getToken();
+    if (!token || !editingQuestionText.trim()) {
+      setError(translations.questionRequiredError);
       return;
     }
     setError(null);
@@ -170,8 +274,11 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Không thể cập nhật câu hỏi: ${response.statusText}`);
+        if (response.status === 401) {
+          logout();
+          navigate('/');
+        }
+        throw new Error(`${translations.errorMessagePrefix} ${translations.updateQuestionError}`);
       }
 
       setEditingQuestion(null);
@@ -179,13 +286,19 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       fetchQuestionsAndAnswers();
     } catch (err) {
       console.error('Lỗi khi cập nhật câu hỏi:', err);
-      setError(err.message || "Đã xảy ra lỗi khi cập nhật câu hỏi.");
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      setError(err.message || `${translations.errorMessagePrefix} ${translations.updateQuestionError}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteQuestion = async (questionId) => {
+    const token = getToken();
+    if (!token) return;
     setError(null);
     setIsLoading(true);
 
@@ -199,14 +312,21 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Không thể xóa câu hỏi: ${response.statusText}`);
+        if (response.status === 401) {
+          logout();
+          navigate('/');
+        }
+        throw new Error(`${translations.errorMessagePrefix} ${translations.deleteQuestionError}`);
       }
 
       fetchQuestionsAndAnswers();
     } catch (err) {
       console.error('Lỗi khi xóa câu hỏi:', err);
-      setError(err.message || "Đã xảy ra lỗi khi xóa câu hỏi.");
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      setError(err.message || `${translations.errorMessagePrefix} ${translations.deleteQuestionError}`);
     } finally {
       setIsLoading(false);
     }
@@ -227,11 +347,9 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
   };
 
   const handleAddAnswer = async (questionId) => {
-    const answerText = newAnswerTexts[questionId]?.trim();
-    const isCorrect = newAnswerIsCorrect[questionId] || false;
-
-    if (!answerText || !questionId || !exercise || !exercise.id) {
-      setError("Văn bản câu trả lời và thông tin câu hỏi là bắt buộc.");
+    const token = getToken();
+    if (!token || !newAnswerTexts[questionId]?.trim() || !questionId || !exercise || !exercise.id) {
+      setError(translations.answerRequiredError);
       return;
     }
     setError(null);
@@ -239,8 +357,8 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
 
     try {
       const payload = {
-        option_text: answerText,
-        is_correct: isCorrect,
+        option_text: newAnswerTexts[questionId]?.trim(),
+        is_correct: newAnswerIsCorrect[questionId] || false,
         quiz_question: questionId,
       };
       const response = await fetch('http://localhost:8000/api/quizanswers/', {
@@ -253,8 +371,11 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Không thể thêm câu trả lời: ${response.statusText}`);
+        if (response.status === 401) {
+          logout();
+          navigate('/');
+        }
+        throw new Error(`${translations.errorMessagePrefix} ${translations.addAnswerError}`);
       }
 
       setNewAnswerTexts(prev => {
@@ -271,7 +392,11 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       fetchQuestionsAndAnswers();
     } catch (err) {
       console.error('Lỗi khi thêm câu trả lời:', err);
-      setError(err.message || "Đã xảy ra lỗi khi thêm câu trả lời.");
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      setError(err.message || `${translations.errorMessagePrefix} ${translations.addAnswerError}`);
     } finally {
       setIsLoading(false);
     }
@@ -284,8 +409,9 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
   };
 
   const handleUpdateAnswer = async (answerId) => {
-    if (!editingAnswerText.trim()) {
-      setError("Văn bản câu trả lời là bắt buộc.");
+    const token = getToken();
+    if (!token || !editingAnswerText.trim()) {
+      setError(translations.answerRequiredError);
       return;
     }
     setError(null);
@@ -295,7 +421,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       const payload = {
         option_text: editingAnswerText,
         is_correct: editingAnswerIsCorrect,
-        quiz_question: editingAnswer.quiz_question, // Giữ nguyên liên kết với câu hỏi
+        quiz_question: editingAnswer.quiz_question,
       };
       const response = await fetch(`http://localhost:8000/api/quizanswers/${answerId}/`, {
         method: 'PUT',
@@ -307,8 +433,11 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Không thể cập nhật câu trả lời: ${response.statusText}`);
+        if (response.status === 401) {
+          logout();
+          navigate('/');
+        }
+        throw new Error(`${translations.errorMessagePrefix} ${translations.updateAnswerError}`);
       }
 
       setEditingAnswer(null);
@@ -317,13 +446,19 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       fetchQuestionsAndAnswers();
     } catch (err) {
       console.error('Lỗi khi cập nhật câu trả lời:', err);
-      setError(err.message || "Đã xảy ra lỗi khi cập nhật câu trả lời.");
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      setError(err.message || `${translations.errorMessagePrefix} ${translations.updateAnswerError}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteAnswer = async (answerId) => {
+    const token = getToken();
+    if (!token) return;
     setError(null);
     setIsLoading(true);
 
@@ -337,14 +472,21 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Không thể xóa câu trả lời: ${response.statusText}`);
+        if (response.status === 401) {
+          logout();
+          navigate('/');
+        }
+        throw new Error(`${translations.errorMessagePrefix} ${translations.deleteAnswerError}`);
       }
 
       fetchQuestionsAndAnswers();
     } catch (err) {
       console.error('Lỗi khi xóa câu trả lời:', err);
-      setError(err.message || "Đã xảy ra lỗi khi xóa câu trả lời.");
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/');
+      }
+      setError(err.message || `${translations.errorMessagePrefix} ${translations.deleteAnswerError}`);
     } finally {
       setIsLoading(false);
     }
@@ -356,13 +498,13 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Quản lý câu hỏi cho: {exercise?.title || 'Đang tải...'}</h2>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Đóng modal">
+          <h2>{translations.manageQuestionsHeader} {exercise?.title || translations.loadingHeader}</h2>
+          <button className="modal-close-btn" onClick={onClose} aria-label={translations.closeModalLabel}>
             <FontAwesomeIcon icon="times" />
           </button>
         </div>
         <div className="modal-body">
-          {isLoading && <p className="loading-message">Đang tải dữ liệu câu hỏi...</p>}
+          {isLoading && <p className="loading-message">{translations.loadingMessage}</p>}
           {error && <p className="error-message">{error}</p>}
 
           <div className="add-question-section">
@@ -370,7 +512,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
               type="text"
               value={newQuestionText}
               onChange={(e) => setNewQuestionText(e.target.value)}
-              placeholder="Nhập nội dung câu hỏi mới"
+              placeholder={translations.questionTextPlaceholder}
               disabled={isLoading}
             />
             <button
@@ -378,12 +520,12 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
               onClick={handleAddQuestion}
               disabled={isLoading || !newQuestionText.trim()}
             >
-              Thêm câu hỏi
+              {translations.addQuestionButton}
             </button>
           </div>
 
           {questions.length === 0 && !isLoading && !error ? (
-            <p className="no-questions-message">Không có câu hỏi nào. Thêm câu hỏi để bắt đầu quản lý câu hỏi.</p>
+            <p className="no-questions-message">{translations.noQuestionsMessage}</p>
           ) : (
             questions.length > 0 && (
               <div className="questions-list">
@@ -395,7 +537,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           type="text"
                           value={editingQuestionText}
                           onChange={(e) => setEditingQuestionText(e.target.value)}
-                          placeholder="Nhập nội dung câu hỏi"
+                          placeholder={translations.questionTextPlaceholder}
                           disabled={isLoading}
                         />
                         <button
@@ -403,14 +545,14 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           onClick={() => handleUpdateQuestion(question.id)}
                           disabled={isLoading || !editingQuestionText.trim()}
                         >
-                          Lưu
+                          {translations.saveButton}
                         </button>
                         <button
                           className="cancel-btn"
                           onClick={() => setEditingQuestion(null)}
                           disabled={isLoading}
                         >
-                          Hủy
+                          {translations.cancelButton}
                         </button>
                       </div>
                     ) : (
@@ -444,7 +586,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                                   type="text"
                                   value={editingAnswerText}
                                   onChange={(e) => setEditingAnswerText(e.target.value)}
-                                  placeholder="Nhập nội dung câu trả lời"
+                                  placeholder={translations.answerTextPlaceholder}
                                   disabled={isLoading}
                                 />
                                 <label>
@@ -453,26 +595,26 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                                     checked={editingAnswerIsCorrect}
                                     onChange={(e) => setEditingAnswerIsCorrect(e.target.checked)}
                                     disabled={isLoading}
-                                  /> Đúng?
+                                  /> {translations.isCorrectLabel}
                                 </label>
                                 <button
                                   className="save-btn"
                                   onClick={() => handleUpdateAnswer(answer.id)}
                                   disabled={isLoading || !editingAnswerText.trim()}
                                 >
-                                  Lưu
+                                  {translations.saveButton}
                                 </button>
                                 <button
                                   className="cancel-btn"
                                   onClick={() => setEditingAnswer(null)}
                                   disabled={isLoading}
                                 >
-                                  Hủy
+                                  {translations.cancelButton}
                                 </button>
                               </div>
                             ) : (
                               <>
-                                {answer.content} {answer.is_correct && <span className="correct-label">(Đúng)</span>}
+                                {answer.content} {answer.is_correct && <span className="correct-label">{translations.correctLabel}</span>}
                                 <div className="answer-actions">
                                   <button
                                     className="edit-btn"
@@ -494,7 +636,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           </li>
                         ))
                       ) : (
-                        <li className="no-answers-message">Chưa có câu trả lời nào cho câu hỏi này.</li>
+                        <li className="no-answers-message">{translations.noAnswersMessage}</li>
                       )}
                     </ul>
                     <div className="add-answer-section">
@@ -502,7 +644,7 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                         type="text"
                         value={newAnswerTexts[question.id] || ''}
                         onChange={(e) => handleNewAnswerInputChange(question.id, e.target.value)}
-                        placeholder="Nhập lựa chọn trả lời mới"
+                        placeholder={translations.answerTextPlaceholder}
                         disabled={isLoading}
                       />
                       <label>
@@ -511,14 +653,14 @@ function QuizManagerModal({ isVisible, onClose, exercise }) {
                           checked={newAnswerIsCorrect[question.id] || false}
                           onChange={(e) => handleNewAnswerIsCorrectChange(question.id, e.target.checked)}
                           disabled={isLoading}
-                        /> Đúng?
+                        /> {translations.isCorrectLabel}
                       </label>
                       <button
                         className="add-answer-btn"
                         onClick={() => handleAddAnswer(question.id)}
                         disabled={isLoading || !(newAnswerTexts[question.id]?.trim())}
                       >
-                        Thêm câu trả lời
+                        {translations.addAnswerButton}
                       </button>
                     </div>
                   </div>
