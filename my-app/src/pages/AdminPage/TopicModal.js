@@ -18,6 +18,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
   const navigate = useNavigate();
   const { getToken, logout } = useAuth();
 
+  // Thêm placeholder và các cột động vào initialTranslations
   const initialTranslations = useMemo(() => ({
     modalHeader: "Tạo Chủ đề",
     createNewSection: "Tạo chủ đề mới",
@@ -26,6 +27,8 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
     successMessage: "Chủ đề đã được tạo thành công.",
     newTopicNameLabel: "Tên chủ đề:",
     newTopicDescLabel: "Mô tả:",
+    newTopicNamePlaceholder: "Nhập tên chủ đề",
+    newTopicDescPlaceholder: "Nhập mô tả",
     cancelButton: "Hủy",
     createButton: "Thêm chủ đề",
     creatingButton: "Đang tạo...",
@@ -35,11 +38,14 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
     noTopicsAvailable: "Không có chủ đề nào có sẵn để thêm.",
     selectError: "Vui lòng chọn ít nhất một chủ đề để thêm.",
     addSelectedButton: "Thêm các chủ đề đã chọn",
+    selectColumn: "Chọn",
+    nameColumn: "Tên",
+    descriptionColumn: "Mô tả",
+    descriptionNA: "N/A", // Bản dịch cho "N/A" khi không có mô tả
   }), []);
 
   const [translations, setTranslations] = useState(initialTranslations);
 
-  // Sử dụng useCallback để ổn định hàm translateText
   const translateText = useCallback(async (texts, targetLang) => {
     console.log('TopicModal translateText input:', { texts, targetLang });
     try {
@@ -68,7 +74,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
       }
       return texts;
     }
-  }, [logout, navigate]); // Dependencies của translateText
+  }, [logout, navigate]);
 
   useEffect(() => {
     console.log('TopicModal useEffect triggered with currentLang:', currentLang);
@@ -93,7 +99,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
     };
 
     translateContent();
-  }, [currentLang, initialTranslations, translateText]); // Thêm translateText vào dependencies
+  }, [currentLang, initialTranslations, translateText]);
 
   useEffect(() => {
     console.log('TopicModal translations state updated:', translations);
@@ -172,8 +178,23 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
 
           const responseData = await response.json();
           console.log('Đã tìm nạp các chủ đề:', responseData);
-          const topics = responseData.data || [];
+          let topics = responseData.data || [];
           const availableTopics = topics.filter(topic => !assigned.includes(topic.id));
+
+          // Dịch các existing topics nếu không phải tiếng Việt
+          if (currentLang !== 'vi') {
+            const titles = availableTopics.map(topic => topic.title);
+            const descriptions = availableTopics.map(topic => topic.description || 'N/A');
+            const textsToTranslate = [...titles, ...descriptions];
+            const translatedTexts = await translateText(textsToTranslate, currentLang);
+
+            // Gán lại các giá trị đã dịch
+            availableTopics.forEach((topic, index) => {
+              topic.title = translatedTexts[index] || topic.title;
+              topic.description = translatedTexts[titles.length + index] || (topic.description || 'N/A');
+            });
+          }
+
           setExistingTopicsList(availableTopics);
         } catch (err) {
           console.error('Lỗi khi tìm nạp các chủ đề hiện có:', err);
@@ -188,7 +209,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
       setExistingTopicsList([]);
       setSelectedTopics([]);
     }
-  }, [isVisible, roadmapId, translations.noTokenError, translations.noTopicsAvailable, getToken, logout, navigate]);
+  }, [isVisible, roadmapId, translations.noTokenError, translations.noTopicsAvailable, getToken, logout, navigate, currentLang, translateText]);
 
   const handleNewInputChange = (e) => {
     const { name, value } = e.target;
@@ -331,7 +352,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
                 </td>
                 <td>{index + 1}</td>
                 <td>{topic.title}</td>
-                <td>{topic.description || 'N/A'}</td>
+                <td>{topic.description === 'N/A' ? translations.descriptionNA : topic.description}</td>
               </tr>
             ))}
           </tbody>
@@ -340,9 +361,13 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
     );
   };
 
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <div className="modal-overlay visible">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={handleCancelOrClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{translations.modalHeader}</h3>
           <button className="modal-close-btn" onClick={handleCancelOrClose}>×</button>
@@ -360,7 +385,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
                   className="form-control-us"
                   id="new-topic-name"
                   name="name"
-                  placeholder="Nhập tên chủ đề"
+                  placeholder={translations.newTopicNamePlaceholder}
                   required
                   value={newTopicData.name}
                   onChange={handleNewInputChange}
@@ -373,7 +398,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
                   className="form-control-us"
                   id="new-topic-desc"
                   name="description"
-                  placeholder="Nhập mô tả"
+                  placeholder={translations.newTopicDescPlaceholder}
                   rows="4"
                   value={newTopicData.description}
                   onChange={handleNewInputChange}

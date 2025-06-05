@@ -232,7 +232,7 @@ function Header({ currentLang, setCurrentLang }) {
       navigate('/');
       return;
     }
-    const destination = role === 'admin' ? '/admin/profile' : '/profile';
+    const destination = role === 'admin' ? '/admin/profile' : '/admin/activity';
     console.log('Navigating to:', destination);
     navigate(destination);
   };

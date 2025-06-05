@@ -113,79 +113,6 @@
     color: #00c4cc;
 }
 
-/* Thêm style cho các thành phần mới */
-.logout-section {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.logout-button {
-    background: linear-gradient(45deg, #dc3545, #ff6b6b);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 16px;
-    font-family: 'Noto Sans', sans-serif;
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.logout-button::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
-}
-
-.logout-button:hover::after {
-    width: 300px;
-    height: 300px;
-}
-
-.logout-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(220, 53, 69, 0.4);
-    background: linear-gradient(45deg, #c82333, #ff4040);
-}
-
-.logout-button:disabled {
-    background: #6c757d;
-    box-shadow: none;
-    cursor: not-allowed;
-}
-
-.logout-message {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 16px;
-    font-weight: 500;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.logout-message.green {
-    color: #28a745;
-    background: #e8f5e9;
-    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.2);
-}
-
-.logout-message.red {
-    color: #dc3545;
-    background: #fce4e4;
-    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.2);
-}
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .about-us-container {
         margin: 20px;
@@ -213,11 +140,6 @@
     .core-values-list li::before {
         font-size: 1rem;
     }
-
-    .logout-button {
-        padding: 10px 20px;
-        font-size: 14px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -227,9 +149,5 @@
 
     .section-title {
         font-size: 1.3rem;
-    }
-
-    .logout-message {
-        font-size: 14px;
     }
 }
