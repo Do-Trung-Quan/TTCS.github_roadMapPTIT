@@ -120,7 +120,7 @@ function Home({ currentLang }) {
           if (response.ok) {
             const result = await response.json();
             console.log('API enrolls thành công:', result);
-            alert('Bạn đã đăng ký lộ trình thành công!');
+            // No alert, silent enrollment
           } else {
             const errorData = await response.json();
             console.error('API enrolls thất bại. Status:', response.status, 'Error Data:', errorData);
@@ -152,9 +152,6 @@ function Home({ currentLang }) {
         shouldNavigateToRoadmap = false; // Prevent navigating to roadmap
         setTimeout(() => navigate('/'), 2000); // Delayed redirect
       }
-    } else {
-      console.log('Người dùng không đủ điều kiện để ghi nhận enroll.');
-      alert('Vui lòng đăng nhập với tài khoản người dùng để đăng ký lộ trình.');
     }
 
     if (shouldNavigateToRoadmap) {

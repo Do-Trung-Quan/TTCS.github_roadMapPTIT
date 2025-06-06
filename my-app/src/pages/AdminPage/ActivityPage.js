@@ -10,11 +10,26 @@ const decodeHtmlEntities = (str) => {
   return textarea.value;
 };
 
+// Hàm định dạng ngày tháng
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Ho_Chi_Minh'
+  }).replace(',', '');
+};
+
 function ActivityPage({ currentLang = 'vi' }) {
   const navigate = useNavigate();
   const { getToken, user, logout, isLoggedIn } = useAuth();
   const [progressData, setProgressData] = useState([]);
   const [statsData, setStatsData] = useState({ done_count: 0, pending_or_skip_count: 0 });
+  const [latestStreak, setLatestStreak] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -26,6 +41,7 @@ function ActivityPage({ currentLang = 'vi' }) {
     loginLink: "Đăng nhập",
     topicsCompleted: "Chủ đề đã hoàn thành",
     currentlyLearning: "Đang học",
+    currentStreak: "Số ngày đăng nhập liên tiếp", 
     startJourney: "Bắt đầu hành trình của bạn ngay bây giờ",
     goHome: "Về trang chủ để bắt đầu khám phá các lộ trình.",
     goHomeLink: "Về trang chủ",
@@ -33,8 +49,11 @@ function ActivityPage({ currentLang = 'vi' }) {
     loginRequiredError: "Vui lòng đăng nhập để xem tiến độ của bạn.",
     statsError: "Không thể tải số liệu thống kê: ",
     progressError: "Không thể tải tiến độ: ",
+    visitLogsError: "Không thể tải nhật ký truy cập: ", 
+    enrollError: "Không thể tải thông tin đăng ký: ",
     unknownError: "Lỗi không xác định",
     networkError: "Lỗi mạng. Vui lòng thử lại sau.",
+    completedOn: "Hoàn thành vào",
   }), []);
 
   const [translations, setTranslations] = useState(initialTranslations);
@@ -131,6 +150,26 @@ function ActivityPage({ currentLang = 'vi' }) {
           return;
         }
 
+        // Fetch visit logs data
+        const visitLogsResponse = await fetch('http://localhost:8000/api/visit-logs/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (visitLogsResponse.ok) {
+          const visitLogsResult = await visitLogsResponse.json();
+          const visitLogsData = visitLogsResult.data || [];
+          const recentStreak = visitLogsData.length > 0 ? visitLogsData[0].login_streak : 0;
+          setLatestStreak(recentStreak);
+        } else {
+          const visitLogsErrorData = await visitLogsResponse.json();
+          setError(`${translations.visitLogsError}${visitLogsErrorData.message || translations.unknownError}`);
+          return;
+        }
+
         // Fetch progress data
         const progressResponse = await fetch('http://localhost:8000/api/roadmap-progress/', {
           method: 'GET',
@@ -142,14 +181,45 @@ function ActivityPage({ currentLang = 'vi' }) {
 
         if (progressResponse.ok) {
           const progressResult = await progressResponse.json();
-          const rawProgressData = progressResult.data || [];
+          let rawProgressData = progressResult.data || [];
           const titlesToTranslate = rawProgressData.map(item => item.roadmap_title);
           const translatedTitles = await translateText(titlesToTranslate, currentLang);
           const translatedProgressData = rawProgressData.map((item, index) => ({
             ...item,
             roadmap_title: decodeHtmlEntities(translatedTitles[index] || item.roadmap_title),
           }));
-          setProgressData(translatedProgressData);
+
+          // Fetch all enrolls for the user
+          const enrollResponse = await fetch('http://localhost:8000/api/enrolls/', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          let enrollMap = new Map();
+          if (enrollResponse.ok) {
+            const enrollResult = await enrollResponse.json();
+            const enrollData = enrollResult.data || [];
+            // Create a map of RoadmapID to completed_at
+            enrollData.forEach(enroll => {
+              if (enroll.completed_at) {
+                enrollMap.set(enroll.RoadmapID, enroll.completed_at);
+              }
+            });
+          } else {
+            const enrollErrorData = await enrollResponse.json();
+            console.error(`${translations.enrollError}${enrollErrorData.message || translations.unknownError}`);
+          }
+
+          // Update progress data with completed_at for 100% completed roadmaps
+          rawProgressData = translatedProgressData.map(item => ({
+            ...item,
+            completed_at: item.percentage_complete === 100.0 ? enrollMap.get(item.roadmap_id) || null : null,
+          }));
+
+          setProgressData(rawProgressData);
         } else {
           const progressErrorData = await progressResponse.json();
           setError(`${translations.progressError}${progressErrorData.message || translations.unknownError}`);
@@ -212,6 +282,10 @@ function ActivityPage({ currentLang = 'vi' }) {
             <span className="stats-value">{statsData.pending_or_skip_count}</span>
             <span className="stats-label">{translations.currentlyLearning}</span>
           </div>
+          <div className="stats-item">
+            <span className="stats-value">{latestStreak}</span>
+            <span className="stats-label">{translations.currentStreak}</span>
+          </div>
         </div>
 
         {progressData.length === 0 ? (
@@ -231,7 +305,14 @@ function ActivityPage({ currentLang = 'vi' }) {
                   className="progress-item"
                   onClick={() => handleRoadmapClick(item.roadmap_id)}
                 >
-                  <span className="progress-title">{item.roadmap_title}</span>
+                  <div className="progress-title-container">
+                    <span className="progress-title">{item.roadmap_title}</span>
+                    {item.percentage_complete === 100.0 && item.completed_at && (
+                      <span className="progress-completed">
+                        {translations.completedOn} {formatDate(item.completed_at)}
+                      </span>
+                    )}
+                  </div>
                   <span className="progress-percentage">{item.percentage_complete}%</span>
                 </div>
               ))}

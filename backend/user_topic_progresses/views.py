@@ -2,9 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 from .models import UserTopicProgress, User
 from topic_roadmaps.models import TopicRoadmap
 from roadmaps.models import Roadmap
+from enroll.models import Enroll
 from .serializers import UserTopicProgressSerializer
 from users.permissions import IsAdminOrUser, can_access_own_data
 from rest_framework.authentication import SessionAuthentication
@@ -231,6 +233,17 @@ class UserRoadmapProgressAPIView(APIView):
                 'completed_topics': completed_topics,
                 'percentage_complete': percentage_complete
             }
+
+            # Nếu percentage_complete là 100%, cập nhật completed_at trong Enroll
+            if percentage_complete == 100.0:
+                try:
+                    enroll = Enroll.objects.get(UserID=user_id, RoadmapID=r_id)
+                    if not enroll.completed_at:  # Chỉ cập nhật nếu chưa hoàn thành
+                        enroll.completed_at = timezone.now()
+                        enroll.save()
+                        logger.info(f"Updated completed_at for Enroll {enroll.id} to {enroll.completed_at}")
+                except Enroll.DoesNotExist:
+                    logger.warning(f"No Enroll record found for UserID {user_id} and RoadmapID {r_id}")
 
         # Chuyển dict thành list để trả về
         result = list(roadmap_progress.values())
