@@ -7,6 +7,9 @@ from .serializers import UserVisitLogSerializer
 from users.permissions import IsAdminOrUser
 from django.utils import timezone
 from users.models import User
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Hàm hỗ trợ để ghi nhận lượt truy cập
 def record_user_visit(user):
@@ -69,18 +72,37 @@ class UserVisitLogCreateAPIView(APIView):
             }, status=status.HTTP_201_CREATED)
 
 class UserVisitLogListAPIView(APIView):
+    authentication_classes = []  # Disable DRF authentication, rely on middleware
     permission_classes = [IsAdminOrUser]
 
     def get(self, request):
-        user = request.user
-        if not user or not isinstance(user, User) or not isinstance(user.id, str):
+        # Kiểm tra xác thực
+        if not hasattr(request, 'auth_user') or not request.auth_user:
             return Response({
-                "message": "Người dùng không hợp lệ hoặc ID người dùng không đúng định dạng.",
-                "errors": {"user": ["User object or user ID is invalid."]}
+                "message": "Người dùng không hợp lệ hoặc chưa xác thực.",
+                "errors": {"user": ["Authentication required."]}
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+        user_id = request.auth_user.get('_id', '')
+        logger.info(f"User {user_id} accessed their visit logs")
+
+        # Kiểm tra user_id hợp lệ
+        if not isinstance(user_id, str) or not user_id:
+            return Response({
+                "message": "ID người dùng không đúng định dạng.",
+                "errors": {"user": ["User ID must be a non-empty string."]}
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            visit_logs = UserVisitLog.objects.filter(user=user).order_by('-visit_date')
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({
+                "message": "Người dùng không tồn tại.",
+                "errors": {"user": ["User not found."]}
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            visit_logs = UserVisitLog.objects.filter(user_id=user_id).order_by('-visit_date')
             serializer = UserVisitLogSerializer(visit_logs, many=True)
             total_visits = visit_logs.count()
             return Response({
@@ -91,6 +113,7 @@ class UserVisitLogListAPIView(APIView):
                 }
             }, status=status.HTTP_200_OK)
         except Exception as e:
+            logger.error(f"Error retrieving visit logs for user {user_id}: {str(e)}")
             return Response({
                 "message": "Lỗi khi lấy danh sách lượt truy cập.",
                 "errors": str(e)

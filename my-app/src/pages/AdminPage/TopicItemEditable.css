@@ -52,7 +52,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0; /* Prevent shrinking */
-    gap: 5px; /* Space between buttons */
+    gap: 8px; /* Increased space between buttons */
 }
 
 /* Styles for the Edit and Delete buttons within topic-actions-within-item */
@@ -116,6 +116,7 @@
     display: flex; /* Dùng flexbox để căn chỉnh tiêu đề và nút Add */
     justify-content: space-between;
     align-items: center;
+    gap: 10px; /* Added gap for spacing between title and button */
 }
 
 /* Style cho nút "+ Add Resource/Exercise" */
@@ -128,6 +129,7 @@
     font-size: 0.9em;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    margin-bottom: 15px; /* Added margin to space from content below */
 }
 
 .add-item-btn:hover {
@@ -143,8 +145,8 @@
 
 .topic-details ul li {
     border: 1px solid #eee; /* Viền mỗi item */
-    padding: 10px 15px;
-    margin-bottom: 8px; /* Khoảng cách giữa các item */
+    padding: 12px 15px; /* Increased padding for better spacing */
+    margin-bottom: 12px; /* Increased spacing between list items */
     border-radius: 4px;
     background-color: #f9f9f9; /* Nền nhẹ cho item */
     display: flex; /* Dùng flexbox nếu có nút Edit/Delete bên cạnh */
@@ -164,7 +166,7 @@
     display: flex;
     align-items: center;
     flex-grow: 1; /* Allow content to take available space */
-    margin-right: 10px; /* Space between content and actions */
+    margin-right: 15px; /* Increased space from action buttons */
     /* Ensure content doesn't wrap under action buttons */
     min-width: 0; /* Allow flex item to shrink below its content size */
 }
@@ -172,8 +174,9 @@
 /* Add spacing between icon and text within resource/exercise list items */
 .topic-details ul li .resource-item-content .svg-inline--fa,
 .topic-details ul li .exercise-item-content .svg-inline--fa {
-    margin-right: 8px; /* Adjust spacing as needed */
+    margin-right: 10px; /* Consistent spacing from icon to text */
     flex-shrink: 0; /* Prevent icon from shrinking */
+    font-size: 1em; /* Normalize icon size for consistent spacing */
 }
 
 /* Style for the resource link to prevent text wrapping issues */
@@ -182,8 +185,8 @@
     overflow: hidden; /* Hide overflowing text */
     text-overflow: ellipsis; /* Add ellipsis for truncated text */
     display: inline-block; /* Required for text-overflow to work */
-    max-width: calc(100% - 30px); /* Adjust max-width considering icon and padding/margin */
-     /* You might need to fine-tune this max-width based on your layout */
+    max-width: calc(100% - 40px); /* Adjusted max-width for increased spacing */
+    /* You might need to fine-tune this max-width based on your layout */
 }
 
 /* Style for the exercise difficulty span */
@@ -197,7 +200,7 @@
      flex-shrink: 0; /* Prevent action buttons from shrinking */
      display: flex; /* Use flexbox for buttons within item actions */
      align-items: center; /* Align buttons vertically */
-     gap: 5px; /* Space between buttons */
+     gap: 8px; /* Increased space between buttons */
 }
 
 .topic-details ul li .item-actions .action-btn { /* Specific selector */

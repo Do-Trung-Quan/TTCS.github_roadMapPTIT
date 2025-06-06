@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import './header.css';
 
 function Header({ currentLang, setCurrentLang }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
   const token = Cookies.get('access_token');
   const payload = token ? JSON.parse(atob(token.split('.')[1])) : null;
@@ -118,8 +118,9 @@ function Header({ currentLang, setCurrentLang }) {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!token || !userId) {
-        console.log('No token or userId, skipping user data fetch.');
-        return; // Avoid immediate redirect to allow navigation
+        setRole(null);
+        setAvatarUrl(null);
+        return; // No token or userId, reset states
       }
 
       try {
@@ -133,8 +134,11 @@ function Header({ currentLang, setCurrentLang }) {
 
         if (!response.ok) {
           if (response.status === 401) {
-            console.warn('Token expired or invalid (401), redirecting to homepage after delay.');
-            setTimeout(() => navigate('/'), 2000); // Delay redirect to avoid interrupting navigation
+            console.warn('Token expired or invalid (401), logging out and resetting states.');
+            logout(); // Trigger logout in AuthContext
+            setRole(null);
+            setAvatarUrl(null);
+            navigate('/');
             return;
           }
           throw new Error(`Không thể tải dữ liệu người dùng: ${response.statusText}`);
@@ -147,12 +151,15 @@ function Header({ currentLang, setCurrentLang }) {
         Cookies.set('user_avatar', data.avatar, { expires: 7, secure: true, sameSite: 'Strict' });
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu người dùng:', error);
-        setTimeout(() => navigate('/'), 2000); // Delay redirect to avoid interrupting navigation
+        logout(); // Logout on any error
+        setRole(null);
+        setAvatarUrl(null);
+        navigate('/');
       }
     };
 
     fetchUserData();
-  }, [token, userId, navigate]);
+  }, [token, userId, navigate, logout]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -237,6 +244,11 @@ function Header({ currentLang, setCurrentLang }) {
     navigate(destination);
   };
 
+  // Fallback to login button if avatar fails to load
+  const handleImageError = () => {
+    setAvatarUrl(null); // Reset avatarUrl on error
+  };
+
   return (
     <div className="navigation">
       <nav className="navbar navbar-expand-sm navbar-dark" style={{ backgroundColor: '#0b0b0b', position: 'relative', zIndex: 20001 }}>
@@ -317,12 +329,13 @@ function Header({ currentLang, setCurrentLang }) {
               </button>
             </li>
             <li className="nav-item d-flex align-items-center">
-              {isLoggedIn ? (
+              {isLoggedIn && avatarUrl ? (
                 <button className="user-avatar-btn" onClick={handleProfileClick}>
                   <img
                     src={avatarUrl}
                     alt="User Avatar"
                     className="user-avatar"
+                    onError={handleImageError}
                   />
                 </button>
               ) : (
@@ -377,12 +390,13 @@ function Header({ currentLang, setCurrentLang }) {
               </button>
             </li>
             <li className="nav-mobile-item d-flex align-items-center">
-              {isLoggedIn ? (
+              {isLoggedIn && avatarUrl ? (
                 <button className="user-avatar-btn" onClick={() => { handleProfileClick(); document.getElementById('nav-mobile-input').checked = false; }}>
                   <img
                     src={avatarUrl}
                     alt="User Avatar"
                     className="user-avatar"
+                    onError={handleImageError}
                   />
                 </button>
               ) : (

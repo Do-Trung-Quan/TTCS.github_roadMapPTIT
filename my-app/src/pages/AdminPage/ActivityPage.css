@@ -12,7 +12,7 @@
 .activity-stats {
   display: flex;
   justify-content: center;
-  gap: 30px; /* Increased gap for better spacing between larger boxes */
+  gap: 30px;
   margin-bottom: 40px;
   border-bottom: 1px solid #e0e0e0;
   padding-bottom: 20px;
@@ -22,24 +22,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 25px 35px; /* Increased padding for larger appearance */
-  background-color: #e6f0fa; /* Bright pastel blue background */
-  border: 2px solid #b3c9e6; /* Darker border for contrast */
-  border-radius: 10px; /* Slightly larger radius to match increased size */
-  width: 200px; /* Increased width from 150px to 200px */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Added box shadow for depth */
+  padding: 20px 30px;
+  background-color: #e6f0fa;
+  border: 2px solid #b3c9e6;
+  border-radius: 10px;
+  width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stats-value {
-  font-size: 3rem; /* Increased font size for larger numbers */
+  font-size: 3rem;
   font-weight: bold;
   color: #000;
 }
 
 .stats-label {
-  font-size: 1.1rem; /* Increased font size for labels */
+  font-size: 1.1rem;
   color: #888;
-  margin-top: 10px; /* Increased margin for better spacing */
+  margin-top: 10px;
 }
 
 .continue-following {
@@ -72,9 +72,20 @@
   background-color: #e0e0e0;
 }
 
+.progress-title-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .progress-title {
   font-size: 1.2rem;
   color: #333;
+}
+
+.progress-completed {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 5px;
 }
 
 .progress-percentage {
@@ -117,12 +128,12 @@
 
   .stats-item {
     width: 100%;
-    padding: 20px 30px; /* Adjusted padding for mobile */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Maintain box shadow on mobile */
+    padding: 20px 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .stats-value {
-    font-size: 2.5rem; /* Slightly reduced for mobile */
+    font-size: 2.5rem;
   }
 
   .stats-label {
@@ -136,6 +147,10 @@
   .progress-title,
   .progress-percentage {
     font-size: 1.1rem;
+  }
+
+  .progress-completed {
+    font-size: 0.8rem;
   }
 
   .activity-container {
