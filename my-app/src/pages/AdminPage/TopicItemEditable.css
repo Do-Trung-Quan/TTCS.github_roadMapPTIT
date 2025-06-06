@@ -231,3 +231,33 @@
     font-style: italic;
     margin-top: 10px;
 }
+
+/* Style for form groups within modals (e.g., ResourceFormModal, ExerciseFormModal) */
+.modal .form-group {
+    margin-bottom: 15px;
+}
+
+.modal .form-group label {
+    display: block;
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.modal .form-group input,
+.modal .form-group textarea {
+    width: 100%;
+    padding: 12px; /* Tăng padding để trường nhập liệu rộng hơn */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    min-width: 0; /* Đảm bảo không bị thu hẹp quá mức */
+}
+
+.modal .form-group textarea {
+    height: 120px; /* Tăng chiều cao của textarea */
+    resize: vertical; /* Cho phép điều chỉnh chiều cao theo chiều dọc */
+    min-height: 80px; /* Đảm bảo chiều cao tối thiểu */
+}

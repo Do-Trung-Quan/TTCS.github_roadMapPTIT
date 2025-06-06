@@ -169,7 +169,7 @@
   background-color: #fff;
   padding: 20px;
   border-radius: 8px;
-  width: 400px;
+  width: 500px; /* Giữ nguyên 500px để rộng hơn, có thể tăng thêm nếu cần */
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -224,10 +224,18 @@
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 8px;
+  padding: 10px; /* Tăng padding để dễ nhập */
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1em;
+  box-sizing: border-box;
+  min-width: 0; /* Đảm bảo không bị thu hẹp quá mức */
+}
+
+.form-group textarea {
+  height: 150px; /* Tăng chiều cao của textarea cho phần mô tả */
+  resize: vertical; /* Cho phép người dùng thay đổi chiều cao theo chiều dọc */
+  min-height: 100px; /* Đảm bảo chiều cao tối thiểu */
 }
 
 .modal-btn {
