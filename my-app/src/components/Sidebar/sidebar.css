@@ -1,11 +1,11 @@
 .sidebar {
-    width: 250px;
+    width: 260px; /*250px*/
     background-color: #f8f9fa;
     padding: 15px 20px;
     box-shadow: 3px 0 10px rgba(0, 0, 0, 0.08);
-    position: fixed;
-    top: 60px;
-    bottom: 100px;
+    position: absolute; /*fixed*/
+    top: 0px;  /*60px*/
+    bottom: 0px; /*100px*/
     height: auto;
     left: -250px;
     overflow-y: auto;
@@ -142,7 +142,7 @@ body:hover .sidebar {
 }
 
 .menu-item.logout-item {
-    margin-top: auto;
+    /* margin-top: auto; */
     color: #dc3545;
 }
 

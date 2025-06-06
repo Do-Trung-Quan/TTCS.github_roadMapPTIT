@@ -1,52 +1,9 @@
-/* src/pages/AdminPage/AdminPage.css */
-
 .admin-page-container {
+    position: relative;
     display: flex; /* Sử dụng Flexbox để tạo layout 2 cột */
     min-height: 100vh; /* Chiều cao tối thiểu bằng chiều cao viewport */
     background-color: #f0f2f5; /* Nền tổng thể */
 }
-
-/* Style cho Sidebar mẫu (bạn sẽ thay bằng style sidebar thật của mình) */
-.sidebar-mock {
-    width: 250px; /* Chiều rộng của sidebar */
-    background-color: #fff; /* Nền trắng */
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); /* Đổ bóng nhẹ */
-    display: flex;
-    flex-direction: column; /* Các item xếp dọc */
-    gap: 10px; /* Khoảng cách giữa các item */
-}
-
-.team-selector-mock {
-    font-weight: bold;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-.menu-item-mock {
-    text-decoration: none;
-    color: #555;
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.menu-item-mock:hover {
-    background-color: #e9ecef;
-    color: #333;
-}
-
-.menu-item-mock.active {
-    background-color: #007bff;
-    color: #fff;
-    font-weight: bold;
-}
-
-.menu-item-mock.active:hover {
-    background-color: #0056b3;
-}
-
 
 /* Style cho khu vực nội dung chính */
 .main-content-area {
@@ -58,9 +15,5 @@
 /* Style cho page-content (các component ActivityPage, RoadmapsPage, ...) */
 /* Các component trang con cần có lớp .page-content để được reset style */
 .page-content {
-    /* padding đã được định nghĩa trong từng file CSS riêng của từng trang */
-    /* background-color: #fff; */ /* Nền trắng cho từng trang con nếu cần */
-    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */ /* Đổ bóng cho từng trang con nếu cần */
     border-radius: 8px; /* Bo góc cho từng trang con nếu cần */
-    /* Các style này nên được định nghĩa trong CSS của từng trang con (#activity, #roadmaps, ...) */
 }

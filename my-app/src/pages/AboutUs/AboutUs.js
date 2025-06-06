@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import "./AboutUs.css"; // Sử dụng file CSS của bạn
-import { useAuth } from "../../context/AuthContext"; // Giữ nguyên import này nếu useAuth vẫn được dùng ở nơi khác hoặc cho user object
+import { useAuth } from "../../context/AuthContext"; // Import useAuth để sử dụng getToken và logout
 
 function AboutUs({ currentLang = "vi" }) {
-  const { user } = useAuth(); // Chỉ giữ lại user nếu nó còn cần thiết cho việc hiển thị gì đó
-  // Đã loại bỏ: const [isLoggingOut, setIsLoggingOut] = useState(false);
-  // Đã loại bỏ: const [logoutMessage, setLogoutMessage] = useState(null);
+  const { user, getToken, logout } = useAuth(); // Sử dụng user, getToken và logout từ useAuth
 
   const initialContent = useMemo(
     () => ({
@@ -33,10 +31,6 @@ function AboutUs({ currentLang = "vi" }) {
         "RoadMapPTIT chỉ mới là bước khởi đầu. Chúng tôi mơ về một tương lai nơi mỗi trường đại học đều có một 'roadmap' riêng, nơi mà không một sinh viên nào phải mò mẫm tìm đường. Với sự đồng hành của các bạn, chúng tôi tin rằng giấc mơ đó sẽ sớm trở thành hiện thực.",
       section4Para2:
         "Hãy cùng chúng tôi viết tiếp câu chuyện RoadMapPTIT - câu chuyện của những người trẻ dám mơ ước và dám hành động vì một cộng đồng sinh viên PTIT tốt đẹp hơn.",
-      // Đã loại bỏ: logoutButton: "Đăng xuất",
-      // Đã loại bỏ: logoutSuccess: "Bạn đã đăng xuất thành công!",
-      // Đã loại bỏ: logoutError: "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.",
-      // Đã loại bỏ: tokenExpired: "Phiên đăng nhập đã hết hạn. Bạn đã được đăng xuất.",
     }),
     []
   );
@@ -83,27 +77,31 @@ function AboutUs({ currentLang = "vi" }) {
     translateContent();
   }, [currentLang, initialContent, translateText, decodeHtmlEntities]);
 
-  // Đã loại bỏ toàn bộ hàm checkTokenExpiration và useEffect liên quan đến nó
+  // Kiểm tra token hết hạn và tự động đăng xuất
+  useEffect(() => {
+    const checkTokenExpiration = () => {
+      const token = getToken();
+      if (token) {
+        try {
+          const decoded = JSON.parse(atob(token.split('.')[1]));
+          const exp = decoded.exp;
+          const now = Date.now() / 1000;
+          if (exp && exp < now) {
+            logout();
+          }
+        } catch (error) {
+          console.error("Lỗi khi kiểm tra token:", error);
+          logout();
+        }
+      }
+    };
 
-  // Đã loại bỏ toàn bộ hàm handleLogout
+    checkTokenExpiration();
+  }, [getToken, logout]);
 
   return (
     <div className="about-us-container">
-      {/* Đã loại bỏ: {logoutMessage && (
-        <div className="logout-message">
-          {logoutMessage}
-        </div>
-      )} */}
-
       <h1 className="about-us-title">{content.pageTitle}</h1>
-
-      {/* Đã loại bỏ: {user && (
-        <div className="logout-section">
-          <button onClick={handleLogout} disabled={isLoggingOut} className="logout-button">
-            {isLoggingOut ? "Đang đăng xuất..." : content.logoutButton}
-          </button>
-        </div>
-      )} */}
 
       <section className="about-us-section">
         <h2 className="section-title">{content.section1Title}</h2>
