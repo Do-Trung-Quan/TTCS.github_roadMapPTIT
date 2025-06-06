@@ -12,6 +12,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
     resource_type: 'RT001',
     topic: topicId || '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
 
   const initialTranslations = useMemo(() => ({
     editResourceHeader: 'Chỉnh sửa Tài nguyên',
@@ -97,6 +98,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
         resource_type: 'RT001',
         topic: topicId || '',
       });
+      setIsSubmitting(false); // Reset submitting state
       return;
     }
     if (initialData) {
@@ -126,9 +128,17 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true);
+
     const token = getToken();
-    if (!token || !topicId) return;
+    if (!token || !topicId) {
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      console.log('Submitting resource:', formData); // Debug log
       const response = await fetch(
         initialData ? `http://localhost:8000/api/resources/${initialData.id}/` : 'http://localhost:8000/api/resources/',
         {
@@ -147,8 +157,9 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
         }
         throw new Error(`Không thể ${initialData ? 'cập nhật' : 'thêm'} tài nguyên`);
       }
-      await response.json();
-      onSubmit(formData);
+      const responseData = await response.json();
+      console.log('Resource response:', responseData); // Debug log
+      onSubmit(responseData); // Pass backend response
       setFormData({
         title: '',
         url: '',
@@ -162,6 +173,8 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
         logout();
         navigate('/login');
       }
+    } finally {
+      setIsSubmitting(false); // Re-enable form
     }
   };
 
@@ -186,6 +199,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
                 value={formData.title}
                 onChange={handleChange}
                 required
+                disabled={isSubmitting}
               />
             </div>
             <div className="form-group">
@@ -196,6 +210,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
                 value={formData.url}
                 onChange={handleChange}
                 required
+                disabled={isSubmitting}
               />
             </div>
             <div className="form-group">
@@ -204,6 +219,7 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
                 name="resource_type"
                 value={formData.resource_type}
                 onChange={handleChange}
+                disabled={isSubmitting}
               >
                 <option value="RT001">{translations.videoOption}</option>
                 <option value="RT002">{translations.articleOption}</option>
@@ -211,8 +227,12 @@ function ResourceFormModal({ isVisible, onClose, onSubmit, topicId, initialData,
                 <option value="RT004">{translations.bookOption}</option>
               </select>
             </div>
-            <button type="submit" className="modal-save-btn">
-              {initialData ? translations.updateButton : translations.saveButton}
+            <button type="submit" className="modal-save-btn" disabled={isSubmitting}>
+              {isSubmitting
+                ? 'Đang xử lý...'
+                : initialData
+                ? translations.updateButton
+                : translations.saveButton}
             </button>
           </form>
         </div>

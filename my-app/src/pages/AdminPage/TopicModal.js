@@ -18,7 +18,6 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
   const navigate = useNavigate();
   const { getToken, logout } = useAuth();
 
-  // Thêm placeholder và các cột động vào initialTranslations
   const initialTranslations = useMemo(() => ({
     modalHeader: "Tạo Chủ đề",
     createNewSection: "Tạo chủ đề mới",
@@ -29,9 +28,8 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
     newTopicDescLabel: "Mô tả:",
     newTopicNamePlaceholder: "Nhập tên chủ đề",
     newTopicDescPlaceholder: "Nhập mô tả",
-    cancelButton: "Hủy",
-    createButton: "Thêm chủ đề",
     creatingButton: "Đang tạo...",
+    createButton: "Thêm chủ đề",
     existingSection: "Thêm chủ đề hiện có",
     instruction: "Chọn các chủ đề từ danh sách dưới đây:",
     loadingMessage: "Đang tải các chủ đề hiện có...",
@@ -41,7 +39,7 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
     selectColumn: "Chọn",
     nameColumn: "Tên",
     descriptionColumn: "Mô tả",
-    descriptionNA: "N/A", // Bản dịch cho "N/A" khi không có mô tả
+    descriptionNA: "N/A",
   }), []);
 
   const [translations, setTranslations] = useState(initialTranslations);
@@ -181,14 +179,12 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
           let topics = responseData.data || [];
           const availableTopics = topics.filter(topic => !assigned.includes(topic.id));
 
-          // Dịch các existing topics nếu không phải tiếng Việt
           if (currentLang !== 'vi') {
             const titles = availableTopics.map(topic => topic.title);
             const descriptions = availableTopics.map(topic => topic.description || 'N/A');
             const textsToTranslate = [...titles, ...descriptions];
             const translatedTexts = await translateText(textsToTranslate, currentLang);
 
-            // Gán lại các giá trị đã dịch
             availableTopics.forEach((topic, index) => {
               topic.title = translatedTexts[index] || topic.title;
               topic.description = translatedTexts[titles.length + index] || (topic.description || 'N/A');
@@ -406,7 +402,6 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
                 ></textarea>
               </div>
               <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={handleCancelOrClose} disabled={isCreating}>{translations.cancelButton}</button>
                 <button type="submit" className="create-btn" disabled={isCreating}>
                   {isCreating ? translations.creatingButton : translations.createButton}
                 </button>
@@ -419,7 +414,6 @@ function TopicModal({ isVisible, onClose, onCreateNew, onAddExisting, roadmapId,
             <p className="section-instruction">{translations.instruction}</p>
             {renderExistingTopicsTable()}
             <div className="modal-actions">
-              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>{translations.cancelButton}</button>
               <button type="button" className="create-btn" onClick={handleAddExistingSubmit}>{translations.addSelectedButton}</button>
             </div>
           </div>

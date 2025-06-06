@@ -12,6 +12,7 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
     difficulty: 'medium',
     topic: topicId || '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
 
   const initialTranslations = useMemo(() => ({
     editExerciseHeader: 'Chỉnh sửa bài tập',
@@ -93,14 +94,24 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
   }, [getToken, logout, navigate]);
 
   useEffect(() => {
-    if (isVisible && initialData) {
+    if (!isVisible) {
+      setFormData({
+        title: '',
+        description: '',
+        difficulty: 'medium',
+        topic: topicId || 'TP005',
+      });
+      setIsSubmitting(false); // Reset submitting state
+      return;
+    }
+    if (initialData) {
       setFormData({
         title: initialData.title || '',
         description: initialData.description || '',
         difficulty: initialData.difficulty || 'medium',
         topic: initialData.topic || topicId || 'TP005',
       });
-    } else if (isVisible && !initialData) {
+    } else {
       setFormData({
         title: '',
         description: '',
@@ -124,14 +135,21 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true);
 
     if (!formData.title.trim()) {
       alert(translations.requiredFieldError);
+      setIsSubmitting(false);
       return;
     }
 
     const token = getToken();
-    if (!token || !topicId) return;
+    if (!token || !topicId) {
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const response = await fetch(
         initialData ? `http://localhost:8000/api/exercises/${initialData.id}/` : 'http://localhost:8000/api/exercises/',
@@ -151,8 +169,8 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
         }
         throw new Error(`Không thể ${initialData ? 'cập nhật' : 'thêm'} bài tập`);
       }
-      await response.json();
-      onSubmit(formData);
+      const responseData = await response.json();
+      onSubmit(responseData); // Pass backend response
       setFormData({ title: '', description: '', difficulty: 'medium', topic: topicId || 'TP005' });
       onClose();
     } catch (err) {
@@ -161,11 +179,14 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
         logout();
         navigate('/');
       }
+    } finally {
+      setIsSubmitting(false); // Re-enable form
     }
   };
 
   const handleCancelOrClose = () => {
     setFormData({ title: '', description: '', difficulty: 'medium', topic: topicId || 'TP005' });
+    setIsSubmitting(false); // Reset submitting state
     onClose();
   };
 
@@ -189,6 +210,7 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
                 required
                 value={formData.title}
                 onChange={handleInputChange}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -202,6 +224,7 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
                 rows="4"
                 value={formData.description}
                 onChange={handleInputChange}
+                disabled={isSubmitting}
               ></textarea>
             </div>
 
@@ -214,6 +237,7 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
                 required
                 value={formData.difficulty}
                 onChange={handleInputChange}
+                disabled={isSubmitting}
               >
                 <option value="easy">{translations.easyOption}</option>
                 <option value="medium">{translations.mediumOption}</option>
@@ -222,9 +246,15 @@ function ExerciseFormModal({ isVisible, onClose, onSubmit, initialData, topicId,
             </div>
 
             <div className="modal-actions">
-              <button type="button" className="cancel-btn" onClick={handleCancelOrClose}>{translations.cancelButton}</button>
-              <button type="submit" className="create-btn">
-                {initialData ? translations.saveButton : translations.addButton}
+              <button type="button" className="cancel-btn" onClick={handleCancelOrClose} disabled={isSubmitting}>
+                {translations.cancelButton}
+              </button>
+              <button type="submit" className="create-btn" disabled={isSubmitting}>
+                {isSubmitting
+                  ? 'Đang xử lý...'
+                  : initialData
+                  ? translations.saveButton
+                  : translations.addButton}
               </button>
             </div>
           </form>

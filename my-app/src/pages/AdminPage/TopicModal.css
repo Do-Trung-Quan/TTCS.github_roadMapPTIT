@@ -1,149 +1,193 @@
-/* src/pages/AdminPage/TopicModal.css */
-
-/* Style cho lớp phủ nền (overlay) - Sử dụng lại từ RoadmapModal.css nếu muốn */
-/* Nếu muốn dùng chung style cho tất cả modal, hãy đặt các style này vào file CSS dùng chung */
-/* .modal-overlay { ... } */
-/* .modal-overlay.visible { ... } */
-
-/* Style cho nội dung chính của modal - Sử dụng lại từ RoadmapModal.css nếu muốn */
-.modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    max-width: 600px; /* Có thể rộng hơn modal Roadmap đơn giản */
-    width: 90%;
-    position: relative;
-    /* Thêm max-height và overflow-y: auto nếu nội dung modal có thể quá dài */
-    max-height: 80vh; /* Chiều cao tối đa */
-    overflow-y: auto; /* Cho phép cuộn */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Style cho header modal - Sử dụng lại từ RoadmapModal.css nếu muốn */
+.modal-overlay.visible {
+  display: flex;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .modal-header h3 {
-    margin: 0;
-    font-size: 1.2em;
-    color: #333;
+  margin: 0;
+  font-size: 1.2em;
+  color: #333;
+  font-weight: bold; /* Bold for "Tạo Chủ đề" */
 }
 
-/* Style cho nút đóng modal (X) - Sử dụng lại từ RoadmapModal.css nếu muốn */
 .modal-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.5em;
-    cursor: pointer;
-    color: #888;
-    padding: 0;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
 }
 
 .modal-close-btn:hover {
-    color: #555;
+  color: #555;
 }
 
+.form-group {
+  margin-bottom: 20px;
+}
 
-/* Style cho body modal */
+.form-group label {
+  display: block;
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
 
-/* Style cho các phần riêng biệt trong modal (Create new, Add existed) */
+.form-control-us {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 1em;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-sizing: border-box;
+}
+
+.form-control-us:focus {
+  border-color: #007bff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control-us textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
 .topic-creation-section,
 .topic-existing-section {
-    margin-bottom: 20px; /* Khoảng cách dưới mỗi phần */
+  margin-bottom: 20px;
 }
 
 .topic-creation-section h4,
 .topic-existing-section h4 {
-    font-size: 1.1em;
-    color: #333;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee; /* Đường kẻ dưới tiêu đề phần */
-    padding-bottom: 5px;
+  font-size: 1.1em;
+  color: #333;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
 }
 
-
-/* Style cho form groups (label + input/textarea) - Sử dụng lại form-control-us */
-/* Đảm bảo form-control-us style có sẵn (global hoặc import) */
-/* .form-group { ... } */
-/* .form-group label { ... } */
-/* .form-control-us { ... } */
-
-
-/* Style cho đường phân cách giữa 2 phần */
 .topic-divider {
-    border: none;
-    height: 1px;
-    background-color: #eee;
-    margin: 30px 0; /* Khoảng cách trên dưới */
+  border: none;
+  height: 1px;
+  background-color: #eee;
+  margin: 30px 0;
 }
 
-/* Style cho mô tả phần (Add existed topic) */
 .section-instruction {
-    font-size: 0.9em;
-    color: #555;
-    margin-bottom: 15px;
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 15px;
 }
 
-/* Style cho container bảng topic đã tồn tại */
 .topic-table-container {
-    max-height: 200px; /* Giới hạn chiều cao bảng để có scroll nếu nhiều item */
-    overflow-y: auto; /* Thêm scroll dọc cho bảng */
-    margin-bottom: 15px; /* Khoảng cách dưới bảng */
-    border: 1px solid #dee2e6; /* Viền bảng */
-    border-radius: 5px; /* Bo góc bảng */
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
 }
 
-/* Style cho bảng topic */
 .topic-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .topic-table thead th {
-    text-align: left;
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 0.9em;
-    color: #333;
+  text-align: left;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 0.9em;
+  color: #333;
 }
 
 .topic-table tbody td {
-    padding: 10px 15px;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 0.9em;
-    color: #555;
+  padding: 10px 15px;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 0.9em;
+  color: #555;
 }
 
 .topic-table tbody tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .topic-table tbody tr:hover {
-    background-color: #f0f0f0;
-    cursor: pointer; /* Thêm pointer nếu hàng có thể click để chọn */
+  background-color: #f0f0f0;
+  cursor: pointer;
 }
 
+.topic-table input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #007bff;
+}
 
-/* Style cho phần nút hành động (Cancel, Add topic) - Sử dụng lại từ RoadmapModal.css */
-/* Nếu muốn dùng chung style cho tất cả modal actions, hãy đặt các style này vào file CSS dùng chung */
 .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px; /* Khoảng cách trên */
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }
 
-/* Style cho nút Cancel - Sử dụng lại từ RoadmapModal.css */
-/* .cancel-btn { ... } */
-/* .cancel-btn:hover { ... } */
+.create-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
 
-/* Style cho nút Add topic (trong cả 2 phần) - Sử dụng lại từ RoadmapModal.css */
-/* .create-btn { ... } */ /* Tên class trong HTML là create-btn */
-/* .create-btn:hover { ... } */
+.create-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.create-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
