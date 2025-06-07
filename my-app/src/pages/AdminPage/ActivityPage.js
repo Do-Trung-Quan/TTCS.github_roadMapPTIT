@@ -205,12 +205,30 @@ function ActivityPage({ currentLang = 'vi' }) {
       <div className="activity-container">
         <div className="activity-stats">
           <div className="stats-item">
+            <div className="item-content">
+              {/* Icon Completed Topic */}
+              <span className="stats-icon" aria-label="Completed">
+                <svg width="30" height="30" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" fill="#4caf50"/>
+                  <path d="M8 12.5l2.5 2.5 5-5" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <span className="stats-label">{translations.topicsCompleted}</span>
+            </div>
             <span className="stats-value">{statsData.done_count}</span>
-            <span className="stats-label">{translations.topicsCompleted}</span>
           </div>
           <div className="stats-item">
+            <div className="item-content">
+              {/* Icon Currently Learning */}
+              <span className="stats-icon" aria-label="Learning">
+                <svg width="30" height="30" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" fill="#2196f3"/>
+                  <path d="M12 8v4l3 2" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <span className="stats-label">{translations.currentlyLearning}</span>
+            </div>
             <span className="stats-value">{statsData.pending_or_skip_count}</span>
-            <span className="stats-label">{translations.currentlyLearning}</span>
           </div>
         </div>
 

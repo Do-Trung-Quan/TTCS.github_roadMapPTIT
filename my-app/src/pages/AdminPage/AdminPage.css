@@ -1,6 +1,7 @@
 /* src/pages/AdminPage/AdminPage.css */
 
 .admin-page-container {
+    position: relative;
     display: flex; /* Sử dụng Flexbox để tạo layout 2 cột */
     min-height: 100vh; /* Chiều cao tối thiểu bằng chiều cao viewport */
     background-color: #f0f2f5; /* Nền tổng thể */

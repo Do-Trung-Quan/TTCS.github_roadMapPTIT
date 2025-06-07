@@ -22,7 +22,7 @@
   padding: 30px;
   border-radius: 8px;
   width: 90%;
-  max-width: 600px;
+  max-width: 600px !important;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
@@ -325,17 +325,17 @@
 .answer-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 20px 0;
 }
 
 .answer-item {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between  ;
   align-items: center;
   margin-bottom: 8px;
   color: #495057;
   font-size: 1em;
-  padding: 5px 15px;
+  padding: 5px 0px 5px 15px;
   position: relative;
 }
 
@@ -348,7 +348,7 @@
   font-weight: 500;
   font-size: 0.9em;
   color: #28a745;
-  margin-left: 5px;
+  margin-right: 50px;
 }
 
 /*----------------------------------------*/
