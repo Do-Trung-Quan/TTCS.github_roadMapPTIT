@@ -84,7 +84,7 @@ body, html {
   text-decoration: none;
   color: #fff;
   display: block;
-  padding: 8px 0;
+  padding: 0 auto;
   font-size: 1.4rem;
 }
 
@@ -108,12 +108,11 @@ body, html {
   transform: translateX(0%);
 }
 
-/* Search bar styles */
 .search-section {
   position: relative;
   width: 300px;
   margin-left: 1rem;
-  z-index: 20001;
+  z-index: 20000;
 }
 
 .search-results-container {

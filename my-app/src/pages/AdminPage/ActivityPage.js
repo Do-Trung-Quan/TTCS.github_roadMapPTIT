@@ -40,10 +40,10 @@ function ActivityPage({ currentLang = 'vi' }) {
     loginToView: "Đăng nhập để xem tiến độ của bạn.",
     loginLink: "Đăng nhập",
     topicsCompleted: "Chủ đề đã hoàn thành",
-    currentlyLearning: "Đang học",
+    currentlyLearning: "Đang trong quá trình học",
     currentStreak: "Số ngày đăng nhập liên tiếp", 
     startJourney: "Bắt đầu hành trình của bạn ngay bây giờ",
-    goHome: "Về trang chủ để bắt đầu khám phá các lộ trình.",
+    goHome: "để bắt đầu khám phá các lộ trình",
     goHomeLink: "Về trang chủ",
     continueFollowing: "TIẾP TỤC THEO DÕI",
     loginRequiredError: "Vui lòng đăng nhập để xem tiến độ của bạn.",
@@ -308,9 +308,9 @@ function ActivityPage({ currentLang = 'vi' }) {
                   <div className="progress-title-container">
                     <span className="progress-title">{item.roadmap_title}</span>
                     {item.percentage_complete === 100.0 && item.completed_at && (
-                      <span className="progress-completed">
+                      <div className="progress-completed">
                         {translations.completedOn} {formatDate(item.completed_at)}
-                      </span>
+                      </div>
                     )}
                   </div>
                   <span className="progress-percentage">{item.percentage_complete}%</span>
