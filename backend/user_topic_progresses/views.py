@@ -183,19 +183,29 @@ class UserRoadmapProgressAPIView(APIView):
                 'message': 'User không tồn tại.'
             }, status=status.HTTP_404_NOT_FOUND)
 
+        # Lấy danh sách roadmap mà user đã đăng ký từ bảng Enroll
+        enrolled_roadmaps = Enroll.objects.filter(UserID=user_id).values_list('RoadmapID', flat=True)
+
+        if not enrolled_roadmaps.exists():
+            return Response({
+                'message': 'Bạn chưa đăng ký bất kỳ roadmap nào.',
+                'user_id': user_id,
+                'data': []
+            }, status=status.HTTP_200_OK)
+
         # Lấy roadmap_id từ query param (nếu có)
         roadmap_id = request.query_params.get('roadmap_id', None)
 
-        # Bước 1: Lấy tất cả TopicID thuộc RoadmapID từ TopicRoadmap
-        topic_roadmaps = TopicRoadmap.objects.all()
+        # Lọc TopicRoadmap dựa trên các roadmap đã đăng ký
+        topic_roadmaps = TopicRoadmap.objects.filter(RoadmapID__in=enrolled_roadmaps)
         if roadmap_id:
             topic_roadmaps = topic_roadmaps.filter(RoadmapID=roadmap_id)
             if not topic_roadmaps.exists():
                 return Response({
-                    'message': f'Không tìm thấy roadmap với ID {roadmap_id}.'
+                    'message': f'Không tìm thấy roadmap với ID {roadmap_id} mà bạn đã đăng ký.'
                 }, status=status.HTTP_404_NOT_FOUND)
 
-        # Lấy danh sách các RoadmapID duy nhất
+        # Lấy danh sách các RoadmapID duy nhất từ các roadmap đã đăng ký
         roadmap_ids = topic_roadmaps.values_list('RoadmapID', flat=True).distinct()
 
         # Bước 2: Lấy danh sách TopicID từ TopicRoadmap theo từng RoadmapID

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import ReactFlow, { Background } from "reactflow";
+import ReactFlow from "reactflow";
 import "reactflow/dist/style.css";
 import "./roadmap.css";
 import { useParams, useNavigate } from "react-router-dom";
@@ -207,13 +207,13 @@ export default function Roadmap({ currentLang = 'vi' }) {
           const translatedTopicNames = await translateText(topicNames, currentLang);
           nodesWithTranslatedLabels = topicsWithNames.map((topic, index) => ({
             id: topic.TopicID.toString(),
-            position: { x: 300 * index, y: 0 },
+            position: { x: 100, y: 100 * index },
             data: { label: decodeHtmlEntities(translatedTopicNames[index] || topic.topic_name) },
           }));
         } else {
           nodesWithTranslatedLabels = topicsWithNames.map((topic, index) => ({
             id: topic.TopicID.toString(),
-            position: { x: 300 * index, y: 0 },
+            position: { x: 100, y: 100 * index },
             data: { label: topic.topic_name },
           }));
         }
@@ -350,7 +350,6 @@ export default function Roadmap({ currentLang = 'vi' }) {
     }
   }, [translations.fetchTopicDetailsError, translations.fetchResourcesError, translations.fetchExercisesError]);
 
-
   // Hàm fetch câu hỏi quiz và câu trả lời gốc
   const fetchQuizQuestions = useCallback(async (exerciseId) => {
     setError(null);
@@ -381,7 +380,6 @@ export default function Roadmap({ currentLang = 'vi' }) {
       setOriginalQuizAnswers({});
     }
   }, [translations.fetchQuizQuestionsError, translations.fetchQuizAnswersError]);
-
 
   // useEffect để dịch DỮ LIỆU GỐC khi ngôn ngữ hoặc dữ liệu gốc thay đổi
   useEffect(() => {
@@ -462,7 +460,6 @@ export default function Roadmap({ currentLang = 'vi' }) {
             }
           }
           setQuizAnswers(translatedQuizAnswersMap);
-
         } else {
           setQuizQuestions(originalQuizQuestions);
           setQuizAnswers(originalQuizAnswers);
@@ -475,11 +472,60 @@ export default function Roadmap({ currentLang = 'vi' }) {
     translateDynamicContent();
   }, [currentLang, originalTopicDetails, originalResources, originalExercises, originalQuizQuestions, originalQuizAnswers, translateText]);
 
-
-  const onNodeClick = useCallback((event, node) => {
+  const onNodeClick = useCallback(async (event, node) => {
     setSelectedTopic(node);
     fetchTopicDetails(node.id);
-  }, [fetchTopicDetails]);
+
+    // Automatically record progress when clicking a node
+    if (!user || !user.id || user.role.toLowerCase() !== 'user') {
+      alert(translations.loginRequired);
+      return;
+    }
+
+    const token = getToken();
+    if (!token || !checkTokenExpiration(token)) {
+      return;
+    }
+
+    const topicId = node.id;
+    let progressId = nodeProgress[topicId]?.id;
+
+    if (!progressId) {
+      try {
+        const createResponse = await fetch('http://localhost:8000/api/user-topic-progress/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            TopicID: topicId,
+            status: 'pending',
+          }),
+        });
+        if (createResponse.ok) {
+          const createResult = await createResponse.json();
+          progressId = createResult.data.id;
+          setNodeProgress(prev => ({
+            ...prev,
+            [topicId]: {
+              id: progressId,
+              status: 'pending',
+            },
+          }));
+          console.log('Progress created:', createResult);
+          fetchProgressPercentage();
+        } else {
+          console.error(translations.createProgressError, await createResponse.json());
+          setError(`${translations.createProgressError} ${createResponse.statusText}`);
+        }
+      } catch (error) {
+        console.error(translations.createProgressError, error);
+        setError(`${translations.createProgressError} ${error.message}`);
+      }
+    }
+  }, [fetchTopicDetails, user, getToken, checkTokenExpiration, nodeProgress, translations.createProgressError, translations.loginRequired, fetchProgressPercentage]);
 
   const closePanel = useCallback(() => {
     setSelectedTopic(null);
@@ -501,9 +547,9 @@ export default function Roadmap({ currentLang = 'vi' }) {
   const handleExerciseClick = useCallback((exerciseId) => {
     if (selectedExercise === exerciseId) {
       setSelectedExercise(null);
-      setOriginalQuizQuestions([]); // Reset original quiz questions
-      setOriginalQuizAnswers({}); // Reset original quiz answers
-      setSelectedAnswers({}); // Reset selected answers
+      setOriginalQuizQuestions([]);
+      setOriginalQuizAnswers({});
+      setSelectedAnswers({});
     } else {
       setSelectedExercise(exerciseId);
       fetchQuizQuestions(exerciseId);
@@ -511,7 +557,7 @@ export default function Roadmap({ currentLang = 'vi' }) {
   }, [selectedExercise, fetchQuizQuestions]);
 
   const handleStatusChange = async (topicId, status) => {
-    if ((!user || !user.id) || (user.role && user.role.toLowerCase() !== 'user')) {
+    if (!user || !user.id || user.role.toLowerCase() !== 'user') {
       alert(translations.loginRequired);
       return;
     }
@@ -623,7 +669,6 @@ export default function Roadmap({ currentLang = 'vi' }) {
     });
   }, [nodes, nodeProgress]);
 
-
   return (
     <>
       <div style={{ textAlign: "center", marginTop: "10px" }}>
@@ -638,7 +683,7 @@ export default function Roadmap({ currentLang = 'vi' }) {
         </div>
       </div>
 
-      <div className="roadmap-container" style={{ position: "relative", width: "100%", height: "80vh" }}>
+      <div className="roadmap-container-g" style={{ position: "relative", width: "100%", height: "80vh" }}>
         <ReactFlow
           nodes={styledNodes}
           edges={edges}
@@ -652,7 +697,7 @@ export default function Roadmap({ currentLang = 'vi' }) {
           preventScrolling={false}
           style={{ cursor: "default" }}
         >
-          <Background color="#aaa" gap={16} />
+          {/* <Background color="#aaa" gap={16} /> */}
         </ReactFlow>
 
         {selectedTopic && (

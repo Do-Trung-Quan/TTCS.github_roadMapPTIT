@@ -1,10 +1,19 @@
-.roadmap-container {
-  width: 100%;
-  background-color: #fff;
-  padding: 16px;
+.roadmap-container-g {
+  background-color: #f5f6f7;
   box-sizing: border-box;
-  padding: 0 50px; /* Sửa lỗi cú pháp: thay auto 50px bằng 0 50px */
-  margin-bottom: 200px; /* Tăng margin-bottom để tạo khoảng cách lớn hơn với footer */
+  padding: 0 50px;
+  margin: 50px auto;
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  justify-content: center; /* Căn giữa theo chiều ngang */
+  align-items: center; /* Căn giữa theo chiều dọc (tùy chọn) */
+  overflow-y: auto;
+}
+
+.react-flow {
+  background-color: #fff !important;
 }
 
 /* Tùy chỉnh node */

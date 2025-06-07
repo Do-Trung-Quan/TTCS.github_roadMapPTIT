@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-// Import component Header và Footer
+// Import component Header, Footer và Chatbot
 import Header from './components/Header/header';
 import Footer from "./components/Footer/footer";
+import Chatbot from './components/Chatbot/chatbot'; // Import Chatbot
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Import các component trang
@@ -48,6 +49,9 @@ export default function App() {
       <Router>
         <Header currentLang={currentLang} setCurrentLang={setCurrentLang} />
 
+        {/* Thêm Chatbot ở đây để hiển thị trên tất cả các trang */}
+        <Chatbot />
+
         <Routes>
           <Route path="/" element={<Home currentLang={currentLang} />} />
           <Route path="/about-us" element={<AboutUs currentLang={currentLang} />} />
@@ -62,7 +66,7 @@ export default function App() {
             <Route path="profile" element={<ProfilePage currentLang={currentLang} />} />
             <Route path="settings" element={<SettingsPage currentLang={currentLang} />} />
             <Route path="roadmaps-list" element={<RoadmapsPage currentLang={currentLang} />} />
-            <Route path="edit-roadmap/:roadmapId" element={<EditRoadmapPage currentLang={currentLang} setCurrentLang={setCurrentLang} />} /> {/* Thêm :roadmapId */}
+            <Route path="edit-roadmap/:roadmapId" element={<EditRoadmapPage currentLang={currentLang} setCurrentLang={setCurrentLang} />} />
             <Route path="users" element={<UserManagementPage currentLang={currentLang} />} />
             <Route path="activity" element={<ActivityPage currentLang={currentLang} />} />
           </Route>
