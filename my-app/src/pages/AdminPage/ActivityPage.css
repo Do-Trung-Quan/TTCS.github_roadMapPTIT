@@ -11,7 +11,7 @@
 
 .activity-stats {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 30px; /* Increased gap for better spacing between larger boxes */
   margin-bottom: 40px;
   border-bottom: 1px solid #e0e0e0;
@@ -27,7 +27,7 @@
   background-color: #e6f0fa; /* Bright pastel blue background */
   border: 2px solid #b3c9e6; /* Darker border for contrast */
   border-radius: 10px; /* Slightly larger radius to match increased size */
-  width: 300px; /* Increased width from 150px to 200px */
+  width: 270px; /* Increased width from 150px to 200px */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Added box shadow for depth */
   margin-right: 20px;
 }
@@ -51,14 +51,14 @@
   font-size: 5rem; /* Increased font size for larger numbers */
   font-weight: bold;
   color: #000;
-  /* margin-left: 18px; */
+  margin-left: 18px;
   min-width: 48px;
   text-align: right;
   flex: 1;
 }
 
 .stats-label {
-  font-size: 1.3rem; /* Increased font size for labels */
+  font-size: 1.2rem; /* Increased font size for labels */
   color: #888;
   margin: 0;
 }

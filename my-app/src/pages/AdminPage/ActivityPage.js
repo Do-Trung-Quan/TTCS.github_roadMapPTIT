@@ -275,16 +275,43 @@ function ActivityPage({ currentLang = 'vi' }) {
       <div className="activity-container">
         <div className="activity-stats">
           <div className="stats-item">
+            <div className="item-content">
+              {/* Icon Completed Topic */}
+              <span className="stats-icon" aria-label="Completed">
+                <svg width="30" height="30" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" fill="#4caf50"/>
+                  <path d="M8 12.5l2.5 2.5 5-5" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <span className="stats-label">{translations.topicsCompleted}</span>
+            </div>
             <span className="stats-value">{statsData.done_count}</span>
-            <span className="stats-label">{translations.topicsCompleted}</span>
           </div>
           <div className="stats-item">
+            <div className="item-content">
+              {/* Icon Currently Learning */}
+              <span className="stats-icon" aria-label="Learning">
+                <svg width="30" height="30" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" fill="#2196f3"/>
+                  <path d="M12 8v4l3 2" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <span className="stats-label">{translations.currentlyLearning}</span>
+            </div>
             <span className="stats-value">{statsData.pending_or_skip_count}</span>
-            <span className="stats-label">{translations.currentlyLearning}</span>
           </div>
           <div className="stats-item">
+            <div className="item-content">
+              {/* Icon Streak (Fire/Flame) */}
+              <span className="stats-icon" aria-label="Streak">
+                <svg width="35" height="35" fill="none" viewBox="0 0 24 24">
+                  <path d="M12 2C12 2 7 7.5 7 12.5C7 16.09 9.91 19 13.5 19C17.09 19 20 16.09 20 12.5C20 8.5 15 2 12 2ZM13.5 17C11.01 17 9 14.99 9 12.5C9 10.5 11 7.5 12 6.2C13 7.5 15 10.5 15 12.5C15 14.99 12.99 17 13.5 17Z" fill="#ff9800"/>
+                  <circle cx="13.5" cy="14" r="1.5" fill="#fff176"/>
+                </svg>
+              </span>
+              <span className="stats-label">{translations.currentStreak}</span>
+            </div>
             <span className="stats-value">{latestStreak}</span>
-            <span className="stats-label">{translations.currentStreak}</span>
           </div>
         </div>
 
