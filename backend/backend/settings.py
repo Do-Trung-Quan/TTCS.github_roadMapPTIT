@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'chatbot'
 ]
 
 MIDDLEWARE = [
@@ -256,3 +257,5 @@ cloudinary.config(
 import os
 GOOGLE_APPLICATION_CREDENTIALS = os.path.join(BASE_DIR, 'credentials.json')
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
+
+GEMINI_API_KEY = "AIzaSyAnWqDTxSQ1Lws5wrQKJbOUJTMNzuZ24Nw"

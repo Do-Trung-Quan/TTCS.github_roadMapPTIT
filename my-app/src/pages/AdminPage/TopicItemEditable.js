@@ -123,6 +123,7 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children, c
       const data = await response.json();
       const filteredResources = (data.data || []).filter(r => r.topic === topic.TopicID);
       setResources(filteredResources);
+      console.log('Fetched resources:', filteredResources); // Debug log
     } catch (err) {
       console.error('Lỗi khi thêm tài nguyên:', err);
       if (err.message.includes('401')) {
@@ -156,6 +157,7 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children, c
       const data = await response.json();
       const filteredExercises = (data.data || []).filter(e => e.topic === topic.TopicID);
       setExercises(filteredExercises);
+      console.log('Fetched exercises:', filteredExercises); // Debug log
     } catch (err) {
       console.error('Lỗi khi thêm bài tập:', err);
       if (err.message.includes('401')) {
@@ -192,32 +194,11 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children, c
   };
 
   const handleSaveResource = async (resourceData) => {
-    const token = getToken();
-    if (!token || !topic?.TopicID) return;
-    const method = editingResource ? 'PUT' : 'POST';
-    const url = editingResource
-      ? `http://localhost:8000/api/resources/${editingResource.id}/`
-      : 'http://localhost:8000/api/resources/';
+    console.log('handleSaveResource called with:', resourceData); // Debug log
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...resourceData, topic: topic.TopicID, resource_type: resourceData.resource_type }),
-      });
-      if (!response.ok) {
-        if (response.status === 401) {
-          logout();
-          navigate('/');
-        }
-        throw new Error(`Không thể ${editingResource ? 'cập nhật' : 'thêm'} tài nguyên`);
-      }
-      await response.json();
-      fetchResources();
+      await fetchResources(); // Refresh resources from backend
     } catch (err) {
-      console.error('Lỗi khi lưu tài nguyên:', err);
+      console.error('Error refreshing resources:', err);
       if (err.message.includes('401')) {
         logout();
         navigate('/');
@@ -242,32 +223,11 @@ function TopicItemEditable({ topic, onEditTopic, onDeleteTopicClick, children, c
   };
 
   const handleSaveExercise = async (exerciseData) => {
-    const token = getToken();
-    if (!token || !topic?.TopicID) return;
-    const method = editingExercise ? 'PUT' : 'POST';
-    const url = editingExercise
-      ? `http://localhost:8000/api/exercises/${editingExercise.id}/`
-      : 'http://localhost:8000/api/exercises/';
+    console.log('handleSaveExercise called with:', exerciseData); // Debug log
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...exerciseData, topic: topic.TopicID }),
-      });
-      if (!response.ok) {
-        if (response.status === 401) {
-          logout();
-          navigate('/');
-        }
-        throw new Error(`Không thể ${editingExercise ? 'cập nhật' : 'thêm'} bài tập`);
-      }
-      await response.json();
-      fetchExercises();
+      await fetchExercises(); // Refresh exercises from backend
     } catch (err) {
-      console.error('Lỗi khi lưu bài tập:', err);
+      console.error('Error refreshing exercises:', err);
       if (err.message.includes('401')) {
         logout();
         navigate('/');

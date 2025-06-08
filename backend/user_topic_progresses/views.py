@@ -2,9 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 from .models import UserTopicProgress, User
 from topic_roadmaps.models import TopicRoadmap
 from roadmaps.models import Roadmap
+from enroll.models import Enroll
 from .serializers import UserTopicProgressSerializer
 from users.permissions import IsAdminOrUser, can_access_own_data
 from rest_framework.authentication import SessionAuthentication
@@ -181,19 +183,29 @@ class UserRoadmapProgressAPIView(APIView):
                 'message': 'User không tồn tại.'
             }, status=status.HTTP_404_NOT_FOUND)
 
+        # Lấy danh sách roadmap mà user đã đăng ký từ bảng Enroll
+        enrolled_roadmaps = Enroll.objects.filter(UserID=user_id).values_list('RoadmapID', flat=True)
+
+        if not enrolled_roadmaps.exists():
+            return Response({
+                'message': 'Bạn chưa đăng ký bất kỳ roadmap nào.',
+                'user_id': user_id,
+                'data': []
+            }, status=status.HTTP_200_OK)
+
         # Lấy roadmap_id từ query param (nếu có)
         roadmap_id = request.query_params.get('roadmap_id', None)
 
-        # Bước 1: Lấy tất cả TopicID thuộc RoadmapID từ TopicRoadmap
-        topic_roadmaps = TopicRoadmap.objects.all()
+        # Lọc TopicRoadmap dựa trên các roadmap đã đăng ký
+        topic_roadmaps = TopicRoadmap.objects.filter(RoadmapID__in=enrolled_roadmaps)
         if roadmap_id:
             topic_roadmaps = topic_roadmaps.filter(RoadmapID=roadmap_id)
             if not topic_roadmaps.exists():
                 return Response({
-                    'message': f'Không tìm thấy roadmap với ID {roadmap_id}.'
+                    'message': f'Không tìm thấy roadmap với ID {roadmap_id} mà bạn đã đăng ký.'
                 }, status=status.HTTP_404_NOT_FOUND)
 
-        # Lấy danh sách các RoadmapID duy nhất
+        # Lấy danh sách các RoadmapID duy nhất từ các roadmap đã đăng ký
         roadmap_ids = topic_roadmaps.values_list('RoadmapID', flat=True).distinct()
 
         # Bước 2: Lấy danh sách TopicID từ TopicRoadmap theo từng RoadmapID
@@ -231,6 +243,17 @@ class UserRoadmapProgressAPIView(APIView):
                 'completed_topics': completed_topics,
                 'percentage_complete': percentage_complete
             }
+
+            # Nếu percentage_complete là 100%, cập nhật completed_at trong Enroll
+            if percentage_complete == 100.0:
+                try:
+                    enroll = Enroll.objects.get(UserID=user_id, RoadmapID=r_id)
+                    if not enroll.completed_at:  # Chỉ cập nhật nếu chưa hoàn thành
+                        enroll.completed_at = timezone.now()
+                        enroll.save()
+                        logger.info(f"Updated completed_at for Enroll {enroll.id} to {enroll.completed_at}")
+                except Enroll.DoesNotExist:
+                    logger.warning(f"No Enroll record found for UserID {user_id} and RoadmapID {r_id}")
 
         # Chuyển dict thành list để trả về
         result = list(roadmap_progress.values())

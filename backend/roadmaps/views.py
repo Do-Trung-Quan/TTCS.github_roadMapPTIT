@@ -122,10 +122,10 @@ class RoadmapSearch(APIView):
                 "data": []
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Tìm kiếm các roadmap theo tiêu đề hoặc mô tả và sắp xếp
+        # Tìm kiếm các roadmap chỉ theo tiêu đề và sắp xếp
         queryset = Roadmap.objects.filter(
-            Q(title__icontains=search_term) | Q(description__icontains=search_term)
-        ).order_by('id')  # Thêm order_by để sắp xếp
+            Q(title__icontains=search_term)
+        ).order_by('id')  # Chỉ tìm theo title, giữ order_by
 
         serializer = RoadmapSerializer(queryset, many=True)
         return Response({

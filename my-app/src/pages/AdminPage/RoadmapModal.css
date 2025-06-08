@@ -1,151 +1,130 @@
-/* src/pages/AdminPage/RoadmapModal.css */
-
-/* Style cho lớp phủ nền (overlay) */
 .modal-overlay {
-    /* Mặc định ẩn modal, sẽ hiện khi class 'visible' được thêm vào */
-    display: none; /* Ẩn */
-    position: fixed; /* Cố định trên màn hình */
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Nền đen mờ */
-    display: flex; /* Dùng flexbox để căn giữa modal content */
-    justify-content: center; /* Căn giữa ngang */
-    align-items: center; /* Căn giữa dọc */
-    z-index: 1000; /* Đảm bảo modal nằm trên cùng */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Chỉ hiển thị overlay khi class 'visible' được thêm */
 .modal-overlay.visible {
-     display: flex;
+  display: flex;
 }
 
-
-/* Style cho nội dung chính của modal */
 .modal-content {
-    background-color: #fff; /* Nền trắng */
-    padding: 20px;
-    border-radius: 8px; /* Bo góc */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Đổ bóng */
-    max-width: 500px; /* Chiều rộng tối đa của modal */
-    width: 90%; /* Chiếm 90% chiều rộng màn hình trên thiết bị nhỏ */
-    position: relative; /* Nếu có các element định vị tuyệt đối bên trong */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  position: relative;
 }
 
-/* Style cho header modal (Tiêu đề và nút đóng) */
 .modal-header {
-    display: flex; /* Dùng flexbox */
-    justify-content: space-between; /* Đẩy tiêu đề sang trái, nút đóng sang phải */
-    align-items: center; /* Căn giữa theo chiều dọc */
-    border-bottom: 1px solid #eee; /* Đường kẻ dưới */
-    padding-bottom: 15px;
-    margin-bottom: 20px; /* Khoảng cách dưới header */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .modal-header h3 {
-    margin: 0; /* Bỏ margin mặc định của h3 */
-    font-size: 1.2em;
-    color: #333;
+  margin: 0;
+  font-size: 1.2em;
+  color: #333;
 }
 
-/* Style cho nút đóng modal (X) */
 .modal-close-btn {
-    background: none; /* Không nền */
-    border: none; /* Không viền */
-    font-size: 1.5em;
-    cursor: pointer;
-    color: #888; /* Màu xám */
-    padding: 0; /* Bỏ padding mặc định của button */
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
 }
 
 .modal-close-btn:hover {
-    color: #555; /* Màu sẫm hơn khi hover */
+  color: #555;
 }
 
-
-/* Style cho body modal (phần chứa form) */
-
-/* Style cho group form (label + input/textarea) */
 .form-group {
-    margin-bottom: 20px; /* Khoảng cách dưới mỗi group form */
+  margin-bottom: 20px;
 }
 
 .form-group label {
-    display: block; /* Hiển thị trên một dòng riêng */
-    font-size: 0.9em;
-    color: #555;
-    margin-bottom: 8px; /* Khoảng cách dưới label */
-    font-weight: bold; /* Chữ đậm */
+  display: block;
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 8px;
+  font-weight: bold;
 }
 
-/* Sử dụng lại style form-control-us từ ProfilePage.css cho input/textarea trong modal */
-/* Bạn có thể cần copy style này vào file CSS global hoặc một file dùng chung */
 .form-control-us {
-    display: block;
-    width: 100%;
-    padding: 10px 15px;
-    font-size: 1em;
-    line-height: 1.5;
-    color: #495057;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 1em;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-sizing: border-box;
 }
 
 .form-control-us:focus {
-    border-color: #007bff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #007bff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-/* Style cho phần đếm ký tự */
 .character-count {
-    font-size: 0.8em;
-    color: #888; /* Màu xám mờ */
-    text-align: right; /* Căn phải */
-    margin-top: 5px; /* Khoảng cách trên */
+  font-size: 0.8em;
+  color: #888;
+  text-align: right;
+  margin-top: 5px;
 }
 
-/* Style cho phần nút hành động (Cancel, Create) */
 .modal-actions {
-    display: flex; /* Dùng flexbox */
-    justify-content: flex-end; /* Căn các nút sang phải */
-    gap: 10px; /* Khoảng cách giữa các nút */
-    margin-top: 20px; /* Khoảng cách trên */
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }
 
-/* Style cho nút Cancel */
 .cancel-btn {
-    background-color: #ccc; /* Nền xám */
-    color: #333; /* Chữ đen */
-    border: none;
-    border-radius: 5px;
-    padding: 8px 15px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: #ccc;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .cancel-btn:hover {
-    background-color: #bbb; /* Nền xám sẫm hơn */
+  background-color: #bbb;
 }
 
-/* Style cho nút Create */
 .create-btn {
-    background-color: #007bff; /* Màu xanh Bootstrap primary */
-    color: #fff; /* Chữ trắng */
-    border: none;
-    border-radius: 5px;
-    padding: 8px 15px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .create-btn:hover {
-    background-color: #0056b3; /* Màu xanh sẫm hơn */
+  background-color: #0056b3;
 }

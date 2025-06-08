@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import './header.css';
 
 function Header({ currentLang, setCurrentLang }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
   const token = Cookies.get('access_token');
   const payload = token ? JSON.parse(atob(token.split('.')[1])) : null;
@@ -69,21 +69,13 @@ function Header({ currentLang, setCurrentLang }) {
 
     if (lang === 'vi') {
       setTranslations(initialTranslations);
-      const updatedResults = searchResults.map(result => {
-        const originalResult = (JSON.parse(localStorage.getItem('headerSearchResultsOriginal')) || []).find(r => r.id === result.id);
-        return originalResult || result;
-      });
-      setSearchResults(updatedResults);
+      // Đặt lại kết quả tìm kiếm về nguyên bản (tiếng Việt)
+      const originalResults = localStorage.getItem('headerSearchResultsOriginal') ? JSON.parse(localStorage.getItem('headerSearchResultsOriginal')) : [];
+      setSearchResults(originalResults);
       return;
     }
 
-    const baseTextsToTranslate = Object.values(initialTranslations);
-    const searchResultTexts = searchResults.flatMap(result => [
-      result.title || 'Không có tiêu đề',
-      result.description || 'Không có mô tả'
-    ]);
-    const textsToTranslate = [...baseTextsToTranslate, ...searchResultTexts];
-
+    const textsToTranslate = Object.values(initialTranslations);
     const translatedTexts = await translateText(textsToTranslate, lang);
 
     const updatedTranslations = {};
@@ -92,17 +84,14 @@ function Header({ currentLang, setCurrentLang }) {
     });
     setTranslations(updatedTranslations);
 
+    // Dịch lại kết quả tìm kiếm nếu có
     if (searchResults.length > 0) {
-      const updatedResults = searchResults.map((result, index) => {
-        const baseIndex = baseTextsToTranslate.length;
-        const titleIndex = baseIndex + (index * 2);
-        const descriptionIndex = baseIndex + (index * 2) + 1;
-        return {
-          ...result,
-          title: translatedTexts[titleIndex] || result.title || 'Không có tiêu đề',
-          description: translatedTexts[descriptionIndex] || result.description || 'Không có mô tả',
-        };
-      });
+      const searchResultTexts = searchResults.map(result => result.title || 'Không có tiêu đề');
+      const translatedResultTexts = await translateText(searchResultTexts, lang);
+      const updatedResults = searchResults.map((result, index) => ({
+        ...result,
+        title: translatedResultTexts[index] || result.title || 'Không có tiêu đề',
+      }));
       setSearchResults(updatedResults);
     }
   };
@@ -118,8 +107,9 @@ function Header({ currentLang, setCurrentLang }) {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!token || !userId) {
-        console.log('No token or userId, skipping user data fetch.');
-        return; // Avoid immediate redirect to allow navigation
+        setRole(null);
+        setAvatarUrl(null);
+        return; // No token or userId, reset states
       }
 
       try {
@@ -133,8 +123,11 @@ function Header({ currentLang, setCurrentLang }) {
 
         if (!response.ok) {
           if (response.status === 401) {
-            console.warn('Token expired or invalid (401), redirecting to homepage after delay.');
-            setTimeout(() => navigate('/'), 2000); // Delay redirect to avoid interrupting navigation
+            console.warn('Token expired or invalid (401), logging out and resetting states.');
+            logout(); // Trigger logout in AuthContext
+            setRole(null);
+            setAvatarUrl(null);
+            navigate('/');
             return;
           }
           throw new Error(`Không thể tải dữ liệu người dùng: ${response.statusText}`);
@@ -147,12 +140,15 @@ function Header({ currentLang, setCurrentLang }) {
         Cookies.set('user_avatar', data.avatar, { expires: 7, secure: true, sameSite: 'Strict' });
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu người dùng:', error);
-        setTimeout(() => navigate('/'), 2000); // Delay redirect to avoid interrupting navigation
+        logout(); // Logout on any error
+        setRole(null);
+        setAvatarUrl(null);
+        navigate('/');
       }
     };
 
     fetchUserData();
-  }, [token, userId, navigate]);
+  }, [token, userId, navigate, logout]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -178,16 +174,13 @@ function Header({ currentLang, setCurrentLang }) {
       let results = data.data || [];
       localStorage.setItem('headerSearchResultsOriginal', JSON.stringify(results));
 
-      if (currentLang === 'en' && results.length > 0) {
-        const searchResultTexts = results.flatMap(result => [
-          result.title || 'Không có tiêu đề',
-          result.description || 'Không có mô tả'
-        ]);
-        const translatedTexts = await translateText(searchResultTexts, 'en');
+      // Dịch kết quả nếu ngôn ngữ khác tiếng Việt
+      if (currentLang !== 'vi' && results.length > 0) {
+        const searchResultTexts = results.map(result => result.title || 'Không có tiêu đề');
+        const translatedTexts = await translateText(searchResultTexts, currentLang);
         results = results.map((result, index) => ({
           ...result,
-          title: translatedTexts[index * 2] || result.title || 'Không có tiêu đề',
-          description: translatedTexts[index * 2 + 1] || result.description || 'Không có mô tả',
+          title: translatedTexts[index] || result.title || 'Không có tiêu đề',
         }));
       }
 
@@ -237,6 +230,11 @@ function Header({ currentLang, setCurrentLang }) {
     navigate(destination);
   };
 
+  // Fallback to login button if avatar fails to load
+  const handleImageError = () => {
+    setAvatarUrl(null); // Reset avatarUrl on error
+  };
+
   return (
     <div className="navigation">
       <nav className="navbar navbar-expand-sm navbar-dark" style={{ backgroundColor: '#0b0b0b', position: 'relative', zIndex: 20001 }}>
@@ -255,6 +253,7 @@ function Header({ currentLang, setCurrentLang }) {
                   onChange={handleInputChange}
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
+                  style={{ minWidth: '220px', maxWidth: '220px' }} 
                 />
                 <button className="btn btn-outline-danger" type="submit">
                   {translations.searchButton}
@@ -281,7 +280,7 @@ function Header({ currentLang, setCurrentLang }) {
                       className="search-result-item"
                       onClick={() => handleResultClick(result.id)}
                     >
-                      {`${result.title || 'Không có tiêu đề'} - ${result.description || 'Không có mô tả'}`}
+                      {result.title || 'Không có tiêu đề'}
                     </div>
                   ))
                 ) : searchTerm ? (
@@ -317,12 +316,13 @@ function Header({ currentLang, setCurrentLang }) {
               </button>
             </li>
             <li className="nav-item d-flex align-items-center">
-              {isLoggedIn ? (
+              {isLoggedIn && avatarUrl ? (
                 <button className="user-avatar-btn" onClick={handleProfileClick}>
                   <img
                     src={avatarUrl}
                     alt="User Avatar"
                     className="user-avatar"
+                    onError={handleImageError}
                   />
                 </button>
               ) : (
@@ -367,7 +367,6 @@ function Header({ currentLang, setCurrentLang }) {
               >
                 <img src="https://flagsapi.com/VN/flat/64.png" alt="Tiếng Việt" width="30" height="30" />
               </button>
-              <span className="border-start mx-2" style={{ height: '24px', display: 'inline-block' }}></span>
               <button
                 className="nav-link p-0"
                 style={{ background: 'none', border: 'none' }}
@@ -377,12 +376,13 @@ function Header({ currentLang, setCurrentLang }) {
               </button>
             </li>
             <li className="nav-mobile-item d-flex align-items-center">
-              {isLoggedIn ? (
+              {isLoggedIn && avatarUrl ? (
                 <button className="user-avatar-btn" onClick={() => { handleProfileClick(); document.getElementById('nav-mobile-input').checked = false; }}>
                   <img
                     src={avatarUrl}
                     alt="User Avatar"
                     className="user-avatar"
+                    onError={handleImageError}
                   />
                 </button>
               ) : (
